@@ -349,7 +349,10 @@ func (c *checker) compare(op string, l, r model.Type, at model.Span) {
 	ok := false
 	switch op {
 	case "is", "is not":
-		ok = l.Kind == "None" && (r.Kind == "optional" || r.Kind == "None") || r.Kind == "None" && (l.Kind == "optional" || l.Kind == "None")
+		// None has a single value, so identity against its exact type cannot
+		// expose allocation identity or invoke user-defined equality. This also
+		// applies to nonoptional Pure Values, including narrowed optionals.
+		ok = l.Kind == "None" && r.Pure() || r.Kind == "None" && l.Pure()
 	case "==", "!=":
 		ok = l.Equal(r) && c.equality(l, map[string]bool{}) || l.Kind == "optional" && r.Kind == "None" && c.equality(l, map[string]bool{}) || r.Kind == "optional" && l.Kind == "None" && c.equality(r, map[string]bool{})
 	case "<", "<=", ">", ">=":

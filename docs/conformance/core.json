@@ -2959,22 +2959,58 @@
     "status": "tested",
     "positive": [
       {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreAccepted/narrowing_reversed_none"
+        "path": "internal/check/identity_test.go",
+        "test": "TestNoneIdentityPureValues"
       },
       {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreAccepted/narrowing_not_guard"
+        "path": "internal/check/identity_test.go",
+        "test": "TestNoneIdentityExactNoneExpressions"
+      },
+      {
+        "path": "internal/check/identity_test.go",
+        "test": "TestNoneIdentityNominalValues"
+      },
+      {
+        "path": "internal/check/identity_test.go",
+        "test": "TestNoneIdentityChainedComparisons"
+      },
+      {
+        "path": "internal/check/identity_test.go",
+        "test": "TestNoneIdentityNarrowingAndReassignment"
+      },
+      {
+        "path": "internal/app/identity_test.go",
+        "test": "TestNoneIdentityAcrossCacheStates"
+      },
+      {
+        "path": "tools/tests/test_differential_semantics.py",
+        "test": "DifferentialTests.test_none_identity_has_explicit_values_and_rejects_non_none_pairs"
       }
     ],
     "negative": [
       {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreRejected/identity_exposes_object_identity"
+        "path": "internal/check/identity_test.go",
+        "test": "TestNoneIdentityRequiresAnExactNoneOperand"
+      },
+      {
+        "path": "internal/check/identity_test.go",
+        "test": "TestNoneIdentityNominalValues"
+      },
+      {
+        "path": "internal/check/identity_test.go",
+        "test": "TestNoneIdentityChainedComparisons"
+      },
+      {
+        "path": "internal/check/identity_test.go",
+        "test": "TestNoneIdentityRejectsNonValues"
+      },
+      {
+        "path": "internal/check/identity_test.go",
+        "test": "TestNoneIdentityNarrowingAndReassignment"
       }
     ],
     "fixtures": [],
-    "notes": "None identity guards pass; identity comparison of strings rejects."
+    "notes": "Identity requires exact None on one side and any Pure Value on the other, checked independently for each chain pair. Tests cover nonoptional/optional primitives and tuples, nominal and opaque values, typed None expressions, literal-only narrowing, reassignment, and cache/worker equivalence. A finite CPython matrix checks explicit Boolean outcomes and rejects pairs without exact None; authority, ephemerals, declarations, and unsealed equality remain prohibited."
   },
   {
     "section": "14.8",

@@ -1006,6 +1006,18 @@ Permitted equality includes:
 
 Identity operators `is` and `is not` are permitted only with `None`.
 
+For each identity comparison, at least one operand has the exact type `None`;
+the other operand may be any Pure Value, including a nonoptional value, an
+optional value, a `@value` record, or a manifest-declared immutable value. The
+`None` operand may be a literal or another expression with exact type `None`.
+An optional type alone does not satisfy the exact-`None` requirement. Each
+adjacent pair in a comparison chain is checked separately.
+
+These comparisons produce `bool` without invoking equality methods or exposing
+the allocation identity of non-`None` values. They do not require the other
+operand to support equality. Optional narrowing retains the explicit literal
+`is None` and `is not None` guard rules.
+
 Capability and host-reference values cannot be compared.
 
 ### 14.7 Membership

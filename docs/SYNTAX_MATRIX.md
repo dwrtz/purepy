@@ -82,8 +82,8 @@ verifier; the label records a possible future design, not implicit permission.
 | Unary `+`, `-`, `~` | accepted with exact restriction | Numeric signs on `int`/`float`; bitwise complement on `int`. |
 | Binary arithmetic | accepted with exact restriction | Only the exact operator table below; no implicit numeric coercion or user dispatch. |
 | Boolean `and`, `or`, `not` | accepted with exact restriction | Exact `bool` operands and results; no general Python truthiness. |
-| Comparison, including chains | accepted with exact restriction | Each adjacent operand pair must match a sealed equality, ordering or membership rule. |
-| Identity `is`, `is not` | accepted with exact restriction | Only `None` identity tests, including optional narrowing. |
+| Comparison, including chains | accepted with exact restriction | Each adjacent operand pair must match a sealed equality, identity, ordering or membership rule. |
+| Identity `is`, `is not` | accepted with exact restriction | Each pair needs an operand of exact type `None`; the other may be any Pure Value, including a nonoptional value or opaque immutable value. An optional type alone is insufficient. Literal `None` guards retain optional narrowing. |
 | Subscription | accepted with exact restriction | Exact `int` index on tuple, `str` or `bytes`; bytes indexing returns `int`. |
 | Slice | accepted with exact restriction | Tuple, `str` or `bytes`; `int | None` bounds; no third colon/step or multidimensional subscription. |
 | Conditional expression | accepted with exact restriction | Exact `bool` condition and equal exact branch types. |
@@ -119,6 +119,7 @@ verifier; the label records a possible future design, not implicit permission.
 | `&`, `|`, `^`, `<<`, `>>` | Two `int` | `int` |
 | `+` concatenation | Two `str`, two `bytes`, or equal homogeneous tuple types | Same sequence type |
 | `==`, `!=` | Equal primitives, recursively equality-comparable records/tuples/optionals; comparable optional against `None` | `bool` |
+| `is`, `is not` | Exact `None` on either side and any Pure Value on the other; each chain pair checked independently | `bool` |
 | `<`, `<=`, `>`, `>=` | Equal `int`, `float`, `str` or `bytes` | `bool` |
 | `in`, `not in` | Equality-comparable element in matching tuple; `str` in `str`; `int` in `bytes` | `bool` |
 

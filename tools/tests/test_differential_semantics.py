@@ -115,6 +115,44 @@ class DifferentialTests(unittest.TestCase):
         with self.assertRaises(SyntaxError):
             gate.runtime_case(malformed)
 
+    def test_none_identity_has_explicit_values_and_rejects_non_none_pairs(self):
+        cases = {case.name: case for case in generate_cases(samples=0)
+                 if case.name.startswith("identity/")}
+        self.assertEqual(len(cases), 3400)
+        accepted_count = 0
+        for case in cases.values():
+            if case.expected_type is None:
+                continue
+            accepted_count += 1
+            with self.subTest(case=case.name):
+                self.assertEqual(case.expected_type, "bool")
+                self.assertTrue(case.check_value)
+                self.assertIs(type(case.expected_value), bool)
+                runtime = gate.runtime_case(case)
+                self.assertEqual(runtime["value"], gate.encode_value(case.expected_value))
+                self.assertEqual(gate.compare_case(case, accepted("bool"), runtime), [])
+                self.assertTrue(gate.compare_case(case, accepted("bool"),
+                                                 {"value": gate.encode_value(not case.expected_value)}))
+        self.assertEqual(accepted_count, 342)
+
+        rejected = {"ok": False, "inferred_types": [], "diagnostics": [{"code": "PP209"}]}
+        for name in (
+            "identity/is/int/int",
+            "identity/is_not/str/bytes",
+            "identity/is/optional_int_none/optional_int_none",
+            "identity/is_not/optional_tuple_int_none/tuple_int",
+            # A false first pair cannot hide an invalid second pair.
+            "identity/chain/is/is/none/int/int",
+            "identity/chain/is_not/is/int/int/none",
+            "identity/chain/is/is/none/optional_int_none/optional_int_none",
+        ):
+            with self.subTest(case=name):
+                case = cases[name]
+                self.assertIsNone(case.expected_type)
+                runtime = gate.runtime_case(case)
+                self.assertEqual(gate.compare_case(case, rejected, runtime), [])
+                self.assertTrue(gate.compare_case(case, accepted("bool"), runtime))
+
     def test_runtime_corpus_cannot_import_or_call_host_objects(self):
         for expression in ("__import__('os')", "open('/tmp/sentinel', 'w')", "(1).__class__", "[x for x in (1,)]", "(lambda: 1)()"):
             with self.subTest(expression=expression), self.assertRaises(ValueError):

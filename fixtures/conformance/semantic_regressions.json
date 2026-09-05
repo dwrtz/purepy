@@ -51,6 +51,63 @@
       "expression": "bytes((256,))",
       "expected_type": "bytes",
       "exception": "ValueError"
+    },
+    {
+      "name": "regression/exact_integer_identity_with_none",
+      "family": "regression",
+      "expression": "value is None",
+      "bindings": [["value", "int", "2"]],
+      "expected_type": "bool",
+      "check_value": true,
+      "expected_value": {"type": "bool", "value": false}
+    },
+    {
+      "name": "regression/reversed_bytes_identity_with_none",
+      "family": "regression",
+      "expression": "None is not value",
+      "bindings": [["value", "bytes", "b'a'"]],
+      "expected_type": "bool",
+      "check_value": true,
+      "expected_value": {"type": "bool", "value": true}
+    },
+    {
+      "name": "regression/exact_tuple_identity_with_none_binding",
+      "family": "regression",
+      "expression": "value is sentinel",
+      "bindings": [["value", "tuple[int, ...]", "()"], ["sentinel", "None", "None"]],
+      "expected_type": "bool",
+      "check_value": true,
+      "expected_value": {"type": "bool", "value": false}
+    },
+    {
+      "name": "regression/optional_none_identity_with_none_binding",
+      "family": "regression",
+      "expression": "value is sentinel",
+      "bindings": [["value", "int | None", "None"], ["sentinel", "None", "None"]],
+      "expected_type": "bool",
+      "check_value": true,
+      "expected_value": {"type": "bool", "value": true}
+    },
+    {
+      "name": "regression/non_none_object_identity_rejected",
+      "family": "regression",
+      "expression": "value is value",
+      "bindings": [["value", "tuple[int, ...]", "(1, 2)"]],
+      "expected_type": null
+    },
+    {
+      "name": "regression/optional_none_pair_identity_rejected",
+      "family": "regression",
+      "expression": "left is right",
+      "bindings": [["left", "int | None", "None"], ["right", "int | None", "None"]],
+      "expected_type": null
+    },
+    {
+      "name": "regression/identity_chain_checks_each_pair",
+      "family": "regression",
+      "expression": "None is left is right",
+      "bindings": [["left", "int", "1"], ["right", "int", "1"]],
+      "expected_type": null
     }
   ]
 }

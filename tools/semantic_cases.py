@@ -78,8 +78,16 @@ def generate_cases(seed: int = 0, samples: int = 32) -> list[Case]:
                           exception, mode, value, check_value))
 
     def bindings(*operands: _Operand) -> tuple[tuple[str, str, str], ...]:
-        return tuple((name, operand.annotation, operand.literal)
-                     for name, operand in zip(("left", "right", "third"), operands))
+        result = []
+        for name, operand in zip(("left", "right", "third"), operands):
+            literal = operand.literal
+            if literal == "()" and operand.annotation.endswith(" | None"):
+                # Supply empty-tuple element context before widening to the
+                # optional type; the identity matrix tests the comparison.
+                literal = name + "_empty"
+                result.append((literal, operand.annotation.removesuffix(" | None"), "()"))
+            result.append((name, operand.annotation, literal))
+        return tuple(result)
 
     # Complete Cartesian matrices over eight representative exact type shapes.
     # Additional homogeneous tuple element shapes are covered separately below.
@@ -133,15 +141,63 @@ def generate_cases(seed: int = 0, samples: int = 32) -> list[Case]:
         add(f"comparison/{label}/{left.name}/{right.name}", "comparison",
             f"left {op} right", "bool" if accepted else None, bindings(left, right))
 
-    # Identity checks between nonoptional values and None are deliberately not
-    # assigned an oracle here: the prose's "only with None" is less specific
-    # than the current optional-only implementation.  Optional flow belongs to
-    # the checker suite; this matrix checks None itself and non-None near misses.
-    for op, label in (("is", "is"), ("is not", "is_not")):
-        for operand in _BASE:
-            add(f"identity/{label}/{operand.name}", "comparison",
-                f"left {op} left", "bool" if operand.annotation == "None" else None,
-                bindings(operand))
+    # Spec section 14.6 seals each identity pair to an exact None operand and
+    # another Pure Value. Optional values do not themselves satisfy the exact
+    # None requirement, even when their current runtime value happens to be
+    # None. The checker suite covers nominal values and authority rejection;
+    # this runtime corpus stays within primitive and tuple literals.
+    identity_exact = _BASE + _EXTRA_TUPLES + (
+        _Operand("tuple_empty", "tuple[int, ...]", "()", "int"),
+        _Operand("tuple_nested", "tuple[tuple[int, ...], ...]", "((1, 2), ())",
+                 "tuple[int, ...]"),
+    )
+    identity_operands = identity_exact + tuple(
+        _Operand(f"optional_{operand.name}_{state}", f"{operand.annotation} | None", literal)
+        for operand in identity_exact if operand.annotation != "None"
+        for state, literal in (("none", "None"), ("present", operand.literal))
+    )
+    identity_operators = (("is", "is"), ("is not", "is_not"))
+    for (op, label), left, right in product(identity_operators, identity_operands, identity_operands):
+        accepted = "None" in (left.annotation, right.annotation)
+        both_none = left.literal == right.literal == "None"
+        add(f"identity/{label}/{left.name}/{right.name}", "comparison",
+            f"left {op} right", "bool" if accepted else None, bindings(left, right),
+            value=both_none if op == "is" else not both_none, check_value=accepted)
+
+    # Literal None and a None-typed binding must obey the same rule in either
+    # position. Their values are independently known from the fixed literals.
+    for (op, label), operand, reverse in product(identity_operators, identity_operands, (False, True)):
+        expression = f"None {op} left" if reverse else f"left {op} None"
+        is_none = operand.literal == "None"
+        add(f"identity/literal/{label}/{operand.name}/{'left' if reverse else 'right'}",
+            "comparison", expression, "bool", bindings(operand),
+            value=is_none if op == "is" else not is_none, check_value=True)
+
+    identity_by_name = {operand.name: operand for operand in identity_operands}
+    identity_chains = (
+        ("none", "none", "none"),
+        ("int", "none", "str"),
+        ("optional_int_none", "none", "optional_tuple_int_present"),
+        ("none", "int", "none"),
+        ("none", "optional_int_none", "none"),
+        ("none", "tuple_nested", "none"),
+        ("none", "int", "int"),
+        ("int", "int", "none"),
+        ("optional_int_none", "optional_int_none", "none"),
+        ("none", "optional_int_none", "optional_int_none"),
+    )
+    for names, first, second in product(identity_chains, identity_operators, identity_operators):
+        left, right, third = (identity_by_name[name] for name in names)
+        op1, label1 = first
+        op2, label2 = second
+        accepted = ("None" in (left.annotation, right.annotation) and
+                    "None" in (right.annotation, third.annotation))
+        pair1 = left.literal == right.literal == "None"
+        pair2 = right.literal == third.literal == "None"
+        value = (pair1 if op1 == "is" else not pair1) and (pair2 if op2 == "is" else not pair2)
+        add(f"identity/chain/{label1}/{label2}/{'/'.join(names)}", "comparison",
+            f"left {op1} right {op2} third", "bool" if accepted else None,
+            bindings(left, right, third), value=value, check_value=accepted)
 
     for left, right in product(_BASE, _BASE):
         # The integer representative is zero here to avoid hiding a result type

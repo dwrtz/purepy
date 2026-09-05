@@ -43,8 +43,8 @@ gate; they cannot satisfy an expected Python exception or required rejection.
 
 ## Corpus and bounds
 
-The default corpus has **2,557 cases**: 450 accepted signatures (including 37
-explicit domain failures) and 2,107 required rejections. It combines:
+The default corpus has **5,948 cases**: 794 accepted signatures (including 37
+explicit domain failures) and 5,154 required rejections. It combines:
 
 - Fixed Cartesian matrices over eight representative type shapes, covering
   arithmetic, bitwise, unary, Boolean, comparison, indexing, slicing, formatting,
@@ -55,8 +55,13 @@ explicit domain failures) and 2,107 required rejections. It combines:
   Unicode, byte boundaries, NaN, infinities, and signed zero.
 - Named Unicode character names and aliases, raw/bytes spellings, and f-string
   combinations with explicit literal value expectations.
+- A 3,400-case identity matrix over exact and optional primitive/tuple types,
+  including both `None` operand orders, typed `None` bindings, and chains. Every
+  accepted identity case has an explicit expected Boolean value. Typed empty
+  tuples are established before optional widening so these comparisons do not
+  depend on inferring an empty tuple through an optional context.
 - Three bounded integer expressions per seeded sample, using a local PRNG.
-- Seven permanent regression controls independent of matrix generation.
+- Fourteen permanent regression controls independent of matrix generation.
 
 Cases are trusted development code generated only from fixed templates and
 reviewed fixture data. The gate never evaluates analyzed project files, imports
@@ -106,10 +111,12 @@ match the implementation.
 These matrices cover finite representative type shapes and values. They do not
 prove every syntax composition, nominal/optional type combination, call graph,
 host behavior, platform-specific floating-point result, or termination property.
-Exact nonoptional-value identity comparisons with `None` remain outside this
-matrix because the spec's wording and implementation restriction need separate
-resolution. Named Unicode escapes have both valid-value cases in this gate and
-malformed-name cases in the shared AST syntax corpus. The separate
+`None` identity cases cover both operand orders, exact and optional primitive or
+tuple values, chains, and rejection of identity pairs without an exact `None`
+operand. Go conformance tests separately cover nominal and opaque immutable
+values, authority categories, and optional flow. Named Unicode escapes have both
+valid-value cases in this gate and malformed-name cases in the shared AST syntax
+corpus. The separate
 [Unicode data gate](UNICODE.md) validates the pinned name table against CPython.
 Cache correctness and worker determinism retain their existing Go tests.
 

@@ -52,6 +52,11 @@ dependencies, including on warm runs.
 - Local and parameter names cannot shadow module declarations. Optional narrowing
   uses exact `is None` / `is not None` guards. Loop joins conservatively discard
   refinements for values written by an iteration.
+- Identity checks require exact type `None` on one side and a Pure Value on the
+  other. Nonoptional primitives, tuples, records, opaque immutable values, and
+  already-narrowed optionals can therefore be checked against `None`. Every pair
+  in a chain follows the same rule. These checks do not enable equality dispatch,
+  general object identity, or comparisons of authority-bearing values.
 - No broad standard-library manifest ships. The sealed intrinsic table and the
   explicit example host manifest are the initial interoperation surface.
 - The `@value` runtime trusts the verifier's annotations and the host's exact-value
