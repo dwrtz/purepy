@@ -28,6 +28,7 @@ jobs:
           path: |
             internal/**/testdata/fuzz/**
             build/differential-failures.json
+            build/function-differential-failures.json
           if-no-files-found: ignore
           retention-days: 14
   performance:

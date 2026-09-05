@@ -1,4 +1,4 @@
-# Operator and intrinsic differential testing
+# Expression and whole-function differential testing
 
 Run the development gate with:
 
@@ -11,7 +11,7 @@ CPython 3.14. It builds `bin/purepy-semantic-probe`, runs the harness regression
 tests, and compares generated cases against the verifier and CPython. CI runs
 this target alongside the existing syntax and conformance gates.
 
-## What is compared
+## Expression comparisons
 
 Each case declares an expected PurePy verdict and, for accepted operations, an
 exact result type. These expectations come from the documented
@@ -41,7 +41,7 @@ mean verification should reject the program. Harness failures, malformed
 responses, missing results, crashes and resource-limit failures always fail the
 gate; they cannot satisfy an expected Python exception or required rejection.
 
-## Corpus and bounds
+## Expression corpus and shared process bounds
 
 The default corpus has **5,948 cases**: 794 accepted signatures (including 37
 explicit domain failures) and 5,154 required rejections. It combines:
@@ -126,3 +126,68 @@ fixtures. Harness regressions separately ensure mismatches and protocol failures
 cannot become successful comparisons. [Checker and cache fuzzing](FUZZING.md)
 now have a separate bounded `make fuzz-test` gate. Longer campaigns remain release
 work; neither finite target claims to complete that release gate.
+
+## Whole-function comparisons
+
+The same `make differential-test` target also runs
+[`differential_functions.py`](../tools/differential_functions.py). Each case
+contains a complete synchronous `probe` function, optionally with acyclic helper
+functions, and several typed input tuples. The normal Go adapter checks every
+function in the module. The parent requires a documented acceptance verdict or
+rejection with at least one specified diagnostic code. An unrelated syntax error
+cannot satisfy a flow-error expectation, and `PP099` always fails the gate.
+
+The isolated CPython worker executes the generated functions on those inputs.
+Every normal return from an accepted function must have its exact declared type,
+recursively through optional and homogeneous tuple types. `bool` does not count
+as `int`. Every default invocation also has an independently specified value or
+domain-exception expectation, including the runtime witnesses in rejected cases.
+Expected exceptions apply only to the corresponding invocation; an exception on
+another input still fails. The worker receives source, signature metadata and
+inputs, with all value and verdict oracles retained in the parent.
+
+The default seed has **73 functions and 428 invocations**: 64 required acceptances
+and 9 required rejections. Its 41 permanent cases cover optional guards and
+short-circuit conditions, branch joins and definite assignment, exact return
+types, implicit `None` returns, tuple/range iteration, bounded `while` loops,
+`break`, `continue`, early returns, nested loops, and primitive/optional tuple
+payloads passed through helpers. Four permanent regressions preserve loop-target
+refinement loss through both exit statements and iterable evaluation before
+body rebinding for tuple and range loops. The 32 seeded cases vary guard polarity,
+loop kind and exit ordering, payload type, and helper depth. `--samples 256`
+produces 297 functions; invocation counts depend on the seed.
+
+The runtime independently parses signature annotations and checks exact argument
+types before invocation. Its AST guard rejects imports, module initialization,
+decorators, attributes, nested functions, recursion, computed calls, and builtin
+or function shadowing. Each invocation has a 20,000-event execution budget;
+budget failures escape the domain-exception handler. The shared CPU, memory and
+wall-time limits also apply, including to work performed inside native builtins.
+Additional bounds are 2,000 cases per request, 32 KiB source and 2,000 AST nodes
+per case, 8 top-level functions, 16 parameters, and 64 invocations. Inputs,
+literals and returned values are limited to 256-bit integers, 128-character
+strings/bytes, and tuples of at most 16 elements with depth at most four.
+
+Run and replay specific cases after building the adapter:
+
+```sh
+.venv/bin/python tools/differential_functions.py --seed 2026 --samples 256
+.venv/bin/python tools/differential_functions.py --samples 0 --case regression/for_target_break_optional
+.venv/bin/python tools/differential_functions.py --replay build/function-differential-failures.json
+```
+
+Whole-function mismatches write `build/function-differential-failures.json`.
+Each record retains the complete source, signature, ordered typed inputs,
+expected verdict/codes and invocation outcomes, verifier diagnostics, and actual
+runtime outcomes. Child-process and protocol failures also preserve the selected
+inputs, with unavailable outputs marked null. CI uploads this artifact alongside
+the expression failures. `--replay` reads these records as data and reruns their
+exact source and inputs through the same guards; use only trusted development
+artifacts. Successful runs retain earlier artifacts. Promote minimized failures
+to named permanent templates and focused checker regressions after independently
+establishing the expected behavior.
+
+This extends differential evidence to selected whole-function compositions and
+paths. It does not prove all inputs, all path combinations, termination, async
+effects, nominal/opaque values, module imports, or host behavior. The opcode and
+line-event budget is a development guard, not a verifier termination guarantee.

@@ -46,8 +46,10 @@ unicode-generate: setup
 	$(PYTHON) tools/generate_unicode_identifiers.py
 differential-test: setup
 	go build -trimpath -buildvcs=false -o bin/purepy-semantic-probe ./tools/semantic_probe
-	$(PYTHON) -m unittest discover -s tools/tests -p 'test_differential_semantics.py' -v
+	$(PYTHON) -m unittest discover -s tools/tests -p 'test_differential*.py' -v
+	$(PYTHON) -m unittest discover -s tools/tests -p 'test_function*.py' -v
 	$(PYTHON) tools/differential_semantics.py
+	$(PYTHON) tools/differential_functions.py
 coverage-test: setup
 	$(PYTHON) -m unittest discover -s tools/tests -p 'test_spec_coverage.py' -v
 	$(PYTHON) tools/spec_coverage.py --check

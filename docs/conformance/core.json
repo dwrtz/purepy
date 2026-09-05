@@ -1757,6 +1757,10 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreAccepted/returning_branch_same_local_type"
+      },
+      {
+        "path": "tools/tests/test_differential_functions.py",
+        "test": "DifferentialFunctionTests.test_live_fixed_corpus"
       }
     ],
     "negative": [
@@ -1771,10 +1775,14 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreRejected/loop_changes_local_type"
+      },
+      {
+        "path": "tools/tests/test_differential_functions.py",
+        "test": "DifferentialFunctionTests.test_live_fixed_corpus"
       }
     ],
     "fixtures": [],
-    "notes": "Includes regression for declared types lost after a returning branch. Flow joins now preserve declaration types independently of continuing-path assignment/refinement facts."
+    "notes": "Includes regression for declared types lost after a returning branch. Flow joins now preserve declaration types independently of continuing-path assignment/refinement facts. The whole-function differential gate adds independently specified static verdicts and multiple CPython invocation outcomes for bounded branch, loop, and return compositions; selected inputs do not prove all paths."
   },
   {
     "section": "9.5",
@@ -1788,6 +1796,10 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreAccepted/loop_keeps_preassigned_local"
+      },
+      {
+        "path": "tools/tests/test_differential_functions.py",
+        "test": "DifferentialFunctionTests.test_live_fixed_corpus"
       }
     ],
     "negative": [
@@ -1802,10 +1814,14 @@
       {
         "path": "internal/check/security_test.go",
         "test": "TestSecurityFlowRejections"
+      },
+      {
+        "path": "tools/tests/test_differential_functions.py",
+        "test": "DifferentialFunctionTests.test_live_fixed_corpus"
       }
     ],
     "fixtures": [],
-    "notes": "Tests cover both-branch assignment, annotated-but-unassigned locals, use before local definition, empty loops, and continue paths; conservative loop narrowing remains an implementation choice."
+    "notes": "Tests cover both-branch assignment, annotated-but-unassigned locals, use before local definition, empty loops, and continue paths; conservative loop narrowing remains an implementation choice. The whole-function differential gate adds independently specified static verdicts and multiple CPython invocation outcomes for bounded branch, loop, and return compositions; selected inputs do not prove all paths."
   },
   {
     "section": "9.5",
@@ -1815,6 +1831,10 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreAccepted/both_branches_assign"
+      },
+      {
+        "path": "tools/tests/test_differential_functions.py",
+        "test": "DifferentialFunctionTests.test_live_fixed_corpus"
       }
     ],
     "negative": [
@@ -1825,10 +1845,14 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreRejected/returning_branch_changes_local_type"
+      },
+      {
+        "path": "tools/tests/test_differential_functions.py",
+        "test": "DifferentialFunctionTests.test_live_fixed_corpus"
       }
     ],
     "fixtures": [],
-    "notes": "Same-type branch assignments pass; conflicting declared types fail, including a declaration confined to a returning branch."
+    "notes": "Same-type branch assignments pass; conflicting declared types fail, including a declaration confined to a returning branch. The whole-function differential gate adds independently specified static verdicts and multiple CPython invocation outcomes for bounded branch, loop, and return compositions; selected inputs do not prove all paths."
   },
   {
     "section": "10.2",
@@ -2812,6 +2836,10 @@
       {
         "path": "internal/check/loop_refinement_test.go",
         "test": "TestForTargetRefinementsRespectEveryExit"
+      },
+      {
+        "path": "tools/tests/test_differential_functions.py",
+        "test": "DifferentialFunctionTests.test_live_fixed_corpus"
       }
     ],
     "negative": [
@@ -2830,10 +2858,14 @@
       {
         "path": "internal/check/loop_refinement_test.go",
         "test": "TestForTargetRefinementsRespectEveryExit"
+      },
+      {
+        "path": "tools/tests/test_differential_functions.py",
+        "test": "DifferentialFunctionTests.test_live_fixed_corpus"
       }
     ],
     "fixtures": [],
-    "notes": "Returns preserve exact primitive types and the explicitly allowed T-to-optional relation. Non-None fallthrough and wrong return values reject. Loop-target regressions cover break, continue, zero iterations, and narrowing after loop exit; a loop cannot retain an invalid exact return type."
+    "notes": "Returns preserve exact primitive types and the explicitly allowed T-to-optional relation. Non-None fallthrough and wrong return values reject. Loop-target regressions cover break, continue, zero iterations, and narrowing after loop exit; a loop cannot retain an invalid exact return type. The whole-function differential gate adds independently specified static verdicts and multiple CPython invocation outcomes for bounded branch, loop, and return compositions; selected inputs do not prove all paths."
   },
   {
     "section": "13.6",
@@ -2843,16 +2875,24 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreAccepted/none_returns_and_fallthrough"
+      },
+      {
+        "path": "tools/tests/test_differential_functions.py",
+        "test": "DifferentialFunctionTests.test_live_fixed_corpus"
       }
     ],
     "negative": [
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreRejected/non_none_fallthrough"
+      },
+      {
+        "path": "tools/tests/test_differential_functions.py",
+        "test": "DifferentialFunctionTests.test_live_fixed_corpus"
       }
     ],
     "fixtures": [],
-    "notes": "None fallthrough is accepted; a possible int fallthrough rejects."
+    "notes": "None fallthrough is accepted; a possible int fallthrough rejects. The whole-function differential gate adds independently specified static verdicts and multiple CPython invocation outcomes for bounded branch, loop, and return compositions; selected inputs do not prove all paths."
   },
   {
     "section": "13.7",

@@ -717,6 +717,10 @@
       {
         "path": "tools/tests/test_differential_semantics.py",
         "test": "DifferentialTests.test_live_primitive_and_near_miss_cases"
+      },
+      {
+        "path": "tools/tests/test_differential_functions.py",
+        "test": "DifferentialFunctionTests.test_live_fixed_corpus"
       }
     ],
     "negative": [
@@ -727,10 +731,14 @@
       {
         "path": "tools/tests/test_differential_semantics.py",
         "test": "DifferentialTests.test_live_primitive_and_near_miss_cases"
+      },
+      {
+        "path": "tools/tests/test_differential_functions.py",
+        "test": "DifferentialFunctionTests.test_live_fixed_corpus"
       }
     ],
     "fixtures": [],
-    "notes": "The suite has positive and negative cases across required feature families; an exhaustive enumeration of statement/operator/type combinations remains open. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; nominal/optional combinations and arbitrary compositions remain outside this finite matrix."
+    "notes": "The suite has positive and negative cases across required feature families; an exhaustive enumeration of statement/operator/type combinations remains open. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; the whole-function gate adds bounded optional/tuple flow compositions with exact returns and independently specified invocation outcomes. Nominal values and arbitrary compositions remain outside these finite matrices."
   },
   {
     "section": "32.4",
@@ -748,6 +756,10 @@
       {
         "path": "internal/frontend/layout_regression_test.go",
         "test": "TestPreserveJoinedHeadersAndAlignedClauses"
+      },
+      {
+        "path": "tools/tests/test_differential_functions.py",
+        "test": "DifferentialFunctionTests.test_live_fixed_corpus"
       }
     ],
     "negative": [
@@ -766,6 +778,10 @@
       {
         "path": "internal/frontend/layout_regression_test.go",
         "test": "TestRejectMisalignedConditionalClauses"
+      },
+      {
+        "path": "tools/tests/test_differential_functions.py",
+        "test": "DifferentialFunctionTests.test_live_fixed_corpus"
       }
     ],
     "fixtures": [
@@ -776,7 +792,7 @@
       "unassigned_branch",
       "discarded_result"
     ],
-    "notes": "Fixtures span the supported statement/expression families, but all operator/type combinations and Python literal spellings are not yet exhaustive. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; nominal/optional combinations and arbitrary compositions remain outside this finite matrix. Shared CPython syntax cases and frontend regressions distinguish valid logical-line joins and aligned clauses from malformed header newlines and clause indentation."
+    "notes": "Fixtures span the supported statement/expression families, but all operator/type combinations and Python literal spellings are not yet exhaustive. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; the whole-function gate adds bounded optional/tuple flow compositions with exact returns and independently specified invocation outcomes. Nominal values and arbitrary compositions remain outside these finite matrices. Shared CPython syntax cases and frontend regressions distinguish valid logical-line joins and aligned clauses from malformed header newlines and clause indentation."
   },
   {
     "section": "32.4",

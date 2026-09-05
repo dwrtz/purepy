@@ -89,8 +89,10 @@ verified source. A small excluded host owns asyncio scheduling, sockets, SQLite,
 atomic transactions, and cancellation. Its tests exercise real concurrent socket
 requests, rollback, repeated SSE events, and cleanup.
 
-`make differential-test` compares the verifier's operator and intrinsic types
-with CPython 3.14 on a reproducible generated corpus. See the
+`make differential-test` compares the verifier's operator and intrinsic types,
+whole-function verdicts, and exact runtime return types with CPython 3.14 on a
+reproducible generated corpus. Whole functions exercise optional narrowing,
+branches, loop exits, and helper calls with multiple inputs. See the
 [differential testing guide](docs/DIFFERENTIAL_TESTING.md) for case selection,
 larger seeded runs, and preserving mismatches as regression fixtures.
 

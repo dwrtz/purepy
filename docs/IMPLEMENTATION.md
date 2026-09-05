@@ -95,8 +95,13 @@ The [semantic differential gate](DIFFERENTIAL_TESTING.md) checks documented
 operator/intrinsic acceptance and the verifier's inferred local types against
 CPython 3.14 outcomes. It includes Cartesian type matrices, bounded seeded values,
 typed empty tuples, numeric boundaries, explicit domain exceptions, and permanent
-regression fixtures. Python execution is confined to trusted development cases in
-a separate process. Production verification never invokes Python. This finite
+regression fixtures. A whole-function gate adds independent acceptance/rejection
+oracles and multiple typed invocations through optional guards, branch joins,
+loop exits, and acyclic helper calls. It checks exact declared return types and
+curated outcomes, preserving complete failing programs and inputs for replay.
+Python execution is confined to trusted development cases in a separate process
+with AST restrictions, opcode budgets, and process limits. Production
+verification never invokes Python. This finite
 gate does not establish arbitrary-program soundness or host contract correctness.
 
 The [specification-to-test audit](CONFORMANCE.md) maps mandatory keyword-bearing

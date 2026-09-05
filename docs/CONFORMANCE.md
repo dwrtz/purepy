@@ -86,8 +86,8 @@ a percentage of semantic correctness.
 - [S22.6-56f3c626](#s226-56f3c626) (trust): The verifier validates declared capability categories, exact forwarding, and reports labels. It cannot prove that native/host code discloses every effect or uses the granted authority correctly; effect completeness is explicitly part of the trusted host contract.
 - [S32.1-31bd3d2e](#s321-31bd3d2e) (partial): The required fixture runner and representative safety/determinism tests run, but experimental status remains: full closed-language compliance and independent soundness evidence are not established.
 - [S32.1-d4cb00a5](#s321-d4cb00a5) (partial): The audit maps mandatory rules and feature families. Named Unicode escapes now cover pinned character names and aliases, raw/bytes behavior, malformed names, exact lexical ranges, and cache equivalence. Finite fixtures still do not exhaust the closed Python subset.
-- [S32.4-018499f6](#s324-018499f6) (partial): The suite has positive and negative cases across required feature families; an exhaustive enumeration of statement/operator/type combinations remains open. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; nominal/optional combinations and arbitrary compositions remain outside this finite matrix.
-- [S32.4-f5622679](#s324-f5622679) (partial): Fixtures span the supported statement/expression families, but all operator/type combinations and Python literal spellings are not yet exhaustive. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; nominal/optional combinations and arbitrary compositions remain outside this finite matrix. Shared CPython syntax cases and frontend regressions distinguish valid logical-line joins and aligned clauses from malformed header newlines and clause indentation.
+- [S32.4-018499f6](#s324-018499f6) (partial): The suite has positive and negative cases across required feature families; an exhaustive enumeration of statement/operator/type combinations remains open. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; the whole-function gate adds bounded optional/tuple flow compositions with exact returns and independently specified invocation outcomes. Nominal values and arbitrary compositions remain outside these finite matrices.
+- [S32.4-f5622679](#s324-f5622679) (partial): Fixtures span the supported statement/expression families, but all operator/type combinations and Python literal spellings are not yet exhaustive. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; the whole-function gate adds bounded optional/tuple flow compositions with exact returns and independently specified invocation outcomes. Nominal values and arbitrary compositions remain outside these finite matrices. Shared CPython syntax cases and frontend regressions distinguish valid logical-line joins and aligned clauses from malformed header newlines and clause indentation.
 - [S32.4-0449ecd2](#s324-0449ecd2) (partial): The suite has positive and negative cases across required feature families; an exhaustive enumeration of statement/operator/type combinations remains open. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; nominal/optional combinations and arbitrary compositions remain outside this finite matrix.
 - [S32.5-a0c47895](#s325-a0c47895) (release): The reference service demonstrates the required behavior and has a documented sample load run. The verifier now has repeated size/worker matrices, exact per-process CPU/RSS, separate wall/worker timings, profile-guided allocation improvements, and tolerant same-run base/head CI checks (docs/PERFORMANCE.md and benchmarks/baseline.json). Dedicated-runner acceptance budgets and sustained representative runtime-service load evidence remain release work.
 - [S32.5-66e0ae7d](#s325-66e0ae7d) (release): The reference service demonstrates the required behavior and has a documented sample load run. The verifier now has repeated size/worker matrices, exact per-process CPU/RSS, separate wall/worker timings, profile-guided allocation improvements, and tolerant same-run base/head CI checks (docs/PERFORMANCE.md and benchmarks/baseline.json). Dedicated-runner acceptance budgets and sustained representative runtime-service load evidence remain release work.
@@ -1096,11 +1096,11 @@ Section 9.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L559)
 
 > Every later assignment to the same name MUST have the same exact type.
 
-Positive: [TestSpecCoreAccepted/local_annotation_then_assignment](../internal/check/spec_core_test.go#L30); [TestSpecCoreAccepted/returning_branch_same_local_type](../internal/check/spec_core_test.go#L30).
+Positive: [TestSpecCoreAccepted/local_annotation_then_assignment](../internal/check/spec_core_test.go#L30); [TestSpecCoreAccepted/returning_branch_same_local_type](../internal/check/spec_core_test.go#L30); [DifferentialFunctionTests.test_live_fixed_corpus](../tools/tests/test_differential_functions.py#L332).
 
-Negative: [TestSpecCoreRejected/local_annotation_changes_type](../internal/check/spec_core_test.go#L62); [TestSpecCoreRejected/returning_branch_changes_local_type](../internal/check/spec_core_test.go#L62); [TestSpecCoreRejected/loop_changes_local_type](../internal/check/spec_core_test.go#L62).
+Negative: [TestSpecCoreRejected/local_annotation_changes_type](../internal/check/spec_core_test.go#L62); [TestSpecCoreRejected/returning_branch_changes_local_type](../internal/check/spec_core_test.go#L62); [TestSpecCoreRejected/loop_changes_local_type](../internal/check/spec_core_test.go#L62); [DifferentialFunctionTests.test_live_fixed_corpus](../tools/tests/test_differential_functions.py#L332).
 
-Includes regression for declared types lost after a returning branch. Flow joins now preserve declaration types independently of continuing-path assignment/refinement facts.
+Includes regression for declared types lost after a returning branch. Flow joins now preserve declaration types independently of continuing-path assignment/refinement facts. The whole-function differential gate adds independently specified static verdicts and multiple CPython invocation outcomes for bounded branch, loop, and return compositions; selected inputs do not prove all paths.
 
 ### S9.5-ffe58154
 
@@ -1108,11 +1108,11 @@ Section 9.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L561)
 
 > A local MUST be definitely assigned on every path before use.
 
-Positive: [TestSpecCoreAccepted/both_branches_assign](../internal/check/spec_core_test.go#L30); [TestSpecCoreAccepted/loop_keeps_preassigned_local](../internal/check/spec_core_test.go#L30).
+Positive: [TestSpecCoreAccepted/both_branches_assign](../internal/check/spec_core_test.go#L30); [TestSpecCoreAccepted/loop_keeps_preassigned_local](../internal/check/spec_core_test.go#L30); [DifferentialFunctionTests.test_live_fixed_corpus](../tools/tests/test_differential_functions.py#L332).
 
-Negative: [TestSpecCoreRejected/unassigned_annotated_local](../internal/check/spec_core_test.go#L62); [TestSpecCoreRejected/assignment_before_local_definition](../internal/check/spec_core_test.go#L62); [TestSecurityFlowRejections](../internal/check/security_test.go#L86).
+Negative: [TestSpecCoreRejected/unassigned_annotated_local](../internal/check/spec_core_test.go#L62); [TestSpecCoreRejected/assignment_before_local_definition](../internal/check/spec_core_test.go#L62); [TestSecurityFlowRejections](../internal/check/security_test.go#L86); [DifferentialFunctionTests.test_live_fixed_corpus](../tools/tests/test_differential_functions.py#L332).
 
-Tests cover both-branch assignment, annotated-but-unassigned locals, use before local definition, empty loops, and continue paths; conservative loop narrowing remains an implementation choice.
+Tests cover both-branch assignment, annotated-but-unassigned locals, use before local definition, empty loops, and continue paths; conservative loop narrowing remains an implementation choice. The whole-function differential gate adds independently specified static verdicts and multiple CPython invocation outcomes for bounded branch, loop, and return compositions; selected inputs do not prove all paths.
 
 ### S9.5-811b264d
 
@@ -1120,11 +1120,11 @@ Section 9.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L563)
 
 > Branch joins MUST agree on the exact type of every live local.
 
-Positive: [TestSpecCoreAccepted/both_branches_assign](../internal/check/spec_core_test.go#L30).
+Positive: [TestSpecCoreAccepted/both_branches_assign](../internal/check/spec_core_test.go#L30); [DifferentialFunctionTests.test_live_fixed_corpus](../tools/tests/test_differential_functions.py#L332).
 
-Negative: [TestSecurityFlowRejections/branch_type_conflict](../internal/check/security_test.go#L86); [TestSpecCoreRejected/returning_branch_changes_local_type](../internal/check/spec_core_test.go#L62).
+Negative: [TestSecurityFlowRejections/branch_type_conflict](../internal/check/security_test.go#L86); [TestSpecCoreRejected/returning_branch_changes_local_type](../internal/check/spec_core_test.go#L62); [DifferentialFunctionTests.test_live_fixed_corpus](../tools/tests/test_differential_functions.py#L332).
 
-Same-type branch assignments pass; conflicting declared types fail, including a declaration confined to a returning branch.
+Same-type branch assignments pass; conflicting declared types fail, including a declaration confined to a returning branch. The whole-function differential gate adds independently specified static verdicts and multiple CPython invocation outcomes for bounded branch, loop, and return compositions; selected inputs do not prove all paths.
 
 ### S10.2-1a664dd1
 
@@ -1660,11 +1660,11 @@ Section 13.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L903)
 
 > Every reachable return expression MUST match the exact declared return type.
 
-Positive: [TestSpecCoreAccepted/none_returns_and_fallthrough](../internal/check/spec_core_test.go#L30); [TestSpecCoreAccepted/optional_argument_and_return](../internal/check/spec_core_test.go#L30); [TestForTargetRefinementsRespectEveryExit](../internal/check/loop_refinement_test.go#L5).
+Positive: [TestSpecCoreAccepted/none_returns_and_fallthrough](../internal/check/spec_core_test.go#L30); [TestSpecCoreAccepted/optional_argument_and_return](../internal/check/spec_core_test.go#L30); [TestForTargetRefinementsRespectEveryExit](../internal/check/loop_refinement_test.go#L5); [DifferentialFunctionTests.test_live_fixed_corpus](../tools/tests/test_differential_functions.py#L332).
 
-Negative: [TestSpecCoreRejected/exact_return_type](../internal/check/spec_core_test.go#L62); [TestSpecCoreRejected/non_none_fallthrough](../internal/check/spec_core_test.go#L62); [TestSpecCoreRejected/wrong_none_return](../internal/check/spec_core_test.go#L62); [TestForTargetRefinementsRespectEveryExit](../internal/check/loop_refinement_test.go#L5).
+Negative: [TestSpecCoreRejected/exact_return_type](../internal/check/spec_core_test.go#L62); [TestSpecCoreRejected/non_none_fallthrough](../internal/check/spec_core_test.go#L62); [TestSpecCoreRejected/wrong_none_return](../internal/check/spec_core_test.go#L62); [TestForTargetRefinementsRespectEveryExit](../internal/check/loop_refinement_test.go#L5); [DifferentialFunctionTests.test_live_fixed_corpus](../tools/tests/test_differential_functions.py#L332).
 
-Returns preserve exact primitive types and the explicitly allowed T-to-optional relation. Non-None fallthrough and wrong return values reject. Loop-target regressions cover break, continue, zero iterations, and narrowing after loop exit; a loop cannot retain an invalid exact return type.
+Returns preserve exact primitive types and the explicitly allowed T-to-optional relation. Non-None fallthrough and wrong return values reject. Loop-target regressions cover break, continue, zero iterations, and narrowing after loop exit; a loop cannot retain an invalid exact return type. The whole-function differential gate adds independently specified static verdicts and multiple CPython invocation outcomes for bounded branch, loop, and return compositions; selected inputs do not prove all paths.
 
 ### S13.6-a490fe05
 
@@ -1672,11 +1672,11 @@ Section 13.6; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#
 
 > Falling off the end is permitted only for a function declared to return `None`.
 
-Positive: [TestSpecCoreAccepted/none_returns_and_fallthrough](../internal/check/spec_core_test.go#L30).
+Positive: [TestSpecCoreAccepted/none_returns_and_fallthrough](../internal/check/spec_core_test.go#L30); [DifferentialFunctionTests.test_live_fixed_corpus](../tools/tests/test_differential_functions.py#L332).
 
-Negative: [TestSpecCoreRejected/non_none_fallthrough](../internal/check/spec_core_test.go#L62).
+Negative: [TestSpecCoreRejected/non_none_fallthrough](../internal/check/spec_core_test.go#L62); [DifferentialFunctionTests.test_live_fixed_corpus](../tools/tests/test_differential_functions.py#L332).
 
-None fallthrough is accepted; a possible int fallthrough rejects.
+None fallthrough is accepted; a possible int fallthrough rejects. The whole-function differential gate adds independently specified static verdicts and multiple CPython invocation outcomes for bounded branch, loop, and return compositions; selected inputs do not prove all paths.
 
 ### S13.7-6864497f
 
@@ -2658,11 +2658,11 @@ Section 32.4; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L2215)
 
 > The conformance suite MUST include positive and negative fixtures for:
 
-Positive: [TestConformance](../internal/app/conformance_test.go#L20); [DifferentialTests.test_live_primitive_and_near_miss_cases](../tools/tests/test_differential_semantics.py#L176).
+Positive: [TestConformance](../internal/app/conformance_test.go#L20); [DifferentialTests.test_live_primitive_and_near_miss_cases](../tools/tests/test_differential_semantics.py#L176); [DifferentialFunctionTests.test_live_fixed_corpus](../tools/tests/test_differential_functions.py#L332).
 
-Negative: [TestUnsupportedSyntaxIsNeverDropped](../internal/frontend/parser_test.go#L175); [DifferentialTests.test_live_primitive_and_near_miss_cases](../tools/tests/test_differential_semantics.py#L176).
+Negative: [TestUnsupportedSyntaxIsNeverDropped](../internal/frontend/parser_test.go#L175); [DifferentialTests.test_live_primitive_and_near_miss_cases](../tools/tests/test_differential_semantics.py#L176); [DifferentialFunctionTests.test_live_fixed_corpus](../tools/tests/test_differential_functions.py#L332).
 
-The suite has positive and negative cases across required feature families; an exhaustive enumeration of statement/operator/type combinations remains open. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; nominal/optional combinations and arbitrary compositions remain outside this finite matrix.
+The suite has positive and negative cases across required feature families; an exhaustive enumeration of statement/operator/type combinations remains open. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; the whole-function gate adds bounded optional/tuple flow compositions with exact returns and independently specified invocation outcomes. Nominal values and arbitrary compositions remain outside these finite matrices.
 
 ### S32.4-f5622679
 
@@ -2672,13 +2672,13 @@ Section 32.4; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L2217)
 
 List obligation introduced by S32.4-018499f6.
 
-Positive: [TestControlFlowAndExpressions](../internal/frontend/parser_test.go#L100); [DifferentialTests.test_live_primitive_and_near_miss_cases](../tools/tests/test_differential_semantics.py#L176); [TestPreserveJoinedHeadersAndAlignedClauses](../internal/frontend/layout_regression_test.go#L45).
+Positive: [TestControlFlowAndExpressions](../internal/frontend/parser_test.go#L100); [DifferentialTests.test_live_primitive_and_near_miss_cases](../tools/tests/test_differential_semantics.py#L176); [TestPreserveJoinedHeadersAndAlignedClauses](../internal/frontend/layout_regression_test.go#L45); [DifferentialFunctionTests.test_live_fixed_corpus](../tools/tests/test_differential_functions.py#L332).
 
-Negative: [TestUnsupportedSyntaxIsNeverDropped](../internal/frontend/parser_test.go#L175); [DifferentialTests.test_live_primitive_and_near_miss_cases](../tools/tests/test_differential_semantics.py#L176); [TestRejectUnjoinedHeaderNewlines](../internal/frontend/layout_regression_test.go#L8); [TestRejectMisalignedConditionalClauses](../internal/frontend/layout_regression_test.go#L33).
+Negative: [TestUnsupportedSyntaxIsNeverDropped](../internal/frontend/parser_test.go#L175); [DifferentialTests.test_live_primitive_and_near_miss_cases](../tools/tests/test_differential_semantics.py#L176); [TestRejectUnjoinedHeaderNewlines](../internal/frontend/layout_regression_test.go#L8); [TestRejectMisalignedConditionalClauses](../internal/frontend/layout_regression_test.go#L33); [DifferentialFunctionTests.test_live_fixed_corpus](../tools/tests/test_differential_functions.py#L332).
 
 [Conformance fixtures](../fixtures/conformance/cases.json): `continue_and_break`, `while_loop`, `slicing`, `fstrings`, `unassigned_branch`, `discarded_result`.
 
-Fixtures span the supported statement/expression families, but all operator/type combinations and Python literal spellings are not yet exhaustive. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; nominal/optional combinations and arbitrary compositions remain outside this finite matrix. Shared CPython syntax cases and frontend regressions distinguish valid logical-line joins and aligned clauses from malformed header newlines and clause indentation.
+Fixtures span the supported statement/expression families, but all operator/type combinations and Python literal spellings are not yet exhaustive. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; the whole-function gate adds bounded optional/tuple flow compositions with exact returns and independently specified invocation outcomes. Nominal values and arbitrary compositions remain outside these finite matrices. Shared CPython syntax cases and frontend regressions distinguish valid logical-line joins and aligned clauses from malformed header newlines and clause indentation.
 
 ### S32.4-2ccfd594
 
