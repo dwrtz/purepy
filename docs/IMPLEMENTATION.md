@@ -51,7 +51,9 @@ dependencies, including on warm runs.
   equality of records containing them is also rejected to prevent hidden dispatch.
 - Local and parameter names cannot shadow module declarations. Optional narrowing
   uses exact `is None` / `is not None` guards. Loop joins conservatively discard
-  refinements for values written by an iteration.
+  refinements for values written by an iteration, including `for` targets.
+  A `for` iterable uses incoming refinements because it is evaluated once before
+  the body; a `while` condition accounts for writes from preceding iterations.
 - Identity checks require exact type `None` on one side and a Pure Value on the
   other. Nonoptional primitives, tuples, records, opaque immutable values, and
   already-narrowed optionals can therefore be checked against `None`. Every pair
@@ -109,6 +111,13 @@ tooling regressions. It also fixed function-wide local types being forgotten aft
 a returning branch, missing import-safety module provenance in trust reports,
 incomplete configuration and manifest error locations, diagnostic tie ordering,
 and missing specification/syntax version metadata.
+
+Review regressions also cover loop-target refinements across break and continue,
+the evaluation order of narrowed `for` iterables, malformed logical-line breaks
+in Python headers, and misaligned `elif`/`else` clauses. Manifest module ancestors
+cannot be verified plain modules: a trusted child does not turn a project `.py`
+file into a package. Unicode identifier validation uses pinned Python 3.14 data
+across discovery, configuration, and manifests; see the [Unicode guide](UNICODE.md).
 
 The performance harness records repeated repository-size and worker matrices,
 per-process CPU/peak RSS, disjoint pipeline timings, and summed frontend-worker

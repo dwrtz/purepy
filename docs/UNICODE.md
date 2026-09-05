@@ -1,4 +1,22 @@
-# Named Unicode escapes
+# Unicode 16.0 identifiers and named escapes
+
+PurePy pins Python 3.14's Unicode 16.0.0 identifier properties and NFKC
+normalization. Source identifiers normalize before binding; module filenames,
+configured entrypoints, and manifest names must already use canonical spelling.
+For example, `Ᲊ` (U+1C89, CYRILLIC CAPITAL LETTER TJE) is a valid name, and newly
+composed Kirat Rai vowel signs normalize consistently in source and configuration.
+Names use Python's `XID_Start`/`XID_Continue` rules, including underscore; reserved
+keywords remain prohibited where identifiers are required.
+
+[`internal/unicodeident`](../internal/unicodeident/identifiers.go) embeds about
+120 KB of generated identifier and normalization tables. Production behavior
+does not depend on the Unicode version built into Go or installed Python.
+ASCII normalization takes an allocation-free path. Non-ASCII identifiers use
+recursive decomposition, stable canonical ordering, and canonical composition,
+including the algorithmic Hangul rules. Input hashes, licensing, and generation
+details are in the [identifier-data README](../internal/unicodeident/ucd/README.md).
+
+## Named escapes
 
 PurePy accepts `\N{...}` in ordinary Unicode strings and the literal portions of
 f-strings. Names use Unicode 16.0.0, the database used by CPython 3.14. Character
@@ -60,6 +78,12 @@ checks rejection boundaries, and runs the Go lookup tests. The Python comparison
 requires CPython 3.14 with Unicode 16.0.0; it was validated with CPython 3.14.7.
 Earlier 3.14 patch releases had differences in algorithmic name lookup; a
 disagreement fails the gate instead of silently changing the generated table.
+
+The same target regenerates and checks the pinned identifier data, compares all
+Unicode code points' identifier and combining properties with CPython 3.14, and
+verifies all 19,965 official normalization vectors against both Go and CPython.
+Application tests cover Unicode 16.0 names across project discovery, configuration,
+manifest linking, source normalization, and cold/warm/disabled cache runs.
 
 Go tests check all explicit source names/aliases, Hangul syllables, and CJK/Tangut
 range points, plus malformed names and range boundaries. Frontend and application

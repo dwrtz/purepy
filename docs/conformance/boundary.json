@@ -437,6 +437,10 @@
       {
         "path": "internal/manifest/manifest_test.go",
         "test": "TestCrossManifestModuleAndConfiguredOrder"
+      },
+      {
+        "path": "internal/app/module_namespace_test.go",
+        "test": "TestManifestModuleAncestors"
       }
     ],
     "negative": [
@@ -447,10 +451,14 @@
       {
         "path": "internal/manifest/spec_boundary_test.go",
         "test": "TestBoundaryManifestConflictLocation"
+      },
+      {
+        "path": "internal/app/module_namespace_test.go",
+        "test": "TestManifestModuleAncestors"
       }
     ],
     "fixtures": [],
-    "notes": "Nonconflicting declarations may span manifests in either configured order. Identical duplicates and cross-kind names are errors; the rejected later declaration retains both provenance paths."
+    "notes": "Nonconflicting declarations may span manifests in either configured order. Identical duplicates and cross-kind names are errors; the rejected later declaration retains both provenance paths. Module ancestor conflicts reject even when parent modules are implicit in a manifest; distinct textual prefixes remain valid. Diagnostics and verdicts agree across cache states and worker counts."
   },
   {
     "section": "22.10",
@@ -645,6 +653,10 @@
       {
         "path": "internal/app/spec_boundary_test.go",
         "test": "TestBoundaryAuthorityAndEntrypointReports"
+      },
+      {
+        "path": "internal/app/unicode_identifier_test.go",
+        "test": "TestPython314UnicodeIdentifiersAcrossBoundaries"
       }
     ],
     "negative": [
@@ -658,7 +670,7 @@
       }
     ],
     "fixtures": [],
-    "notes": "Both sync pure and async effectful entrypoints report exact signatures, pure arguments, capability labels, host references, and return type. Failed verification, records, imports, missing names, and host declarations cannot produce verified-entrypoint claims."
+    "notes": "Both sync pure and async effectful entrypoints report exact signatures, pure arguments, capability labels, host references, and return type. Failed verification, records, imports, missing names, and host declarations cannot produce verified-entrypoint claims. Canonical Unicode 16.0 names are supported consistently in configured entrypoints, source module names, and external declarations."
   },
   {
     "section": "25.4",

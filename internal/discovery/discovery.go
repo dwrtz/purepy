@@ -8,9 +8,8 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
-	"unicode"
 
-	"golang.org/x/text/unicode/norm"
+	"github.com/dwrtz/purepy/internal/unicodeident"
 )
 
 // File is one Python source file. RelativePath always uses forward slashes.
@@ -24,18 +23,12 @@ type File struct {
 // ValidIdentifier accepts Python identifiers in their canonical NFKC spelling.
 // Soft keywords (match, case and type) remain valid identifiers.
 func ValidIdentifier(name string) bool {
-	if name == "" || !norm.NFKC.IsNormalString(name) {
+	if !unicodeident.Canonical(name) {
 		return false
 	}
 	switch name {
 	case "False", "None", "True", "and", "as", "assert", "async", "await", "break", "class", "continue", "def", "del", "elif", "else", "except", "finally", "for", "from", "global", "if", "import", "in", "is", "lambda", "nonlocal", "not", "or", "pass", "raise", "return", "try", "while", "with", "yield":
 		return false
-	}
-	for i, r := range name {
-		start := r == '_' || unicode.IsLetter(r) || unicode.Is(unicode.Nl, r) || unicode.Is(unicode.Other_ID_Start, r)
-		if !start && (i == 0 || !(unicode.Is(unicode.Mn, r) || unicode.Is(unicode.Mc, r) || unicode.Is(unicode.Nd, r) || unicode.Is(unicode.Pc, r) || unicode.Is(unicode.Other_ID_Continue, r))) {
-			return false
-		}
 	}
 	return true
 }

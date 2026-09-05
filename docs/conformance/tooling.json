@@ -744,6 +744,10 @@
       {
         "path": "tools/tests/test_differential_semantics.py",
         "test": "DifferentialTests.test_live_primitive_and_near_miss_cases"
+      },
+      {
+        "path": "internal/frontend/layout_regression_test.go",
+        "test": "TestPreserveJoinedHeadersAndAlignedClauses"
       }
     ],
     "negative": [
@@ -754,6 +758,14 @@
       {
         "path": "tools/tests/test_differential_semantics.py",
         "test": "DifferentialTests.test_live_primitive_and_near_miss_cases"
+      },
+      {
+        "path": "internal/frontend/layout_regression_test.go",
+        "test": "TestRejectUnjoinedHeaderNewlines"
+      },
+      {
+        "path": "internal/frontend/layout_regression_test.go",
+        "test": "TestRejectMisalignedConditionalClauses"
       }
     ],
     "fixtures": [
@@ -764,7 +776,7 @@
       "unassigned_branch",
       "discarded_result"
     ],
-    "notes": "Fixtures span the supported statement/expression families, but all operator/type combinations and Python literal spellings are not yet exhaustive. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; nominal/optional combinations and arbitrary compositions remain outside this finite matrix."
+    "notes": "Fixtures span the supported statement/expression families, but all operator/type combinations and Python literal spellings are not yet exhaustive. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; nominal/optional combinations and arbitrary compositions remain outside this finite matrix. Shared CPython syntax cases and frontend regressions distinguish valid logical-line joins and aligned clauses from malformed header newlines and clause indentation."
   },
   {
     "section": "32.4",
@@ -833,15 +845,37 @@
     "section": "32.4",
     "quote": "- optional narrowing;",
     "status": "tested",
-    "positive": [],
-    "negative": [],
+    "positive": [
+      {
+        "path": "internal/check/loop_refinement_test.go",
+        "test": "TestForIterableUsesIncomingRefinements"
+      },
+      {
+        "path": "internal/check/loop_refinement_test.go",
+        "test": "TestWhileConditionUsesBackEdgeTypes"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/loop_refinement_test.go",
+        "test": "TestForTargetRefinementsRespectEveryExit"
+      },
+      {
+        "path": "internal/check/loop_refinement_test.go",
+        "test": "TestForIterableUsesIncomingRefinements"
+      },
+      {
+        "path": "internal/check/loop_refinement_test.go",
+        "test": "TestWhileConditionUsesBackEdgeTypes"
+      }
+    ],
     "fixtures": [
       "narrowing",
       "short_circuit_narrowing",
       "truthiness",
       "identity_non_none"
     ],
-    "notes": "Named accepted and rejected integration fixtures exercise this conformance family; the more specific rule rows describe its individual limits."
+    "notes": "Named accepted and rejected integration fixtures exercise this conformance family; the more specific rule rows describe its individual limits. Loop regressions distinguish one-time for-iterable evaluation from repeated body/while-condition evaluation and invalidate loop-target refinements at every exit."
   },
   {
     "section": "32.4",

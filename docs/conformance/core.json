@@ -482,16 +482,28 @@
       {
         "path": "internal/discovery/discovery_test.go",
         "test": "TestDiscoverDeterministicMapping"
+      },
+      {
+        "path": "internal/app/unicode_identifier_test.go",
+        "test": "TestPython314UnicodeIdentifiersAcrossBoundaries"
+      },
+      {
+        "path": "internal/app/module_namespace_test.go",
+        "test": "TestManifestModuleAncestors"
       }
     ],
     "negative": [
       {
         "path": "internal/discovery/discovery_test.go",
         "test": "TestDiscoverRejectsUnresolvableModules"
+      },
+      {
+        "path": "internal/app/module_namespace_test.go",
+        "test": "TestManifestModuleAncestors"
       }
     ],
     "fixtures": [],
-    "notes": "Tests assert deterministic file/module mapping, nested packages, and rejection of missing initializers and ambiguous names."
+    "notes": "Tests assert deterministic file/module mapping, nested packages, and rejection of missing initializers and ambiguous names. Python 3.14 Unicode identifiers cross module, entrypoint, and manifest boundaries; trusted child modules cannot require a verified plain module to act as a package."
   },
   {
     "section": "6.5",
@@ -2796,6 +2808,10 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreAccepted/optional_argument_and_return"
+      },
+      {
+        "path": "internal/check/loop_refinement_test.go",
+        "test": "TestForTargetRefinementsRespectEveryExit"
       }
     ],
     "negative": [
@@ -2810,10 +2826,14 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreRejected/wrong_none_return"
+      },
+      {
+        "path": "internal/check/loop_refinement_test.go",
+        "test": "TestForTargetRefinementsRespectEveryExit"
       }
     ],
     "fixtures": [],
-    "notes": "Returns preserve exact primitive types and the explicitly allowed T-to-optional relation. Non-None fallthrough and wrong return values reject."
+    "notes": "Returns preserve exact primitive types and the explicitly allowed T-to-optional relation. Non-None fallthrough and wrong return values reject. Loop-target regressions cover break, continue, zero iterations, and narrowing after loop exit; a loop cannot retain an invalid exact return type."
   },
   {
     "section": "13.6",

@@ -39,9 +39,11 @@ syntax-test: setup
 	$(PYTHON) tools/differential_syntax.py
 unicode-test: setup
 	$(PYTHON) tools/generate_unicode_names.py --check --verify-cpython
-	go test ./internal/unicodenames
+	$(PYTHON) tools/generate_unicode_identifiers.py --check --verify-cpython
+	go test ./internal/unicodenames ./internal/unicodeident
 unicode-generate: setup
 	$(PYTHON) tools/generate_unicode_names.py
+	$(PYTHON) tools/generate_unicode_identifiers.py
 differential-test: setup
 	go build -trimpath -buildvcs=false -o bin/purepy-semantic-probe ./tools/semantic_probe
 	$(PYTHON) -m unittest discover -s tools/tests -p 'test_differential_semantics.py' -v

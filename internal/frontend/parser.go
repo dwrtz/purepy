@@ -15,14 +15,14 @@ import (
 
 	"github.com/dwrtz/purepy/internal/diag"
 	"github.com/dwrtz/purepy/internal/model"
+	"github.com/dwrtz/purepy/internal/unicodeident"
 	"github.com/dwrtz/purepy/internal/unicodenames"
 	sitter "github.com/tree-sitter/go-tree-sitter"
 	python "github.com/tree-sitter/tree-sitter-python/bindings/go"
-	"golang.org/x/text/unicode/norm"
 )
 
 // Version is part of the cache identity; change it whenever lowering changes.
-const Version = "python-3.14/tree-sitter-python-26855eab/ir-3/unicode-" + unicodenames.UnicodeVersion
+const Version = "python-3.14/tree-sitter-python-26855eab/ir-4/unicode-" + unicodenames.UnicodeVersion + "/identifiers-" + unicodeident.UnicodeVersion
 
 type adapter struct {
 	path        string
@@ -192,7 +192,7 @@ func normalizeNames(n *model.Node) {
 	}
 	for _, key := range []string{"name", "alias", "module"} {
 		if value, ok := n.Attr[key]; ok {
-			n.Attr[key] = norm.NFKC.String(value)
+			n.Attr[key] = unicodeident.NFKC(value)
 		}
 	}
 	for _, child := range n.Fields {
@@ -277,6 +277,48 @@ func (a *adapter) trivia(root *sitter.Node) {
 		walk(root)
 	}
 	checkGap(len(a.source))
+}
+
+// The grammar can skip an unescaped newline in a declaration, import or
+// decorator header without producing an ERROR. Python requires these tokens to
+// share one logical line. Only grouping delimiters or an explicit continuation
+// join physical lines; comments cannot join them. Treat literals atomically so
+// their contents, including f-string interpolation, do not affect header layout.
+// A compound statement's check stops at its suite colon, before the body.
+func (a *adapter) logicalLine(n *sitter.Node, suite bool) {
+	previous, depth := int(n.StartByte()), 0
+	done := false
+	var walk func(*sitter.Node)
+	walk = func(token *sitter.Node) {
+		if done {
+			return
+		}
+		kind := token.Kind()
+		if token.ChildCount() != 0 && kind != "string" && kind != "comment" && kind != "line_continuation" {
+			for i := uint(0); i < token.ChildCount(); i++ {
+				walk(token.Child(i))
+			}
+			return
+		}
+		start := int(token.StartByte())
+		if depth == 0 && start >= previous {
+			if offset := bytes.IndexAny(a.source[previous:start], "\r\n"); offset >= 0 {
+				a.report("PP002", "header newline requires parentheses or an explicit line continuation", a.span(previous+offset, previous+offset+1))
+				done = true
+				return
+			}
+		}
+		previous = int(token.EndByte())
+		switch kind {
+		case "(", "[", "{":
+			depth++
+		case ")", "]", "}":
+			depth--
+		case ":":
+			done = suite && depth == 0
+		}
+	}
+	walk(n)
 }
 
 func named(n *sitter.Node) []*sitter.Node {
@@ -467,6 +509,7 @@ func (a *adapter) lower(n *sitter.Node) *model.Node {
 		out := f("definition")
 		for _, c := range children {
 			if c.Kind() == "decorator" {
+				a.logicalLine(c, false)
 				dc := named(c)
 				if len(dc) == 1 {
 					out.Lists["decorators"] = append(out.Lists["decorators"], a.lower(dc[0]))
@@ -477,6 +520,7 @@ func (a *adapter) lower(n *sitter.Node) *model.Node {
 		out.Text = a.text(n)
 		return out
 	case "function_definition", "class_definition":
+		a.logicalLine(n, true)
 		kind := "Function"
 		if n.Kind() == "class_definition" {
 			kind = "Record"
@@ -503,6 +547,7 @@ func (a *adapter) lower(n *sitter.Node) *model.Node {
 		}
 		return out
 	case "import_from_statement", "import_statement", "future_import_statement":
+		a.logicalLine(n, false)
 		out := a.node("Import", n)
 		module := n.ChildByFieldName("module_name")
 		out.Attr["module"] = a.qualified(module)
@@ -557,22 +602,32 @@ func (a *adapter) lower(n *sitter.Node) *model.Node {
 		}
 		return out
 	case "if_statement", "elif_clause":
+		a.logicalLine(n, true)
 		out := a.node("If", n)
 		out.Fields["test"] = f("condition")
 		out.Lists["body"] = a.body(n.ChildByFieldName("consequence"))
 		tail := out
 		for _, c := range children {
+			if c.Kind() == "elif_clause" || c.Kind() == "else_clause" {
+				base, alternate, _ := a.indentation(int(n.StartByte()))
+				column, alt, lineStart := a.indentation(int(c.StartByte()))
+				if !lineStart || column != base || alt != alternate {
+					a.report("PP002", "conditional clauses must align with their if statement", a.node("", c).Span)
+				}
+			}
 			if c.Kind() == "elif_clause" {
 				next := a.lower(c)
 				tail.Lists["else"] = []*model.Node{next}
 				tail = next
 			}
 			if c.Kind() == "else_clause" {
+				a.logicalLine(c, true)
 				tail.Lists["else"] = a.body(c.ChildByFieldName("body"))
 			}
 		}
 		return out
 	case "for_statement", "while_statement":
+		a.logicalLine(n, true)
 		kind := "For"
 		if n.Kind() == "while_statement" {
 			kind = "While"

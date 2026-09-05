@@ -93,6 +93,19 @@ func Link(modules []*Module, external *manifest.Set, entrypoints []string) *Prog
 		if existing := p.Modules[m.Name]; existing != nil {
 			p.error("PP601", "manifest module conflicts with verified module "+m.Name, manifestSpan(m.Span, m.Source)).WithSymbol(m.Name).WithRelated(existing.Tree.Span)
 		}
+		// A plain project module cannot also be an ancestor package of a
+		// trusted module, even when that parent is implicit in the manifest.
+		for parent := m.Name; ; {
+			at := strings.LastIndexByte(parent, '.')
+			if at < 0 {
+				break
+			}
+			parent = parent[:at]
+			if existing := p.Modules[parent]; existing != nil && !existing.Package {
+				p.error("PP601", "manifest module "+m.Name+" requires a package, but verified module "+parent+" is not a package", manifestSpan(m.Span, m.Source)).WithSymbol(m.Name).WithRelated(existing.Tree.Span)
+				break
+			}
+		}
 	}
 	for _, t := range external.Types {
 		s := &Symbol{Name: t.Name, Kind: "type", Type: model.Type{Kind: t.Category, Name: t.Name}, Labels: t.Labels, Source: t.Source, Span: manifestSpan(t.Span, t.Source)}

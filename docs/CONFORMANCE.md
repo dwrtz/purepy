@@ -87,7 +87,7 @@ a percentage of semantic correctness.
 - [S32.1-31bd3d2e](#s321-31bd3d2e) (partial): The required fixture runner and representative safety/determinism tests run, but experimental status remains: full closed-language compliance and independent soundness evidence are not established.
 - [S32.1-d4cb00a5](#s321-d4cb00a5) (partial): The audit maps mandatory rules and feature families. Named Unicode escapes now cover pinned character names and aliases, raw/bytes behavior, malformed names, exact lexical ranges, and cache equivalence. Finite fixtures still do not exhaust the closed Python subset.
 - [S32.4-018499f6](#s324-018499f6) (partial): The suite has positive and negative cases across required feature families; an exhaustive enumeration of statement/operator/type combinations remains open. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; nominal/optional combinations and arbitrary compositions remain outside this finite matrix.
-- [S32.4-f5622679](#s324-f5622679) (partial): Fixtures span the supported statement/expression families, but all operator/type combinations and Python literal spellings are not yet exhaustive. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; nominal/optional combinations and arbitrary compositions remain outside this finite matrix.
+- [S32.4-f5622679](#s324-f5622679) (partial): Fixtures span the supported statement/expression families, but all operator/type combinations and Python literal spellings are not yet exhaustive. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; nominal/optional combinations and arbitrary compositions remain outside this finite matrix. Shared CPython syntax cases and frontend regressions distinguish valid logical-line joins and aligned clauses from malformed header newlines and clause indentation.
 - [S32.4-0449ecd2](#s324-0449ecd2) (partial): The suite has positive and negative cases across required feature families; an exhaustive enumeration of statement/operator/type combinations remains open. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; nominal/optional combinations and arbitrary compositions remain outside this finite matrix.
 - [S32.5-a0c47895](#s325-a0c47895) (release): The reference service demonstrates the required behavior and has a documented sample load run. The verifier now has repeated size/worker matrices, exact per-process CPU/RSS, separate wall/worker timings, profile-guided allocation improvements, and tolerant same-run base/head CI checks (docs/PERFORMANCE.md and benchmarks/baseline.json). Dedicated-runner acceptance budgets and sustained representative runtime-service load evidence remain release work.
 - [S32.5-66e0ae7d](#s325-66e0ae7d) (release): The reference service demonstrates the required behavior and has a documented sample load run. The verifier now has repeated size/worker matrices, exact per-process CPU/RSS, separate wall/worker timings, profile-guided allocation improvements, and tolerant same-run base/head CI checks (docs/PERFORMANCE.md and benchmarks/baseline.json). Dedicated-runner acceptance budgets and sustained representative runtime-service load evidence remain release work.
@@ -328,11 +328,11 @@ Section 6.3; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L298)
 
 > Each `.py` file beneath the source root maps deterministically to one module name. Namespace packages are not supported. Package directories MUST contain `__init__.py` files.
 
-Positive: [TestDiscoverDeterministicMapping](../internal/discovery/discovery_test.go#L26).
+Positive: [TestDiscoverDeterministicMapping](../internal/discovery/discovery_test.go#L26); [TestPython314UnicodeIdentifiersAcrossBoundaries](../internal/app/unicode_identifier_test.go#L5); [TestManifestModuleAncestors](../internal/app/module_namespace_test.go#L11).
 
-Negative: [TestDiscoverRejectsUnresolvableModules](../internal/discovery/discovery_test.go#L50).
+Negative: [TestDiscoverRejectsUnresolvableModules](../internal/discovery/discovery_test.go#L50); [TestManifestModuleAncestors](../internal/app/module_namespace_test.go#L11).
 
-Tests assert deterministic file/module mapping, nested packages, and rejection of missing initializers and ambiguous names.
+Tests assert deterministic file/module mapping, nested packages, and rejection of missing initializers and ambiguous names. Python 3.14 Unicode identifiers cross module, entrypoint, and manifest boundaries; trusted child modules cannot require a verified plain module to act as a package.
 
 ### S6.5-84f2fc59
 
@@ -1660,11 +1660,11 @@ Section 13.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L903)
 
 > Every reachable return expression MUST match the exact declared return type.
 
-Positive: [TestSpecCoreAccepted/none_returns_and_fallthrough](../internal/check/spec_core_test.go#L30); [TestSpecCoreAccepted/optional_argument_and_return](../internal/check/spec_core_test.go#L30).
+Positive: [TestSpecCoreAccepted/none_returns_and_fallthrough](../internal/check/spec_core_test.go#L30); [TestSpecCoreAccepted/optional_argument_and_return](../internal/check/spec_core_test.go#L30); [TestForTargetRefinementsRespectEveryExit](../internal/check/loop_refinement_test.go#L5).
 
-Negative: [TestSpecCoreRejected/exact_return_type](../internal/check/spec_core_test.go#L62); [TestSpecCoreRejected/non_none_fallthrough](../internal/check/spec_core_test.go#L62); [TestSpecCoreRejected/wrong_none_return](../internal/check/spec_core_test.go#L62).
+Negative: [TestSpecCoreRejected/exact_return_type](../internal/check/spec_core_test.go#L62); [TestSpecCoreRejected/non_none_fallthrough](../internal/check/spec_core_test.go#L62); [TestSpecCoreRejected/wrong_none_return](../internal/check/spec_core_test.go#L62); [TestForTargetRefinementsRespectEveryExit](../internal/check/loop_refinement_test.go#L5).
 
-Returns preserve exact primitive types and the explicitly allowed T-to-optional relation. Non-None fallthrough and wrong return values reject.
+Returns preserve exact primitive types and the explicitly allowed T-to-optional relation. Non-None fallthrough and wrong return values reject. Loop-target regressions cover break, continue, zero iterations, and narrowing after loop exit; a loop cannot retain an invalid exact return type.
 
 ### S13.6-a490fe05
 
@@ -2096,11 +2096,11 @@ Section 22.9; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1631)
 
 > Conflicting declarations are errors. Later manifests MUST NOT silently override earlier ones.
 
-Positive: [TestBoundaryManifestOrderAndConflict](../internal/app/spec_boundary_test.go#L212); [TestCrossManifestModuleAndConfiguredOrder](../internal/manifest/manifest_test.go#L135).
+Positive: [TestBoundaryManifestOrderAndConflict](../internal/app/spec_boundary_test.go#L212); [TestCrossManifestModuleAndConfiguredOrder](../internal/manifest/manifest_test.go#L135); [TestManifestModuleAncestors](../internal/app/module_namespace_test.go#L11).
 
-Negative: [TestDuplicateDeclarationsNeverOverride](../internal/manifest/manifest_test.go#L108); [TestBoundaryManifestConflictLocation](../internal/manifest/spec_boundary_test.go#L65).
+Negative: [TestDuplicateDeclarationsNeverOverride](../internal/manifest/manifest_test.go#L108); [TestBoundaryManifestConflictLocation](../internal/manifest/spec_boundary_test.go#L65); [TestManifestModuleAncestors](../internal/app/module_namespace_test.go#L11).
 
-Nonconflicting declarations may span manifests in either configured order. Identical duplicates and cross-kind names are errors; the rejected later declaration retains both provenance paths.
+Nonconflicting declarations may span manifests in either configured order. Identical duplicates and cross-kind names are errors; the rejected later declaration retains both provenance paths. Module ancestor conflicts reject even when parent modules are implicit in a manifest; distinct textual prefixes remain valid. Diagnostics and verdicts agree across cache states and worker counts.
 
 ### S22.10-2b47ac86
 
@@ -2202,11 +2202,11 @@ Section 25.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1763)
 
 > Every configured entrypoint MUST resolve to one top-level verified function.
 
-Positive: [TestBoundaryAuthorityAndEntrypointReports](../internal/app/spec_boundary_test.go#L84).
+Positive: [TestBoundaryAuthorityAndEntrypointReports](../internal/app/spec_boundary_test.go#L84); [TestPython314UnicodeIdentifiersAcrossBoundaries](../internal/app/unicode_identifier_test.go#L5).
 
 Negative: [TestBoundaryEntrypointRejections](../internal/app/spec_boundary_test.go#L181); [TestBoundaryReportsRejectUnknownOrExternalFunction](../internal/app/spec_boundary_test.go#L196).
 
-Both sync pure and async effectful entrypoints report exact signatures, pure arguments, capability labels, host references, and return type. Failed verification, records, imports, missing names, and host declarations cannot produce verified-entrypoint claims.
+Both sync pure and async effectful entrypoints report exact signatures, pure arguments, capability labels, host references, and return type. Failed verification, records, imports, missing names, and host declarations cannot produce verified-entrypoint claims. Canonical Unicode 16.0 names are supported consistently in configured entrypoints, source module names, and external declarations.
 
 ### S25.4-831a9b65
 
@@ -2672,13 +2672,13 @@ Section 32.4; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L2217)
 
 List obligation introduced by S32.4-018499f6.
 
-Positive: [TestControlFlowAndExpressions](../internal/frontend/parser_test.go#L100); [DifferentialTests.test_live_primitive_and_near_miss_cases](../tools/tests/test_differential_semantics.py#L176).
+Positive: [TestControlFlowAndExpressions](../internal/frontend/parser_test.go#L100); [DifferentialTests.test_live_primitive_and_near_miss_cases](../tools/tests/test_differential_semantics.py#L176); [TestPreserveJoinedHeadersAndAlignedClauses](../internal/frontend/layout_regression_test.go#L45).
 
-Negative: [TestUnsupportedSyntaxIsNeverDropped](../internal/frontend/parser_test.go#L175); [DifferentialTests.test_live_primitive_and_near_miss_cases](../tools/tests/test_differential_semantics.py#L176).
+Negative: [TestUnsupportedSyntaxIsNeverDropped](../internal/frontend/parser_test.go#L175); [DifferentialTests.test_live_primitive_and_near_miss_cases](../tools/tests/test_differential_semantics.py#L176); [TestRejectUnjoinedHeaderNewlines](../internal/frontend/layout_regression_test.go#L8); [TestRejectMisalignedConditionalClauses](../internal/frontend/layout_regression_test.go#L33).
 
 [Conformance fixtures](../fixtures/conformance/cases.json): `continue_and_break`, `while_loop`, `slicing`, `fstrings`, `unassigned_branch`, `discarded_result`.
 
-Fixtures span the supported statement/expression families, but all operator/type combinations and Python literal spellings are not yet exhaustive. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; nominal/optional combinations and arbitrary compositions remain outside this finite matrix.
+Fixtures span the supported statement/expression families, but all operator/type combinations and Python literal spellings are not yet exhaustive. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; nominal/optional combinations and arbitrary compositions remain outside this finite matrix. Shared CPython syntax cases and frontend regressions distinguish valid logical-line joins and aligned clauses from malformed header newlines and clause indentation.
 
 ### S32.4-2ccfd594
 
@@ -2738,9 +2738,13 @@ Section 32.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2222)
 
 List obligation introduced by S32.4-018499f6.
 
+Positive: [TestForIterableUsesIncomingRefinements](../internal/check/loop_refinement_test.go#L76); [TestWhileConditionUsesBackEdgeTypes](../internal/check/loop_refinement_test.go#L120).
+
+Negative: [TestForTargetRefinementsRespectEveryExit](../internal/check/loop_refinement_test.go#L5); [TestForIterableUsesIncomingRefinements](../internal/check/loop_refinement_test.go#L76); [TestWhileConditionUsesBackEdgeTypes](../internal/check/loop_refinement_test.go#L120).
+
 [Conformance fixtures](../fixtures/conformance/cases.json): `narrowing`, `short_circuit_narrowing`, `truthiness`, `identity_non_none`.
 
-Named accepted and rejected integration fixtures exercise this conformance family; the more specific rule rows describe its individual limits.
+Named accepted and rejected integration fixtures exercise this conformance family; the more specific rule rows describe its individual limits. Loop regressions distinguish one-time for-iterable evaluation from repeated body/while-condition evaluation and invalidate loop-target refinements at every exit.
 
 ### S32.4-6c66ad5b
 

@@ -17,6 +17,14 @@ func clone(in map[string]variable) map[string]variable {
 	return out
 }
 
+func (c *checker) resetRefinements(names map[string]bool) {
+	for name := range names {
+		v := c.vars[name]
+		v.Current = v.Type
+		c.vars[name] = v
+	}
+}
+
 // CheckFunctions bounds concurrency at the function level. Linked declarations
 // are immutable; each worker owns its environments, facts and diagnostics.
 func (p *Program) CheckFunctions(jobs int) Result {
@@ -275,12 +283,14 @@ func (c *checker) statement(n *model.Node) bool {
 		before := clone(c.vars)
 		writes := map[string]bool{}
 		collectLocals(n.Items("body"), writes)
-		for name := range writes {
-			v := c.vars[name]
-			v.Current = v.Type
-			c.vars[name] = v
+		if n.Kind == "For" {
+			if target := n.Get("target"); target != nil && target.Kind == "Name" {
+				writes[target.A("name")] = true
+			}
 		}
 		if n.Kind == "While" {
+			// A while condition is reevaluated after the body's assignments.
+			c.resetRefinements(writes)
 			c.expectExpression(model.Bool, c.expr(n.Get("test"), model.Bool), n.Get("test"))
 			c.narrow(n.Get("test"), true)
 		} else {
@@ -318,6 +328,9 @@ func (c *checker) statement(n *model.Node) bool {
 					}
 				}
 			}
+			// The iterable and range arguments are evaluated once in the incoming
+			// environment. Only the body must account for previous iterations.
+			c.resetRefinements(writes)
 			c.bind(n.Get("target"), t, nil, true, n.Span)
 		}
 		c.loop++
@@ -327,11 +340,7 @@ func (c *checker) statement(n *model.Node) bool {
 		c.vars = c.join(before, after, true, true, n.Span)
 		// Loops may execute zero times. Refinements of values written by any
 		// iteration cannot survive a break, continue, or subsequent iteration.
-		for name := range writes {
-			v := c.vars[name]
-			v.Current = v.Type
-			c.vars[name] = v
-		}
+		c.resetRefinements(writes)
 		if n.Kind == "While" && literalTrue(n.Get("test")) && !containsBreak(n.Items("body")) {
 			return false
 		}
