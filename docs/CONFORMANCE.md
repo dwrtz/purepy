@@ -321,7 +321,7 @@ Section 6.3; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L298)
 
 > Each `.py` file beneath the source root maps deterministically to one module name. Namespace packages are not supported. Package directories MUST contain `__init__.py` files.
 
-Positive: [TestDiscoverDeterministicMapping](../internal/discovery/discovery_test.go#L26); [TestPython314UnicodeIdentifiersAcrossBoundaries](../internal/app/unicode_identifier_test.go#L5); [TestManifestModuleAncestors](../internal/app/module_namespace_test.go#L11).
+Positive: [TestDiscoverDeterministicMapping](../internal/discovery/discovery_test.go#L26); [TestPython314UnicodeIdentifiersAcrossBoundaries](../internal/app/unicode_identifier_test.go#L11); [TestManifestModuleAncestors](../internal/app/module_namespace_test.go#L11).
 
 Negative: [TestDiscoverRejectsUnresolvableModules](../internal/discovery/discovery_test.go#L50); [TestManifestModuleAncestors](../internal/app/module_namespace_test.go#L11).
 
@@ -2231,7 +2231,7 @@ Section 25.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1792)
 
 > Every configured entrypoint MUST resolve to one top-level verified function.
 
-Positive: [TestBoundaryAuthorityAndEntrypointReports](../internal/app/spec_boundary_test.go#L84); [TestPython314UnicodeIdentifiersAcrossBoundaries](../internal/app/unicode_identifier_test.go#L5).
+Positive: [TestBoundaryAuthorityAndEntrypointReports](../internal/app/spec_boundary_test.go#L84); [TestPython314UnicodeIdentifiersAcrossBoundaries](../internal/app/unicode_identifier_test.go#L11).
 
 Negative: [TestBoundaryEntrypointRejections](../internal/app/spec_boundary_test.go#L181); [TestBoundaryReportsRejectUnknownOrExternalFunction](../internal/app/spec_boundary_test.go#L196).
 

@@ -123,8 +123,12 @@ The combined tooling suite passes all 153 tests. All 17 focused collector tests
 also pass on macOS arm64 with CPython 3.14.7 and Linux arm64 with CPython 3.12.14;
 the remote release matrix additionally exercises Linux amd64.
 
-These follow-up changes use verifier identifier `0.1.0-dev.1`; the original
-`v0.1.0-dev` tag is preserved. The publication workflow requires fresh Linux
+These follow-up changes first used verifier identifier `0.1.0-dev.1`. Its Linux
+release job passed all checks and reproduced identical artifact bytes. The
+macOS 14 job exposed a filesystem limitation when creating a test filename with
+a Unicode 16 character. Candidate `0.1.0-dev.2` separates that filesystem-dependent
+case from the Unicode source, manifest and linking checks. Earlier tags are
+preserved. The publication workflow requires fresh Linux
 amd64 and macOS arm64 tests, repeated artifact builds and agreement on shared
 source/Python artifacts before publishing the candidate.
 

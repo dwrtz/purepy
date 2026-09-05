@@ -8,6 +8,13 @@ composed Kirat Rai vowel signs normalize consistently in source and configuratio
 Names use Python's `XID_Start`/`XID_Continue` rules, including underscore; reserved
 keywords remain prohibited where identifiers are required.
 
+Module filenames also depend on the host filesystem. For example, the macOS 14
+release runner rejects a filename containing U+1C89 with `EILSEQ`, before the
+verifier can read it. Unicode source identifiers and manifest names remain
+supported in files with ASCII names. The application suite always checks those
+language boundaries; only the physical-filename case skips when file creation
+returns `EILSEQ`. Other filesystem errors fail that test.
+
 [`internal/unicodeident`](../internal/unicodeident/identifiers.go) embeds about
 120 KB of generated identifier and normalization tables. Production behavior
 does not depend on the Unicode version built into Go or installed Python.
