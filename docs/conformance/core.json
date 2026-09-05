@@ -508,24 +508,32 @@
   {
     "section": "6.5",
     "quote": "An entrypoint MAY be synchronous or asynchronous. Its parameters MAY include Pure Values, capabilities, and host references. Its return type MUST be a Pure Value type.",
-    "status": "partial",
+    "status": "tested",
     "positive": [
       {
         "path": "internal/app/conformance_test.go",
         "test": "TestReferenceServiceConforms"
+      },
+      {
+        "path": "internal/app/spec_completion_test.go",
+        "test": "TestSpecCompletionEntrypointCategories"
       }
     ],
     "negative": [
       {
         "path": "internal/check/security_test.go",
         "test": "TestSecurityCategoryAndCallRejections/authority_return"
+      },
+      {
+        "path": "internal/app/spec_completion_test.go",
+        "test": "TestSpecCompletionEntrypointCategories"
       }
     ],
     "fixtures": [
       "pure_async",
       "capability_return"
     ],
-    "notes": "Function return category checks apply to entrypoints. The service exercises effectful async entrypoints; this aggregate line also permits sync and varied parameter categories, whose full entrypoint product matrix is not exhaustively tested here."
+    "notes": "Configured entrypoints cover all eight combinations of Pure Value/capability/host-reference parameters, independently in sync and async functions, across cold/warm/uncached and worker modes. Both authority categories are rejected as entrypoint return types; rejected entrypoints do not produce authority reports. Host-supplied runtime argument provenance remains a trusted contract."
   },
   {
     "section": "7.1",
@@ -721,6 +729,10 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      },
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_two_isolated_workers_must_agree_and_enable_hash_randomization"
       }
     ],
     "negative": [
@@ -730,7 +742,7 @@
       }
     ],
     "fixtures": [],
-    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; the multi-module runtime gate compares 48 invocation results and host events across two isolated CPython processes with independent hash randomization. This is finite runtime evidence, not exhaustive seed coverage or a proof about arbitrary trusted hosts."
   },
   {
     "section": "7.3",
@@ -740,6 +752,10 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      },
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_two_isolated_workers_must_agree_and_enable_hash_randomization"
       }
     ],
     "negative": [
@@ -749,7 +765,7 @@
       }
     ],
     "fixtures": [],
-    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; the multi-module runtime gate compares 48 invocation results and host events across two isolated CPython processes with independent hash randomization. This is finite runtime evidence, not exhaustive seed coverage or a proof about arbitrary trusted hosts."
   },
   {
     "section": "7.3",
@@ -759,6 +775,10 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      },
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_two_isolated_workers_must_agree_and_enable_hash_randomization"
       }
     ],
     "negative": [
@@ -768,7 +788,7 @@
       }
     ],
     "fixtures": [],
-    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; the multi-module runtime gate compares 48 invocation results and host events across two isolated CPython processes with independent hash randomization. This is finite runtime evidence, not exhaustive seed coverage or a proof about arbitrary trusted hosts."
   },
   {
     "section": "7.3",
@@ -778,6 +798,10 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      },
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_two_isolated_workers_must_agree_and_enable_hash_randomization"
       }
     ],
     "negative": [
@@ -787,7 +811,7 @@
       }
     ],
     "fixtures": [],
-    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; the multi-module runtime gate compares 48 invocation results and host events across two isolated CPython processes with independent hash randomization. This is finite runtime evidence, not exhaustive seed coverage or a proof about arbitrary trusted hosts."
   },
   {
     "section": "7.3",
@@ -797,6 +821,10 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      },
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_two_isolated_workers_must_agree_and_enable_hash_randomization"
       }
     ],
     "negative": [
@@ -806,7 +834,7 @@
       }
     ],
     "fixtures": [],
-    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; the multi-module runtime gate compares 48 invocation results and host events across two isolated CPython processes with independent hash randomization. This is finite runtime evidence, not exhaustive seed coverage or a proof about arbitrary trusted hosts."
   },
   {
     "section": "7.3",
@@ -816,6 +844,10 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      },
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_two_isolated_workers_must_agree_and_enable_hash_randomization"
       }
     ],
     "negative": [
@@ -825,7 +857,7 @@
       }
     ],
     "fixtures": [],
-    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; the multi-module runtime gate compares 48 invocation results and host events across two isolated CPython processes with independent hash randomization. This is finite runtime evidence, not exhaustive seed coverage or a proof about arbitrary trusted hosts."
   },
   {
     "section": "7.3",
@@ -835,6 +867,10 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      },
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_two_isolated_workers_must_agree_and_enable_hash_randomization"
       }
     ],
     "negative": [
@@ -844,7 +880,7 @@
       }
     ],
     "fixtures": [],
-    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; the multi-module runtime gate compares 48 invocation results and host events across two isolated CPython processes with independent hash randomization. This is finite runtime evidence, not exhaustive seed coverage or a proof about arbitrary trusted hosts."
   },
   {
     "section": "7.3",
@@ -854,6 +890,10 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      },
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_two_isolated_workers_must_agree_and_enable_hash_randomization"
       }
     ],
     "negative": [
@@ -863,7 +903,7 @@
       }
     ],
     "fixtures": [],
-    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; the multi-module runtime gate compares 48 invocation results and host events across two isolated CPython processes with independent hash randomization. This is finite runtime evidence, not exhaustive seed coverage or a proof about arbitrary trusted hosts."
   },
   {
     "section": "7.3",
@@ -873,6 +913,10 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      },
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_two_isolated_workers_must_agree_and_enable_hash_randomization"
       }
     ],
     "negative": [
@@ -882,7 +926,7 @@
       }
     ],
     "fixtures": [],
-    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; the multi-module runtime gate compares 48 invocation results and host events across two isolated CPython processes with independent hash randomization. This is finite runtime evidence, not exhaustive seed coverage or a proof about arbitrary trusted hosts."
   },
   {
     "section": "7.3",
@@ -892,6 +936,10 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      },
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_two_isolated_workers_must_agree_and_enable_hash_randomization"
       }
     ],
     "negative": [
@@ -905,7 +953,7 @@
       }
     ],
     "fixtures": [],
-    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; the multi-module runtime gate compares 48 invocation results and host events across two isolated CPython processes with independent hash randomization. This is finite runtime evidence, not exhaustive seed coverage or a proof about arbitrary trusted hosts."
   },
   {
     "section": "7.3",
@@ -915,6 +963,10 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      },
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_two_isolated_workers_must_agree_and_enable_hash_randomization"
       }
     ],
     "negative": [
@@ -928,7 +980,7 @@
       }
     ],
     "fixtures": [],
-    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; the multi-module runtime gate compares 48 invocation results and host events across two isolated CPython processes with independent hash randomization. This is finite runtime evidence, not exhaustive seed coverage or a proof about arbitrary trusted hosts."
   },
   {
     "section": "7.3",
@@ -938,6 +990,10 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      },
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_two_isolated_workers_must_agree_and_enable_hash_randomization"
       }
     ],
     "negative": [
@@ -951,7 +1007,7 @@
       }
     ],
     "fixtures": [],
-    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; the multi-module runtime gate compares 48 invocation results and host events across two isolated CPython processes with independent hash randomization. This is finite runtime evidence, not exhaustive seed coverage or a proof about arbitrary trusted hosts."
   },
   {
     "section": "7.3",
@@ -961,6 +1017,10 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      },
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_two_isolated_workers_must_agree_and_enable_hash_randomization"
       }
     ],
     "negative": [
@@ -980,6 +1040,10 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      },
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_two_isolated_workers_must_agree_and_enable_hash_randomization"
       }
     ],
     "negative": [
@@ -989,7 +1053,7 @@
       }
     ],
     "fixtures": [],
-    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; the multi-module runtime gate compares 48 invocation results and host events across two isolated CPython processes with independent hash randomization. This is finite runtime evidence, not exhaustive seed coverage or a proof about arbitrary trusted hosts."
   },
   {
     "section": "7.3",
@@ -999,6 +1063,10 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      },
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_two_isolated_workers_must_agree_and_enable_hash_randomization"
       }
     ],
     "negative": [
@@ -1008,7 +1076,7 @@
       }
     ],
     "fixtures": [],
-    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; the multi-module runtime gate compares 48 invocation results and host events across two isolated CPython processes with independent hash randomization. This is finite runtime evidence, not exhaustive seed coverage or a proof about arbitrary trusted hosts."
   },
   {
     "section": "7.3",
@@ -1018,6 +1086,10 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      },
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_two_isolated_workers_must_agree_and_enable_hash_randomization"
       }
     ],
     "negative": [
@@ -1027,7 +1099,7 @@
       }
     ],
     "fixtures": [],
-    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; the multi-module runtime gate compares 48 invocation results and host events across two isolated CPython processes with independent hash randomization. This is finite runtime evidence, not exhaustive seed coverage or a proof about arbitrary trusted hosts."
   },
   {
     "section": "7.3",
@@ -1037,6 +1109,10 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      },
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_two_isolated_workers_must_agree_and_enable_hash_randomization"
       }
     ],
     "negative": [
@@ -1046,7 +1122,7 @@
       }
     ],
     "fixtures": [],
-    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; the multi-module runtime gate compares 48 invocation results and host events across two isolated CPython processes with independent hash randomization. This is finite runtime evidence, not exhaustive seed coverage or a proof about arbitrary trusted hosts."
   },
   {
     "section": "7.3",
@@ -1056,6 +1132,10 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      },
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_two_isolated_workers_must_agree_and_enable_hash_randomization"
       }
     ],
     "negative": [
@@ -1065,7 +1145,7 @@
       }
     ],
     "fixtures": [],
-    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; the multi-module runtime gate compares 48 invocation results and host events across two isolated CPython processes with independent hash randomization. This is finite runtime evidence, not exhaustive seed coverage or a proof about arbitrary trusted hosts."
   },
   {
     "section": "7.3",
@@ -1075,6 +1155,10 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      },
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_two_isolated_workers_must_agree_and_enable_hash_randomization"
       }
     ],
     "negative": [
@@ -1084,7 +1168,7 @@
       }
     ],
     "fixtures": [],
-    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; the multi-module runtime gate compares 48 invocation results and host events across two isolated CPython processes with independent hash randomization. This is finite runtime evidence, not exhaustive seed coverage or a proof about arbitrary trusted hosts."
   },
   {
     "section": "7.4",
@@ -1344,7 +1428,7 @@
   {
     "section": "8.4",
     "quote": "Ephemeral intrinsic values cannot be returned, stored, or passed to external functions.",
-    "status": "partial",
+    "status": "tested",
     "positive": [
       {
         "path": "internal/check/spec_core_test.go",
@@ -1359,10 +1443,14 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreRejected/range_forwarded"
+      },
+      {
+        "path": "internal/check/spec_completion_test.go",
+        "test": "TestSpecCompletionReturnExpressions"
       }
     ],
     "fixtures": [],
-    "notes": "Direct-loop range consumption is tested against local storage and call forwarding. No source type admits range returns; explicit return-expression coverage remains incomplete."
+    "notes": "Direct-loop range consumption is accepted. Local storage, call forwarding, direct return, tuple-nested return, and conditional return reject with PP304 in both sync and async functions. No source type admits an ephemeral return."
   },
   {
     "section": "8.5",
@@ -1711,16 +1799,24 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreAccepted/annotated_primitives"
+      },
+      {
+        "path": "internal/check/spec_completion_test.go",
+        "test": "TestSpecCompletionNestedUnsupportedTypes"
       }
     ],
     "negative": [
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreProhibitedTypes"
+      },
+      {
+        "path": "internal/check/spec_completion_test.go",
+        "test": "TestSpecCompletionNestedUnsupportedTypes"
       }
     ],
     "fixtures": [],
-    "notes": "The table rejects named dynamic/mutable/iterator/coroutine/union/fixed-tuple annotations. Unsupported names alone do not exhaust every possible spelling or recursive alias form."
+    "notes": "The table rejects the named dynamic/mutable/iterator/coroutine/union/fixed-tuple annotation families. Focused nested controls also reject unsupported types inside tuple/optional combinations in both parameter and return positions; an admitted nested Pure Value counterpart passes. These finite examples do not enumerate every spelling or arbitrarily nested annotation."
   },
   {
     "section": "9.4",
@@ -2408,7 +2504,7 @@
   {
     "section": "11.4",
     "quote": "Every verified function MUST return a Pure Value type or `None`.",
-    "status": "partial",
+    "status": "tested",
     "positive": [
       {
         "path": "internal/check/spec_core_test.go",
@@ -2417,6 +2513,10 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreAccepted/none_returns_and_fallthrough"
+      },
+      {
+        "path": "internal/check/spec_completion_test.go",
+        "test": "TestSpecCompletionReturnExpressions"
       }
     ],
     "negative": [
@@ -2431,10 +2531,14 @@
       {
         "path": "internal/check/spec_boundary_test.go",
         "test": "TestBoundaryAuthorityCategoryRestrictions"
+      },
+      {
+        "path": "internal/check/spec_completion_test.go",
+        "test": "TestSpecCompletionReturnExpressions"
       }
     ],
     "fixtures": [],
-    "notes": "Pure Value/None returns and source-level returns of both authority categories have direct tests. Ephemeral/function/module/class/coroutine return bans are partly enforced by rejecting their source expressions or annotations; this is not a complete return-expression matrix. Targeted dynamically generated subtests: Read_returned, Connection_returned."
+    "notes": "Pure Value/None results pass. Valid Pure Value signatures independently reject return expressions containing capabilities, host references, ranges, function/decorator/record declarations, unawaited async calls, and generator expressions. Both plain-module imports and module-symbol imports are prohibited before a module can become a return value. Range and coroutine nesting are also checked; the table covers the enumerated categories, not arbitrary compositions."
   },
   {
     "section": "11.6",
@@ -3125,21 +3229,29 @@
   {
     "section": "14.10",
     "quote": "Argument unpacking with `*` or `**` is prohibited.",
-    "status": "partial",
+    "status": "tested",
     "positive": [
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreAccepted/record_fields_and_top_level_behavior"
+      },
+      {
+        "path": "internal/check/spec_completion_test.go",
+        "test": "TestSpecCompletionArgumentUnpacking"
       }
     ],
     "negative": [
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreRejected/record_argument_unpacking"
+      },
+      {
+        "path": "internal/check/spec_completion_test.go",
+        "test": "TestSpecCompletionArgumentUnpacking"
       }
     ],
     "fixtures": [],
-    "notes": "Positional and keyword binding pass; star arguments reject. Double-star coverage is provided by frontend unsupported-syntax fixtures, not claimed exhaustive here."
+    "notes": "Positional and keyword binding pass. Independent * and ** controls reject function, record-constructor, and directly awaited call unpacking at the frontend; the otherwise-valid counterparts use explicit keywords."
   },
   {
     "section": "14.12",
@@ -3229,7 +3341,7 @@
   {
     "section": "15.4",
     "quote": "The verifier MUST version and test the intrinsic table. Adding an intrinsic is a language change.",
-    "status": "partial",
+    "status": "tested",
     "positive": [
       {
         "path": "internal/check/spec_core_test.go",
@@ -3242,6 +3354,10 @@
       {
         "path": "tools/tests/test_differential_semantics.py",
         "test": "DifferentialTests.test_live_primitive_and_near_miss_cases"
+      },
+      {
+        "path": "internal/app/cli_test.go",
+        "test": "TestCLIVersionAndHelp"
       }
     ],
     "negative": [
@@ -3261,7 +3377,7 @@
     "fixtures": [
       "intrinsics"
     ],
-    "notes": "The table is coupled to verifier version/cache identity. make differential-test now checks the documented operator/intrinsic verdict matrix and inferred exact types against CPython 3.14, including typed empty tuples, domain failures, and permanent regression controls. The finite matrix is not exhaustive, and an independent explicit intrinsic-table version is not yet release-frozen."
+    "notes": "The sealed intrinsic contract is explicitly version 1, independently declared in check.IntrinsicVersion, identified by the exact CLI version regression, and included in program-image cache identity. The differential gate checks accepted/rejected exact call forms and inferred result types against CPython 3.14, including empty tuples and domain failures. Versioning plus finite table regression evidence does not prove all possible runtime inputs."
   },
   {
     "section": "16.1",
@@ -3392,6 +3508,103 @@
       }
     ],
     "fixtures": [],
-    "notes": "Direct resolution plus rejected computed targets, decorators, and mutation cover representative ambient resolution mechanisms. No dedicated runtime registry/import-hook differential matrix is claimed."
+    "notes": "Direct resolution plus rejected computed targets, decorators, and mutation cover representative source-level ambient resolution mechanisms. Production verification does not execute project imports or runtime hooks. Behavior of Python import hooks or registries in the executing trusted host is a host-contract question; these finite static controls do not prove arbitrary-source soundness."
+  },
+  {
+    "section": "10.5",
+    "quote": "- equality and inequality with the same exact record type when every field is recursively equality-comparable under section 14.6; and",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/same_record_equality"
+      },
+      {
+        "path": "internal/check/nominal_audit_test.go",
+        "test": "TestNominalAuditSharedRecordEquality"
+      },
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_live_fixed_catalog"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityOpaqueEqualityCannotHideInsideValues"
+      },
+      {
+        "path": "internal/check/nominal_audit_test.go",
+        "test": "TestNominalAuditSharedRecordsDoNotHideOpaqueEquality"
+      },
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_host_calls_and_hidden_equality_use_independent_event_oracles"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Same exact records with recursively sealed primitive/tuple/optional/record fields compare. Opaque fields reject equality, inequality, tuple membership, and optional equality even through shared nested record layouts; construction and field forwarding remain valid. The multi-module CPython gate checks nominal field/result identity and records hidden opaque __eq__ dispatch for rejected equality witnesses; accepted absence checks produce no such event."
+  },
+  {
+    "section": "14.6",
+    "quote": "- comparison of an optional value to `None` when its non-`None` element type is recursively equality-comparable.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/nominal_audit_test.go",
+        "test": "TestNominalAuditSharedRecordEquality"
+      },
+      {
+        "path": "internal/check/identity_test.go",
+        "test": "TestNoneIdentityNominalValues"
+      },
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_live_fixed_catalog"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityOpaqueEqualityCannotHideInsideValues"
+      },
+      {
+        "path": "internal/check/nominal_audit_test.go",
+        "test": "TestNominalAuditSharedRecordsDoNotHideOpaqueEquality"
+      },
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_host_calls_and_hidden_equality_use_independent_event_oracles"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Comparable optional records admit == None. Opaque optionals and nested opaque record/tuple wrappers reject == and != against None because Python can dispatch equality on the non-None path. is None and is not None retain positive controls for opaque values without granting equality. Independent CPython host-event oracles observe hidden equality dispatch in rejected opaque cases, while permitted None identity avoids dispatch."
+  },
+  {
+    "section": "10.2",
+    "quote": "Identifiers in a record class body follow Python private-name mangling after Unicode NFKC normalization.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_live_fixed_catalog"
+      },
+      {
+        "path": "internal/frontend/parser_test.go",
+        "test": "TestPrivateRecordNamesMatchPythonMangling"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityCategoryAndCallRejections/private_field_source_spelling"
+      },
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_live_fixed_catalog"
+      }
+    ],
+    "fixtures": [],
+    "notes": "The fixed multi-module runtime catalog constructs and reads _Secret__key after declaring __key in class Secret, and validates the effective runtime record fields. A separate __key keyword near miss rejects with PP302 and produces the independently expected CPython TypeError. This is a name-normalization rule, not permission for reflection."
   }
 ]

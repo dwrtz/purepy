@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/dwrtz/purepy/internal/cache"
+	"github.com/dwrtz/purepy/internal/check"
 	"github.com/dwrtz/purepy/internal/config"
 	"github.com/dwrtz/purepy/internal/diag"
 )
@@ -41,7 +42,7 @@ func Run(args []string, out, errOut io.Writer) (status int) {
 		return 0
 	}
 	if args[0] == "version" || args[0] == "--version" {
-		fmt.Fprintf(out, "purepy %s (specification %s, language %s, Python syntax %s)\n", Version, SpecificationVersion, LanguageVersion, PythonSyntaxVersion)
+		fmt.Fprintf(out, "purepy %s (specification %s, language %s, Python syntax %s, intrinsics %s)\n", Version, SpecificationVersion, LanguageVersion, PythonSyntaxVersion, check.IntrinsicVersion)
 		return 0
 	}
 	command := args[0]

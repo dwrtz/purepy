@@ -47,6 +47,16 @@ at 64 bytes, raw cache artifacts at 32 KiB, fallback controls at 8 KiB, parser
 source at 16 KiB, and manifest type strings at 4 KiB. Cache validation limits
 trees to depth 1,024 and 100,000 nodes; focused tests exercise both boundaries.
 The manifest type parser also limits type nesting to 64.
+
+The frontend separately checks the native syntax tree before recursive visitors:
+depth 512, 100,000 nodes including punctuation, and 64 MiB of cumulative source
+spans. It retains at most 1,024 syntax diagnostics plus one explicit resource-limit
+diagnostic. Detached node spellings share one immutable source copy. Cache reads
+remain limited to 64 MiB even if the file grows during reading, and allocation-free
+JSON preflight limits structural boundaries to 2,000,000 overall and 8,192 within
+diagnostics, with nesting at most 2,064. Exceeding a cache budget causes a miss and
+reparsing. These are implementation resource bounds, not an operating-system
+memory limit or a complete bound on native parser allocation before tree inspection.
 Full-manifest fuzzing uses at most two files with 16 KiB combined arbitrary TOML,
 or at most 64 control bytes generating a valid manifest image and one of 15
 targeted invalid variations. Generated inputs are limited to 8 KiB, eight

@@ -5,6 +5,9 @@ alone does not establish verification. The tables enumerate statement,
 expression, declaration and annotation families; an unlisted operation is
 rejected. Restrictions apply recursively, including inside unreachable code.
 The implementation's sealed operator and intrinsic tables are listed below.
+The sealed intrinsic contract is version `1`, reported by `purepy version` and
+included in program-image cache identity. Implementation resource limits are
+documented in specification section 30.11; exceeding a limit produces an error.
 
 Statuses are **accepted**, **accepted with exact restriction**, **rejected in
 0.1**, and **deferred extension**. Deferred forms are rejected by the current
@@ -40,6 +43,7 @@ verifier; the label records a possible future design, not implicit permission.
 | Nested functions or local classes | rejected in 0.1 | No closures or local declarations. |
 | `class` | accepted with exact restriction | Only top-level, data-only `@value` records; no bases, methods, defaults or metaclass options. Fields are annotated Pure Values. |
 | Class decorators | accepted with exact restriction | Exactly the recognized `@value` decorator. |
+| Private record-field names | accepted with exact restriction | Class-body names follow Python private-name mangling after NFKC normalization; outside reads and keyword construction use the effective mangled name. |
 | Function/record docstring | accepted with exact restriction | Optional leading ordinary string. |
 | Simple assignment | accepted with exact restriction | Rebind one local name to a Pure Value of its declared exact type; definite assignment is required before reads. |
 | Local annotated assignment | accepted with exact restriction | A Pure Value annotation fixes the local's type; declaration without a value does not initialize it. |
@@ -127,6 +131,10 @@ Exponentiation (`**`) is rejected: Python's integer exponentiation can return
 `int` or `float`, and floating-point exponentiation can return `complex`.
 Matrix multiplication, sequence repetition, mixed numeric operations and
 external-value comparison have no sealed rule and are rejected.
+Records containing opaque manifest values remain constructible and support field
+reads, but cannot acquire equality through a tuple, optional, or record wrapper.
+For an opaque `Token | None`, use `is None` or `is not None`; `== None` and
+`!= None` have no sealed rule.
 
 | Intrinsic | Exact accepted call forms |
 | --- | --- |

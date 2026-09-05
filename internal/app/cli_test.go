@@ -58,7 +58,7 @@ func cliJSON(t *testing.T, r *Report) string {
 }
 
 func TestCLIVersionAndHelp(t *testing.T) {
-	want := "purepy " + Version + " (specification 0.3-draft, language 0.1, Python syntax 3.14)\n"
+	want := "purepy " + Version + " (specification 0.3-draft, language 0.1, Python syntax 3.14, intrinsics 1)\n"
 	for _, command := range []string{"version", "--version"} {
 		status, out, errOut := cliRun(command)
 		if status != 0 || out != want || errOut != "" {

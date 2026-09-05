@@ -90,6 +90,34 @@ class ValueTests(unittest.TestCase):
         self.assertEqual(ContainsExternal(ExternalValue("opaque")),
                          ContainsExternal(ExternalValue("opaque")))
 
+    def test_opaque_value_construction_and_field_reads_do_not_dispatch(self):
+        @dataclasses.dataclass(frozen=True, slots=True)
+        class Opaque:
+            number: int
+
+            def __eq__(self, other):
+                raise AssertionError("opaque equality must not be invoked")
+
+            def __bool__(self):
+                raise AssertionError("opaque truthiness must not be invoked")
+
+            def __repr__(self):
+                raise AssertionError("opaque formatting must not be invoked")
+
+            def __hash__(self):
+                raise AssertionError("opaque hashing must not be invoked")
+
+        @value
+        class Envelope:
+            tokens: tuple[Opaque | None, ...]
+
+        token = Opaque(7)
+        envelope = Envelope(tokens=(token, None))
+        self.assertIs(envelope.tokens[0], token)
+        self.assertIsNone(envelope.tokens[1])
+        with self.assertRaises(dataclasses.FrozenInstanceError):
+            envelope.tokens = ()
+
     @unittest.skipIf(sys.version_info < (3, 14), "deferred annotation syntax requires Python 3.14")
     def test_forward_record_annotations_on_python314(self):
         # No source-level quoted annotations or future import is needed on 3.14.

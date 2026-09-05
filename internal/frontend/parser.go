@@ -22,11 +22,14 @@ import (
 )
 
 // Version is part of the cache identity; change it whenever lowering changes.
-const Version = "python-3.14/tree-sitter-python-26855eab/ir-4/unicode-" + unicodenames.UnicodeVersion + "/identifiers-" + unicodeident.UnicodeVersion
+const Version = "python-3.14/tree-sitter-python-26855eab/ir-5/unicode-" + unicodenames.UnicodeVersion + "/identifiers-" + unicodeident.UnicodeVersion
 
 type adapter struct {
-	path        string
-	source      []byte
+	path   string
+	source []byte
+	// All detached Text values share one immutable source copy. Copying each
+	// overlapping subtree spelling separately amplifies nested inputs quadratically.
+	sourceText  string
 	lines       []int
 	diagnostics []diag.Diagnostic
 }
@@ -100,6 +103,10 @@ func parse(path string, source []byte, timings *ParseTimings) (*model.Node, []di
 	}
 	defer tree.Close()
 	root := tree.RootNode()
+	if !a.checkTreeResources(root) {
+		return nil, a.diagnostics
+	}
+	a.sourceText = string(source)
 	a.errors(root)
 	a.trivia(root)
 	if len(a.diagnostics) != 0 {
@@ -175,12 +182,18 @@ func (a *adapter) node(kind string, n *sitter.Node) *model.Node {
 	if n == nil {
 		return nil
 	}
-	return &model.Node{Kind: kind, Text: n.Utf8Text(a.source),
+	return &model.Node{Kind: kind, Text: a.text(n),
 		Span:   a.span(int(n.StartByte()), int(n.EndByte())),
 		Fields: map[string]*model.Node{}, Lists: map[string][]*model.Node{}, Attr: map[string]string{}}
 }
 
 func (a *adapter) report(code, message string, span model.Span) {
+	if len(a.diagnostics) > maxSyntaxDiagnostics {
+		return
+	}
+	if len(a.diagnostics) == maxSyntaxDiagnostics {
+		code, message = "PP003", "syntax exceeds diagnostic resource limit (1024); further diagnostics omitted"
+	}
 	a.diagnostics = append(a.diagnostics, diag.New(code, message, span))
 }
 
@@ -226,6 +239,9 @@ func manglePrivateNames(n *model.Node, class string) {
 }
 
 func (a *adapter) errors(n *sitter.Node) {
+	if len(a.diagnostics) > maxSyntaxDiagnostics {
+		return
+	}
 	if _, _, isBytes, complete := a.bytesContent(n); isBytes {
 		if !complete {
 			a.report("PP002", "invalid bytes literal delimiter or unescaped newline", a.node("", n).Span)
@@ -251,7 +267,7 @@ func (a *adapter) errors(n *sitter.Node) {
 func (a *adapter) trivia(root *sitter.Node) {
 	previous := 0
 	checkGap := func(end int) {
-		if end < previous {
+		if end < previous || len(a.diagnostics) > maxSyntaxDiagnostics {
 			return
 		}
 		for offset, r := range string(a.source[previous:end]) {
@@ -259,10 +275,16 @@ func (a *adapter) trivia(root *sitter.Node) {
 				continue
 			}
 			a.report("PP002", "invalid character outside a Python token", a.span(previous+offset, previous+offset+utf8.RuneLen(r)))
+			if len(a.diagnostics) > maxSyntaxDiagnostics {
+				return
+			}
 		}
 	}
 	var walk func(*sitter.Node)
 	walk = func(n *sitter.Node) {
+		if len(a.diagnostics) > maxSyntaxDiagnostics {
+			return
+		}
 		_, _, bytesLiteral, _ := a.bytesContent(n)
 		if bytesLiteral || n.ChildCount() == 0 || n.Kind() == "string_content" || n.Kind() == "format_specifier" {
 			checkGap(int(n.StartByte()))
@@ -339,7 +361,7 @@ func (a *adapter) text(n *sitter.Node) string {
 	if n == nil {
 		return ""
 	}
-	return n.Utf8Text(a.source)
+	return a.sourceText[n.StartByte():n.EndByte()]
 }
 
 func (a *adapter) qualified(n *sitter.Node) string {

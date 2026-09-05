@@ -88,13 +88,13 @@ diagnostic contains:
 | `notes` | Ordered explanatory strings, possibly empty. |
 | `related_locations` | Ordered explanation path through relevant imports, declarations and previous uses, possibly empty. |
 
-The [experimental schema-1 JSON contract](schema/diagnostics-v1.json) includes
-`types` as an additive optional field. Reports without type context retain the
-previous shape. Consumers using an earlier strict schema must update that schema
-to accept the new field; this is not yet a frozen tagged-release contract. The
-diagnostic codes, severity and rejection rules are unchanged. Clients should use
-the structured fields rather than parse text messages, and tolerate new type
-roles as diagnostics gain context.
+The [frozen schema-1 JSON contract](schema/diagnostics-v1.json) includes
+`types` as an optional field. Reports without type context retain the same
+shape. Consumers of an earlier development schema must update to this frozen
+contract before release. The [schema compatibility policy](SCHEMA_CONTRACT.md)
+also covers capabilities and explanation results. Diagnostic codes, severity
+and rejection rules are unchanged. Clients should use structured fields rather
+than parse text messages, and tolerate new type roles as diagnostics gain context.
 
 Each type has a `kind`, with `name` for nominal types and a recursive `element`
 for tuple or optional types. Common roles are:

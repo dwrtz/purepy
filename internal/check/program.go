@@ -308,16 +308,38 @@ func (p *Program) imports(m *Module) {
 				p.error("PP102", "unresolved direct import "+from+"."+name, item.Span).WithSymbol(from + "." + name)
 				continue
 			}
-			if s.Source != "" && !p.ExternalModules[from] {
-				declaration := p.ExternalModuleDeclarations[from]
-				p.error("PP604", "external module is not declared import_safe: "+from, item.Span).WithSymbol(from+"."+name).WithRelated(manifestSpan(declaration.Span, declaration.Source), s.Declaration())
-				continue
+			if s.Source != "" {
+				if unsafe := p.unsafeImportModule(from); unsafe != "" {
+					declaration := p.ExternalModuleDeclarations[unsafe]
+					p.error("PP604", "external module is not declared import_safe: "+unsafe, item.Span).WithSymbol(from+"."+name).WithRelated(manifestSpan(declaration.Span, declaration.Source), s.Declaration())
+					continue
+				}
 			}
 			m.Bindings[name] = s
 			m.ImportedAt[name] = item.Span
 		}
 	}
 }
+
+func (p *Program) unsafeImportModule(name string) string {
+	if !p.ExternalModules[name] {
+		return name
+	}
+	// Importing a child also initializes its ancestor packages. A leaf's
+	// assertion cannot override an explicit unsafe ancestor declaration.
+	// Implicit ancestors remain covered by the leaf's import-safe contract.
+	for {
+		at := strings.LastIndexByte(name, '.')
+		if at < 0 {
+			return ""
+		}
+		name = name[:at]
+		if safe, declared := p.ExternalModules[name]; declared && !safe {
+			return name
+		}
+	}
+}
+
 func (p *Program) cycles() {
 	state := map[string]int{}
 	var visit func(string, []string)

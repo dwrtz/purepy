@@ -135,7 +135,7 @@ func Check(opts Options) *Report {
 		Config   *config.Config
 		External *manifest.Set
 	}{cfg, ext})
-	imageParts := []string{Version, frontend.Version, "intrinsics-1", cache.Digest(semantic)}
+	imageParts := []string{Version, frontend.Version, "intrinsics-" + check.IntrinsicVersion, cache.Digest(semantic)}
 	// Manifest bytes are hashed even if a whitespace-only edit leaves the
 	// decoded schema unchanged. No semantic input silently escapes the key.
 	for _, path := range cfg.Manifests {

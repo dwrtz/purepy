@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "PurePy check result schema 1 (experimental)",
+  "title": "PurePy check result schema 1",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema", "verifier_version", "specification_version", "language", "python_syntax", "ok", "files", "diagnostics", "functions"],

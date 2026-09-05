@@ -1,0 +1,160 @@
+name: publish verified release
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing immutable verifier tag (v plus source verifier version)
+        required: true
+        type: string
+      publish_pypi:
+        description: Publish the Python runtime through configured PyPI Trusted Publishing
+        required: true
+        default: false
+        type: boolean
+permissions:
+  contents: read
+jobs:
+  validate-tag:
+    runs-on: ubuntu-24.04
+    outputs:
+      revision: ${{ steps.identity.outputs.revision }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14.7'
+      - name: Require exact tag and authoritative verifier version
+        id: identity
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+          PUBLISH_PYPI: ${{ inputs.publish_pypi }}
+        run: |
+          python - <<'PY'
+          import os, re, subprocess, tomllib
+          from pathlib import Path
+          tag = os.environ['RELEASE_TAG']
+          version = re.search(r'^const Version = "([A-Za-z0-9.+-]+)"$', Path('internal/app/check.go').read_text(), re.M).group(1)
+          if tag != 'v' + version:
+              raise SystemExit('Tag must equal v plus the authoritative verifier version')
+          revision = subprocess.check_output(['git', 'rev-parse', '--verify', 'refs/tags/' + tag + '^{commit}'], text=True).strip()
+          if revision != subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip():
+              raise SystemExit('Checkout does not match the exact release tag')
+          project = tomllib.loads(Path('python/pyproject.toml').read_text())['project']
+          if os.environ['PUBLISH_PYPI'] == 'true' and project['name'] == 'purepy':
+              raise SystemExit('PyPI purepy belongs to an unrelated package; select and configure an owned distribution name before publishing')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write('revision=' + revision + '\n')
+          PY
+  prepare:
+    needs: validate-tag
+    uses: ./.github/workflows/package.yml
+    with:
+      ref: ${{ needs.validate-tag.outputs.revision }}
+    permissions:
+      contents: read
+  combine:
+    needs: [prepare, validate-tag]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate-tag.outputs.revision }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14.7'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: purepy-*
+          path: prepared
+      - name: Verify native bundles and require common artifacts to match
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import sys
+          sys.path.insert(0, 'tools')
+          import package_binary as release
+          output = Path('release-assets'); output.mkdir()
+          bundles = sorted(Path('prepared').iterdir())
+          if {p.name for p in bundles} != {'purepy-linux-amd64', 'purepy-darwin-arm64'}:
+              raise SystemExit('Missing supported native target')
+          for bundle in bundles:
+              release.verify_release(bundle, require_python=True)
+              for artifact in bundle.iterdir():
+                  if artifact.name in {release.INDEX, release.CHECKSUMS}:
+                      continue
+                  target = output / artifact.name
+                  if target.exists() and target.read_bytes() != artifact.read_bytes():
+                      raise SystemExit('Platform jobs disagree on shared artifact: ' + artifact.name)
+                  target.write_bytes(artifact.read_bytes())
+          release.finalize(output, require_python=True)
+          release.verify_release(output, require_python=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-assets
+          path: release-assets/*
+          if-no-files-found: error
+  github:
+    needs: [combine, validate-tag]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate-tag.outputs.revision }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-assets
+          path: release-assets
+      - name: Publish verified GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+          RELEASE_COMMIT: ${{ needs.validate-tag.outputs.revision }}
+        run: |
+          git fetch --force origin "refs/tags/$RELEASE_TAG:refs/tags/$RELEASE_TAG"
+          if [[ "$(git rev-parse "refs/tags/$RELEASE_TAG^{commit}")" != "$RELEASE_COMMIT" ]]; then
+            echo 'Release tag moved after validation; refusing publication.' >&2
+            exit 1
+          fi
+          prerelease=()
+          if [[ "$RELEASE_TAG" == *-* ]]; then prerelease=(--prerelease); fi
+          gh release create "$RELEASE_TAG" release-assets/* --verify-tag \
+            --title "PurePy $RELEASE_TAG" --notes-file docs/RELEASE_NOTES.md "${prerelease[@]}"
+  pypi:
+    if: inputs.publish_pypi
+    needs: [combine, github]
+    runs-on: ubuntu-24.04
+    environment:
+      name: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-assets
+          path: release-assets
+      - name: Select only the verified Python distributions
+        run: |
+          python - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          source = Path('release-assets')
+          output = Path('python-dist'); output.mkdir()
+          index = json.loads((source / 'release-index.json').read_bytes())
+          for artifact in index['artifacts']:
+              if artifact['kind'] in {'python_wheel', 'python_sdist'}:
+                  data = (source / artifact['file']).read_bytes()
+                  if hashlib.sha256(data).hexdigest() != artifact['sha256']:
+                      raise SystemExit('Python artifact checksum mismatch')
+                  (output / artifact['file']).write_bytes(data)
+          if len(list(output.iterdir())) != 2:
+              raise SystemExit('Missing Python distributions')
+          PY
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: python-dist/

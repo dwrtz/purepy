@@ -1,0 +1,8 @@
+{
+  "binary_sha256": "2248637075712bd432afc57416cbf126446dad5bfe775e4bf80344fe39b6b583",
+  "failures": [],
+  "measurements_checked": 314,
+  "passed": true,
+  "profile": "PurePy 0.1 local Apple M4 acceptance",
+  "schema": 1
+}

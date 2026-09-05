@@ -27,6 +27,9 @@ type checker struct {
 	constant      bool
 	loop          int
 	contextSymbol string
+	// Record layouts are fixed before function checking. Cache their equality
+	// eligibility so shared subrecords are visited once, not once per DAG path.
+	recordEquality map[string]bool
 }
 
 func newChecker(p *Program, m *Module, f *model.Function) *checker {
@@ -337,13 +340,16 @@ func (c *checker) binary(op string, l, r model.Type, at model.Span) model.Type {
 	c.error("PP209", fmt.Sprintf("operator %s has no exact rule for %s and %s", op, l, r), at).WithType("left", l).WithType("right", r)
 	return model.Invalid
 }
-func (c *checker) equality(t model.Type, active map[string]bool) bool {
+func (c *checker) equality(t model.Type, active map[string]bool) (comparable bool) {
 	switch t.Kind {
 	case "None", "bool", "int", "float", "str", "bytes":
 		return true
 	case "tuple", "optional":
 		return t.Elem != nil && c.equality(*t.Elem, active)
 	case "record":
+		if result, checked := c.recordEquality[t.Name]; checked {
+			return result
+		}
 		if active[t.Name] {
 			return false
 		}
@@ -352,7 +358,13 @@ func (c *checker) equality(t model.Type, active map[string]bool) bool {
 			return false
 		}
 		active[t.Name] = true
-		defer delete(active, t.Name)
+		if c.recordEquality == nil {
+			c.recordEquality = map[string]bool{}
+		}
+		defer func() {
+			delete(active, t.Name)
+			c.recordEquality[t.Name] = comparable
+		}()
 		for _, f := range r.Fields {
 			if !c.equality(f.Type, active) {
 				return false

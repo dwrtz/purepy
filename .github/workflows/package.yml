@@ -1,39 +1,73 @@
-name: package experimental artifacts
+name: prepare release artifacts
 on:
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      ref:
+        description: Immutable revision to package
+        required: true
+        type: string
 permissions:
   contents: read
 jobs:
-  binary:
+  native:
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-24.04, macos-14]
+        include:
+          - os: ubuntu-24.04
+            target: linux-amd64
+          - os: macos-14
+            target: darwin-arm64
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
       - uses: actions/setup-go@v5
         with:
-          go-version-file: go.mod
+          go-version: '1.24.5'
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.14'
-      - run: go test -race ./...
-      - run: make build
-      - run: python tools/package_binary.py
-      - uses: actions/upload-artifact@v4
-        with:
-          name: purepy-${{ runner.os }}-${{ runner.arch }}
-          path: dist/*
-  python:
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
+          python-version: '3.14.7'
       - uses: astral-sh/setup-uv@v6
-      - run: make python-test
-      - run: uv build python --out-dir dist
+      - run: go test -race ./...
+      - run: go vet ./...
+      - run: make build
+      - run: make python-test service-test syntax-test differential-test unicode-test coverage-test
+      - run: .venv/bin/python -m unittest discover -s tools/tests -v
+      - name: Validate every public JSON schema against actual CLI results
+        run: uv run --no-project --with jsonschema==4.23.0 python tools/check_schema_contract.py --verifier bin/purepy
+      - name: Prepare first source snapshot and native binary
+        run: .venv/bin/python tools/package_binary.py --output build/release-first
+      - name: Build Python wheel and source distribution
+        run: uv build --no-sources python --out-dir build/release-first
+        env:
+          SOURCE_DATE_EPOCH: '315532800'
+      - run: .venv/bin/python tools/package_binary.py --finalize --output build/release-first --require-python
+      - run: .venv/bin/python tools/package_binary.py --verify --output build/release-first --require-python
+      - name: Repeat all builds and compare artifact bytes
+        run: |
+          .venv/bin/python tools/package_binary.py --output build/release-second
+          uv build --no-sources python --out-dir build/release-second
+          .venv/bin/python tools/package_binary.py --finalize --output build/release-second --require-python
+          .venv/bin/python tools/package_binary.py --verify --output build/release-second --require-python
+          cmp build/release-first/SHA256SUMS build/release-second/SHA256SUMS
         env:
           SOURCE_DATE_EPOCH: '315532800'
       - uses: actions/upload-artifact@v4
         with:
-          name: purepy-python
-          path: dist/*
+          name: purepy-${{ matrix.target }}
+          path: build/release-first/*
+          if-no-files-found: error
+  python-runtimes:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        python: ['3.12', '3.13', '3.14']
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+      - uses: astral-sh/setup-uv@v6
+      - run: make python-test PYTHON_VERSION=${{ matrix.python }}

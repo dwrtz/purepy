@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -50,16 +51,37 @@ func Read(dir, key string) (Summary, bool) {
 	if err != nil || !info.Mode().IsRegular() || info.Size() > 64<<20 {
 		return Summary{}, false
 	}
-	data, err := os.ReadFile(path)
+	f, err := os.Open(path)
 	if err != nil {
 		return Summary{}, false
 	}
+	defer f.Close()
+	opened, err := f.Stat()
+	if err != nil || !opened.Mode().IsRegular() || !os.SameFile(info, opened) || opened.Size() > 64<<20 {
+		return Summary{}, false
+	}
+	// Keep the byte limit effective if an ordinary cache artifact grows after
+	// either metadata check. The cache remains disposable on any read failure.
+	data, err := io.ReadAll(io.LimitReader(f, (64<<20)+1))
+	if err != nil || len(data) > 64<<20 {
+		return Summary{}, false
+	}
 	var a artifact
-	if json.Unmarshal(data, &a) != nil || a.Schema != Schema || a.Key != key || Digest(a.Payload) != a.Checksum {
+	if !withinJSONBudget(data, maxCacheJSONValues) || json.Unmarshal(data, &a) != nil || a.Schema != Schema || a.Key != key || Digest(a.Payload) != a.Checksum {
+		return Summary{}, false
+	}
+	// Inspect raw members before allocating recursive Nodes or Diagnostics.
+	// Decode those final members separately so duplicate JSON keys cannot hide
+	// an earlier unbounded array from the projection's budget check.
+	var raw struct {
+		Tree        json.RawMessage `json:"tree"`
+		Diagnostics json.RawMessage `json:"diagnostics"`
+	}
+	if json.Unmarshal(a.Payload, &raw) != nil || !withinJSONBudget(raw.Diagnostics, maxDiagnosticJSONValues) {
 		return Summary{}, false
 	}
 	var s Summary
-	if json.Unmarshal(a.Payload, &s) != nil || s.Tree == nil || s.Tree.Kind != "Module" || !validSummary(s) {
+	if json.Unmarshal(raw.Tree, &s.Tree) != nil || len(raw.Diagnostics) != 0 && json.Unmarshal(raw.Diagnostics, &s.Diagnostics) != nil || s.Tree == nil || s.Tree.Kind != "Module" || !validSummary(s) {
 		return Summary{}, false
 	}
 	return s, true

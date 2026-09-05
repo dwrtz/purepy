@@ -78,7 +78,10 @@ make syntax-test
 make differential-test
 make unicode-test
 make coverage-test
+make schema-test
 make benchmark-test
+make acceptance-test
+make package-test
 make loadtest
 make serve
 ```
@@ -118,11 +121,13 @@ with separate pipeline/worker timings and per-process memory. Pass
 for a scaling matrix. `make benchmark-compare` checks matching measurements against
 tolerant regression budgets; see the [performance guide](docs/PERFORMANCE.md).
 `make package` prepares local binary/checksum and Python distribution artifacts in
-`dist`. Neither target publishes a release.
+`dist/candidate`, together with a source archive and verified inventories. Use a
+fresh `RELEASE_OUTPUT=...` for each candidate. Neither target publishes a release.
 
 ## Design and status
 
 - [Language specification](docs/PUREPY_SPEC.md) and [implementation plan](docs/PUREPY_PLAN.md)
+- [Language guide](docs/LANGUAGE_GUIDE.md)
 - [Implemented syntax and intrinsic table](docs/SYNTAX_MATRIX.md)
 - [Manifest schema and examples](docs/MANIFESTS.md)
 - [Host-boundary guide](docs/HOST_BOUNDARY.md)
@@ -130,6 +135,7 @@ tolerant regression budgets; see the [performance guide](docs/PERFORMANCE.md).
 - [Implementation and conformance status](docs/IMPLEMENTATION.md)
 - [Specification-to-test coverage](docs/CONFORMANCE.md)
 - [Measured verifier performance](docs/PERFORMANCE.md)
+- [Frozen schema contracts](docs/SCHEMA_CONTRACT.md) and [release preparation](docs/RELEASE.md)
 - [Reference service](examples/reference_service/README.md)
 
 The implementation deliberately has no unsafe suppression, executable verifier

@@ -42,6 +42,9 @@ Every module requires `name` and an explicit Boolean `import_safe`. Importing
 external declarations requires `import_safe = true`; `false` is retained as an
 explicit declaration that imports are unavailable to verified code. The module
 assertion covers import-time behavior and is part of the trusted host contract.
+An explicitly unsafe ancestor package also blocks imports of its children.
+Undeclared ancestor packages remain covered by the importing module's import-time
+trust assertion; the verifier does not inspect their runtime implementations.
 
 Types require a fully qualified `name` and one `category`:
 

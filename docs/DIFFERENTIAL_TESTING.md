@@ -191,3 +191,34 @@ This extends differential evidence to selected whole-function compositions and
 paths. It does not prove all inputs, all path combinations, termination, async
 effects, nominal/opaque values, module imports, or host behavior. The opcode and
 line-event budget is a development guard, not a verifier termination guarantee.
+
+## Nominal records, imports and async modules
+
+`tools/differential_modules.py` complements the generated expression and function
+gates with 29 fixed, reviewed multi-module projects and 48 invocations. Twenty
+projects must be accepted and nine must reject with exact diagnostic sets.
+The cases cover record construction and field order, private-name mangling,
+nominal identity across modules, recursive tuple/optional fields, opaque equality
+rejection, import relationships, direct async helper composition, and original
+capability/host-reference forwarding into a small trusted fixture host.
+
+```sh
+make differential-test
+.venv/bin/python tools/differential_modules.py --verifier bin/purepy
+```
+
+The static side invokes the production CLI on temporary source roots. The
+runtime side executes only the fixed catalog in two isolated CPython 3.14
+processes with hash randomization. It compares exact runtime return categories,
+record layouts and nominal identities, curated results, and host-event ordering.
+Worker requests contain catalog names and source/input fingerprints, never
+arbitrary source or caller-supplied expected outcomes. Instruction, suspension,
+process, request and value bounds limit accidental expansion of the test corpus.
+
+Failures preserve source and observations in
+`build/module-differential-failures.json`. Reproduce a reviewed catalog case with
+`--case NAME`; this harness intentionally has no arbitrary-source replay mode.
+The 16 harness tests include false-verdict, wrong-type/identity, event-order,
+protocol, fingerprint and unsupported-input rejection controls. These cases
+extend finite cross-module and async evidence; they do not verify real external
+implementations or establish every possible program composition.

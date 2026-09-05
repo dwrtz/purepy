@@ -6,7 +6,7 @@
 **Target source syntax:** Python 3.14  
 **Reference implementation language:** Go  
 **Status:** Implementation plan  
-**Last updated:** 2026-08-28
+**Last updated:** 2026-09-05
 
 ---
 
@@ -59,7 +59,7 @@ Core packages MUST NOT implement:
 - SSE framing;
 - task scheduling;
 - resource cleanup;
-- cache storage; or
+- application/runtime cache storage; or
 - deployment.
 
 The reference service may contain such code only in its excluded host fixture.
@@ -190,8 +190,8 @@ Required documentation includes:
 
 ```text
 docs/LANGUAGE_GUIDE.md
-docs/HOST_BOUNDARY_GUIDE.md
-docs/MANIFEST_FORMAT.md
+docs/HOST_BOUNDARY.md
+docs/MANIFESTS.md
 docs/DIAGNOSTICS.md
 docs/CONFORMANCE.md
 ```
@@ -1097,8 +1097,8 @@ internal/check/calls.go
 internal/check/function.go
 internal/app/capabilities.go
 manifests/schema/
-docs/MANIFEST_FORMAT.md
-docs/HOST_BOUNDARY_GUIDE.md
+docs/MANIFESTS.md
+docs/HOST_BOUNDARY.md
 ```
 
 ### 12.3 Manifest schema v1
@@ -1550,7 +1550,7 @@ Measure:
 - cache size; and
 - CPU utilization by worker count.
 
-### 14.12 Provisional performance gates
+### 14.12 Performance gates
 
 Before release, establish measured budgets on named hardware. Initial qualitative gates are:
 
@@ -1562,6 +1562,14 @@ Before release, establish measured budgets on named hardware. Initial qualitativ
 - no race-detector findings.
 
 Do not claim Ruff-equivalent performance until measured on comparable corpora.
+
+The PurePy 0.1 local Apple M4 acceptance profile is versioned in
+`benchmarks/acceptance-m4.json` and enforced by `tools/performance_acceptance.py`.
+The [2026-09-05 completion record](validation/2026-09-05/completion.md) reports the
+full verifier matrix, sustained reference-service workload, absolute acceptance,
+and controlled base/head regression results. These measurements complete the
+named local profile; dedicated CI hardware and other deployment workloads need
+their own measured budgets.
 
 ### 14.13 Tests
 
@@ -2193,6 +2201,13 @@ The following decisions must not become accidental implementation details:
 14. Manifests are declarative and minimal.
 15. Cache invalidation is conservative before it is clever.
 16. The reference service is not a framework.
+17. Record equality requires recursively sealed comparable fields; an opaque
+    manifest value never gains equality through a record, tuple, or optional.
+18. The sealed intrinsic contract has its own version (`1` for PurePy 0.1),
+    reported by the CLI and included in cache identity.
+19. Documented implementation resource limits reject explicitly; exceeding a
+    cache decoding limit triggers fresh source analysis. The exact frontend and
+    cache bounds are specified in `PUREPY_SPEC.md` section 30.11.
 
 Any proposal to change one of these requires an ADR and conformance impact analysis.
 
@@ -2453,6 +2468,13 @@ Do not begin local builders, `parallel_join`, resources, memoization, generators
 
 PurePy 0.1 is done when all of the following are true.
 
+Implementation readiness and artifact publication are separate gates. The
+completion record in `IMPLEMENTATION.md` links the current validation evidence;
+`CONFORMANCE.md` tracks individual specification obligations. A `partial` row
+can record a finite-testing or trusted-host limitation even when all enumerated
+implementation cases are covered. Traceability counts do not replace regression
+execution, soundness review, or the publication requirements below.
+
 ### Language
 
 - The accepted syntax is completely enumerated.
@@ -2518,4 +2540,3 @@ first-order functions
 ```
 
 That model is sufficient to build the initial verifier, validate modern service viability, and establish a sound base for carefully justified extensions.
-

@@ -524,7 +524,7 @@
       }
     ],
     "fixtures": [],
-    "notes": "The required fixture runner and representative safety/determinism tests run, but experimental status remains: full closed-language compliance and independent soundness evidence are not established."
+    "notes": "The required fixture runner and source-no-execution, unknown-operation, version-reporting, and determinism controls provide finite executable evidence for the conformance obligations. Full arbitrary-source soundness and truthful host contracts cannot be established by this regression inventory."
   },
   {
     "section": "32.1",
@@ -721,6 +721,18 @@
       {
         "path": "tools/tests/test_differential_functions.py",
         "test": "DifferentialFunctionTests.test_live_fixed_corpus"
+      },
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_live_fixed_catalog"
+      },
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_exact_record_types_validate_identity_field_names_and_nested_types"
+      },
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_host_calls_and_hidden_equality_use_independent_event_oracles"
       }
     ],
     "negative": [
@@ -735,10 +747,18 @@
       {
         "path": "tools/tests/test_differential_functions.py",
         "test": "DifferentialFunctionTests.test_live_fixed_corpus"
+      },
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_live_fixed_catalog"
+      },
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_catalog_covers_nominal_import_opaque_and_async_contracts"
       }
     ],
     "fixtures": [],
-    "notes": "The suite has positive and negative cases across required feature families; an exhaustive enumeration of statement/operator/type combinations remains open. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; the whole-function gate adds bounded optional/tuple flow compositions with exact returns and independently specified invocation outcomes. Nominal values and arbitrary compositions remain outside these finite matrices."
+    "notes": "The suite has positive and negative cases across required feature families; finite fixture inputs do not establish every possible statement/operator/type composition. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; the whole-function gate adds bounded optional/tuple flow compositions with exact returns and independently specified invocation outcomes. The multi-module gate adds 29 fixed projects (20 accepted, 9 rejected) and 48 invocations covering nominal and opaque values, absolute imports, rejected import forms, and direct async composition. It checks exact recursive result types, independently specified host-call/equality events, domain failures, and matching outcomes from two isolated hash-randomized CPython processes. Arbitrary programs and host-contract truth remain outside these finite matrices."
   },
   {
     "section": "32.4",
@@ -760,6 +780,18 @@
       {
         "path": "tools/tests/test_differential_functions.py",
         "test": "DifferentialFunctionTests.test_live_fixed_corpus"
+      },
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_live_fixed_catalog"
+      },
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_exact_record_types_validate_identity_field_names_and_nested_types"
+      },
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_host_calls_and_hidden_equality_use_independent_event_oracles"
       }
     ],
     "negative": [
@@ -782,6 +814,14 @@
       {
         "path": "tools/tests/test_differential_functions.py",
         "test": "DifferentialFunctionTests.test_live_fixed_corpus"
+      },
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_live_fixed_catalog"
+      },
+      {
+        "path": "tools/tests/test_differential_modules.py",
+        "test": "ModuleDifferentialTests.test_catalog_covers_nominal_import_opaque_and_async_contracts"
       }
     ],
     "fixtures": [
@@ -792,7 +832,7 @@
       "unassigned_branch",
       "discarded_result"
     ],
-    "notes": "Fixtures span the supported statement/expression families, but all operator/type combinations and Python literal spellings are not yet exhaustive. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; the whole-function gate adds bounded optional/tuple flow compositions with exact returns and independently specified invocation outcomes. Nominal values and arbitrary compositions remain outside these finite matrices. Shared CPython syntax cases and frontend regressions distinguish valid logical-line joins and aligned clauses from malformed header newlines and clause indentation."
+    "notes": "Fixtures span the supported statement/expression families, but the finite operator/type and literal cases do not constitute exhaustive enumeration of Python source. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; the whole-function gate adds bounded optional/tuple flow compositions with exact returns and independently specified invocation outcomes. The multi-module gate adds 29 fixed projects (20 accepted, 9 rejected) and 48 invocations covering nominal and opaque values, absolute imports, rejected import forms, and direct async composition. It checks exact recursive result types, independently specified host-call/equality events, domain failures, and matching outcomes from two isolated hash-randomized CPython processes. Arbitrary programs and host-contract truth remain outside these finite matrices. Shared CPython syntax cases and frontend regressions distinguish valid logical-line joins and aligned clauses from malformed header newlines and clause indentation."
   },
   {
     "section": "32.4",
@@ -1010,7 +1050,7 @@
   {
     "section": "32.5",
     "quote": "Before PurePy 0.1 is considered complete, a reference workload MUST demonstrate:",
-    "status": "release",
+    "status": "tested",
     "positive": [
       {
         "path": "internal/app/conformance_test.go",
@@ -1023,16 +1063,40 @@
       {
         "path": "examples/reference_service/tests/test_service.py",
         "test": "test_atomic_updates_under_concurrency"
+      },
+      {
+        "path": "tools/tests/test_performance_acceptance.py",
+        "test": "AcceptanceTests.test_recorded_measurements_pass_predefined_ceilings"
       }
     ],
     "negative": [
       {
         "path": "examples/reference_service/tests/test_service.py",
         "test": "test_update_rolls_back_if_event_insert_fails"
+      },
+      {
+        "path": "tools/tests/test_performance_acceptance.py",
+        "test": "AcceptanceTests.test_wrong_machine_and_incomplete_matrix_reject"
+      },
+      {
+        "path": "tools/tests/test_performance_acceptance.py",
+        "test": "AcceptanceTests.test_service_shortcuts_and_accounting_fail_closed"
+      },
+      {
+        "path": "tools/tests/test_performance_acceptance.py",
+        "test": "AcceptanceTests.test_latency_throughput_and_memory_regressions_fail"
+      },
+      {
+        "path": "tools/tests/test_performance_acceptance.py",
+        "test": "AcceptanceTests.test_verifier_measurement_over_ceiling_fails"
+      },
+      {
+        "path": "tools/tests/test_performance_acceptance.py",
+        "test": "AcceptanceTests.test_warm_parsing_and_nonfinite_samples_reject"
       }
     ],
     "fixtures": [],
-    "notes": "The reference service demonstrates the required behavior and has a documented sample load run. The verifier now has repeated size/worker matrices, exact per-process CPU/RSS, separate wall/worker timings, profile-guided allocation improvements, and tolerant same-run base/head CI checks (docs/PERFORMANCE.md and benchmarks/baseline.json). Dedicated-runner acceptance budgets and sustained representative runtime-service load evidence remain release work."
+    "notes": "The documented local Apple M4 acceptance profile passed all 314 checks over the repeated full verifier matrix and a 300-second mixed runtime-service workload. The service completed 462456 requests and delivered every committed write to all four SSE readers, with zero response, ledger, delivery, or cleanup errors. A controlled same-machine base/head comparison passed all 24 scalar and 12 growth checks at unchanged thresholds. The earlier historical comparison failed while other workloads were running and is retained alongside the controlled results; see docs/validation/2026-09-05/completion.md and completion-acceptance.json. Negative controls reject wrong-machine or incomplete measurements, missed delivery/cleanup, nonfinite samples, unexpected warm parsing, and exceeded performance ceilings. This completes the scoped documented-load requirement; it does not establish dedicated-runner budgets, universal hardware performance, or representative external deployment workloads."
   },
   {
     "section": "32.5",
@@ -1208,7 +1272,7 @@
   {
     "section": "32.5",
     "quote": "- acceptable verifier and runtime performance under a documented load test.",
-    "status": "release",
+    "status": "tested",
     "positive": [
       {
         "path": "examples/reference_service/tests/test_service.py",
@@ -1217,6 +1281,10 @@
       {
         "path": "examples/reference_service/tests/test_loadtest.py",
         "test": "LoadIntegrationTests.test_sustained_mixed_requests_drain_sse_concurrently"
+      },
+      {
+        "path": "tools/tests/test_performance_acceptance.py",
+        "test": "AcceptanceTests.test_recorded_measurements_pass_predefined_ceilings"
       }
     ],
     "negative": [
@@ -1227,10 +1295,30 @@
       {
         "path": "examples/reference_service/tests/test_loadtest.py",
         "test": "EventTests.test_keepalives_and_stale_events_cannot_satisfy_update_delivery"
+      },
+      {
+        "path": "tools/tests/test_performance_acceptance.py",
+        "test": "AcceptanceTests.test_wrong_machine_and_incomplete_matrix_reject"
+      },
+      {
+        "path": "tools/tests/test_performance_acceptance.py",
+        "test": "AcceptanceTests.test_service_shortcuts_and_accounting_fail_closed"
+      },
+      {
+        "path": "tools/tests/test_performance_acceptance.py",
+        "test": "AcceptanceTests.test_latency_throughput_and_memory_regressions_fail"
+      },
+      {
+        "path": "tools/tests/test_performance_acceptance.py",
+        "test": "AcceptanceTests.test_verifier_measurement_over_ceiling_fails"
+      },
+      {
+        "path": "tools/tests/test_performance_acceptance.py",
+        "test": "AcceptanceTests.test_warm_parsing_and_nonfinite_samples_reject"
       }
     ],
     "fixtures": [],
-    "notes": "The reference service demonstrates the required behavior and has a documented sample load run. The verifier now has repeated size/worker matrices, exact per-process CPU/RSS, separate wall/worker timings, profile-guided allocation improvements, and tolerant same-run base/head CI checks (docs/PERFORMANCE.md and benchmarks/baseline.json). The dated 2026-09-05 report adds a five-minute mixed runtime workload with complete SSE/ledger/cleanup checks. Dedicated-runner acceptance budgets and broader deployment workloads remain release work. The duration-based runtime harness now checks mixed read/write traffic with continuous exact SSE correlation, final ledger and cleanup checks, bounded statistics, and memory accounting for retained SQLite event rows. Finite local measurements do not establish dedicated-runner acceptance budgets."
+    "notes": "The documented local Apple M4 acceptance profile passed all 314 checks over the repeated full verifier matrix and a 300-second mixed runtime-service workload. The service completed 462456 requests and delivered every committed write to all four SSE readers, with zero response, ledger, delivery, or cleanup errors. A controlled same-machine base/head comparison passed all 24 scalar and 12 growth checks at unchanged thresholds. The earlier historical comparison failed while other workloads were running and is retained alongside the controlled results; see docs/validation/2026-09-05/completion.md and completion-acceptance.json. Negative controls reject wrong-machine or incomplete measurements, missed delivery/cleanup, nonfinite samples, unexpected warm parsing, and exceeded performance ceilings. This completes the scoped documented-load requirement; it does not establish dedicated-runner budgets, universal hardware performance, or representative external deployment workloads."
   },
   {
     "section": "29.1",
@@ -1334,5 +1422,40 @@
     ],
     "fixtures": [],
     "notes": "Package diagnostics sort before child modules, and equal-message diagnostics compare their complete stable context."
+  },
+  {
+    "section": "30.11",
+    "quote": "Such rejection MUST produce an explicit error and MUST NOT produce successful verification by skipping analysis.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/frontend/resource_audit_test.go",
+        "test": "TestNestedSourceTextAllocationAndOwnership"
+      },
+      {
+        "path": "internal/cache/resource_audit_test.go",
+        "test": "TestCacheJSONBudgetIgnoresQuotedStructuralCharacters"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/frontend/resource_audit_test.go",
+        "test": "TestParserRejectsExcessiveSyntaxResources"
+      },
+      {
+        "path": "internal/frontend/resource_audit_test.go",
+        "test": "TestParserBoundsRepeatedLexicalDiagnostics"
+      },
+      {
+        "path": "internal/cache/resource_audit_test.go",
+        "test": "TestCacheRejectsDecodeAmplificationBeforeTypedAllocation"
+      },
+      {
+        "path": "internal/cache/resource_audit_test.go",
+        "test": "TestCacheRejectsStructureBeforeDecode"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Native depth/node/overlapping-text excess returns PP003 with no semantic tree; diagnostic overflow emits an explicit final truncation error. Ordinary bounded nested syntax retains detached text. Malformed oversized cache structures are rejected before typed decoding; quoted punctuation does not spuriously exhaust structural budgets. These bounded controls do not establish a global parser/process resource bound."
   }
 ]

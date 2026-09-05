@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PurePy explain result schema 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "diagnostics",
+    "facts"
+  ],
+  "properties": {
+    "schema": {
+      "const": 1
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "$ref": "diagnostics-v1.json#/$defs/diagnostic"
+      }
+    },
+    "facts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/fact"
+      }
+    }
+  },
+  "$defs": {
+    "fact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "span",
+        "type",
+        "category",
+        "description"
+      ],
+      "properties": {
+        "span": {
+          "$ref": "diagnostics-v1.json#/$defs/span"
+        },
+        "symbol": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "diagnostics-v1.json#/$defs/type"
+        },
+        "category": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

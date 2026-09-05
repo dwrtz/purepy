@@ -171,6 +171,38 @@ latency improvement; the strongest measured result is reduced allocation.
 
 ## Regression checks and CI
 
+### Fixed acceptance profile
+
+The checked-in `benchmarks/acceptance-m4.json` defines the initial release
+acceptance envelope on the named 10-core Apple M4 with 16 GiB RAM. It was set
+from the previously recorded baseline before measuring the completion candidate.
+`tools/performance_acceptance.py` requires the complete 100/1,000/3,000-module,
+one/four-worker, three-repetition matrix with ten functions per module. Every
+phase must satisfy its corpus's fixed-plus-linear wall-time, CPU and peak-RSS
+ceiling; every warm sample must do zero parsing and lowering. The ordinary
+benchmark comparator still checks relative regressions and scaling.
+
+The same acceptance command checks the five-minute mixed service workload:
+20 request workers, four SSE streams, 10 ms read latency, and one write per five
+requests. It requires at least 500 requests/second, request p95 at most 100 ms,
+request p99 at most 250 ms, SSE delivery p99 at most 500 ms, peak RSS at most
+128 MiB, and traced allocation after cleanup at most 8 MiB. Errors, missing
+events, mismatched database accounting, residual tasks, and open resources fail
+independently of speed. A shorter run or different workload cannot pass.
+
+```sh
+make acceptance-test
+make acceptance-check ACCEPTANCE_BENCHMARK=build/completion-2026-09-05/benchmark.json \
+  ACCEPTANCE_SERVICE=build/completion-2026-09-05/service.json
+```
+
+These are concrete local acceptance budgets, not a guarantee for arbitrary
+deployments. Hardware identity is checked, but software cannot establish that a
+machine was otherwise idle or reserved. A dedicated release runner should use
+this profile on matching hardware or a separately reviewed measured profile;
+ordinary Linux CI continues to use same-run relative comparisons. Adjusting a
+profile is a reviewed policy change, never an automatic response to a failure.
+
 [The comparator](../tools/benchmark_compare.py) requires complete matching matrices,
 original and edited input hashes, hardware, build and runtime metadata, successful equality
 flags, consistent report hashes across workers, expected cache counts, and raw

@@ -14,9 +14,13 @@ BENCHMARK_CANDIDATE ?= build/benchmark-candidate.json
 BENCHMARK_COMPARE_ARGS ?=
 ROBUSTNESS_ARGS ?=
 LOADTEST_ARGS ?=
+ACCEPTANCE_PROFILE ?= benchmarks/acceptance-m4.json
+ACCEPTANCE_BENCHMARK ?= docs/validation/2026-09-05/completion-benchmark.json
+ACCEPTANCE_SERVICE ?= docs/validation/2026-09-05/completion-service.json
+RELEASE_OUTPUT ?= dist/candidate
 FUZZ_FLAGS = -run '^$$' -fuzztime "$(FUZZ_TIME)" -parallel "$(FUZZ_PARALLEL)" -timeout "$(FUZZ_TIMEOUT)" -fuzzminimizetime "$(FUZZ_MINIMIZE_TIME)"
 
-.PHONY: setup build test race fuzz-test robustness-test robustness-campaign python-test service-test syntax-test differential-test unicode-test unicode-generate coverage-test example serve loadtest benchmark benchmark-test benchmark-compare package clean
+.PHONY: setup build test race fuzz-test robustness-test robustness-campaign python-test service-test syntax-test differential-test unicode-test unicode-generate coverage-test schema-test example serve loadtest benchmark benchmark-test benchmark-compare acceptance-test acceptance-check package-test package clean
 setup:
 	UV_PROJECT_ENVIRONMENT="$(VENV)" $(UV) sync --locked --project python --python $(PYTHON_VERSION)
 build:
@@ -51,15 +55,18 @@ unicode-test: setup
 unicode-generate: setup
 	$(PYTHON) tools/generate_unicode_names.py
 	$(PYTHON) tools/generate_unicode_identifiers.py
-differential-test: setup
+differential-test: setup build
 	go build -trimpath -buildvcs=false -o bin/purepy-semantic-probe ./tools/semantic_probe
 	$(PYTHON) -m unittest discover -s tools/tests -p 'test_differential*.py' -v
 	$(PYTHON) -m unittest discover -s tools/tests -p 'test_function*.py' -v
 	$(PYTHON) tools/differential_semantics.py
 	$(PYTHON) tools/differential_functions.py
+	$(PYTHON) tools/differential_modules.py --verifier "$(CURDIR)/bin/purepy"
 coverage-test: setup
 	$(PYTHON) -m unittest discover -s tools/tests -p 'test_spec_coverage.py' -v
 	$(PYTHON) tools/spec_coverage.py --check
+schema-test: build
+	$(UV) run --no-project --with jsonschema==4.23.0 --python "$(PYTHON_VERSION)" python tools/check_schema_contract.py --verifier "$(CURDIR)/bin/purepy"
 example:
 	go run ./cmd/purepy check examples/reference_service
 serve: setup
@@ -72,8 +79,16 @@ benchmark-test: setup
 	$(PYTHON) -m unittest discover -s tools/tests -p 'test_benchmark*.py' -v
 benchmark-compare: setup
 	$(PYTHON) tools/benchmark_compare.py --baseline "$(BENCHMARK_BASELINE)" --candidate "$(BENCHMARK_CANDIDATE)" $(BENCHMARK_COMPARE_ARGS)
-package: setup build
-	$(PYTHON) tools/package_binary.py
-	SOURCE_DATE_EPOCH=315532800 $(UV) build python --out-dir dist
+acceptance-test: setup
+	$(PYTHON) -m unittest discover -s tools/tests -p 'test_performance_acceptance.py' -v
+acceptance-check: setup
+	$(PYTHON) tools/performance_acceptance.py --profile "$(ACCEPTANCE_PROFILE)" --benchmark "$(ACCEPTANCE_BENCHMARK)" --service "$(ACCEPTANCE_SERVICE)"
+package-test: setup
+	$(PYTHON) -m unittest discover -s tools/tests -p 'test_package_binary.py' -v
+package: setup
+	$(PYTHON) tools/package_binary.py --output "$(RELEASE_OUTPUT)"
+	SOURCE_DATE_EPOCH=315532800 $(UV) build python --out-dir "$(RELEASE_OUTPUT)"
+	$(PYTHON) tools/package_binary.py --finalize --output "$(RELEASE_OUTPUT)" --require-python
+	$(PYTHON) tools/package_binary.py --verify --output "$(RELEASE_OUTPUT)" --require-python
 clean:
 	go clean ./...

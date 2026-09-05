@@ -1,0 +1,249 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PurePy capabilities result schema 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "functions"
+  ],
+  "properties": {
+    "schema": {
+      "const": 1
+    },
+    "functions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/authority"
+      }
+    }
+  },
+  "$defs": {
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "kind",
+        "classification",
+        "parameters",
+        "returns",
+        "capabilities",
+        "host_references",
+        "unused_capabilities",
+        "direct_calls",
+        "trusted_external",
+        "reachable_trusted_external",
+        "trusted_types",
+        "trusted_modules"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "sync",
+            "async"
+          ]
+        },
+        "classification": {
+          "enum": [
+            "pure_sync",
+            "pure_async",
+            "effectful_sync",
+            "effectful_async"
+          ]
+        },
+        "parameters": {
+          "type": "array",
+          "items": {
+            "$ref": "diagnostics-v1.json#/$defs/parameter"
+          }
+        },
+        "returns": {
+          "$ref": "diagnostics-v1.json#/$defs/type"
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "$ref": "diagnostics-v1.json#/$defs/parameter"
+          }
+        },
+        "host_references": {
+          "type": "array",
+          "items": {
+            "$ref": "diagnostics-v1.json#/$defs/parameter"
+          }
+        },
+        "unused_capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "direct_calls": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/call"
+          }
+        },
+        "trusted_external": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/external"
+          }
+        },
+        "reachable_trusted_external": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/external"
+          }
+        },
+        "trusted_types": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "category",
+              "labels",
+              "source"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "category": {
+                "enum": [
+                  "pure_value",
+                  "capability",
+                  "host_reference"
+                ]
+              },
+              "labels": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "source": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "trusted_modules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "import_safe",
+              "source"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "import_safe": {
+                "type": "boolean"
+              },
+              "source": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "call": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "caller",
+        "callee",
+        "kind",
+        "span",
+        "capability_arguments",
+        "host_ref_arguments"
+      ],
+      "properties": {
+        "caller": {
+          "type": "string"
+        },
+        "callee": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "span": {
+          "$ref": "diagnostics-v1.json#/$defs/span"
+        },
+        "capability_arguments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "host_ref_arguments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "external": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "kind",
+        "parameters",
+        "returns",
+        "origin",
+        "trust",
+        "span"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "sync",
+            "async"
+          ]
+        },
+        "parameters": {
+          "type": "array",
+          "items": {
+            "$ref": "diagnostics-v1.json#/$defs/parameter"
+          }
+        },
+        "returns": {
+          "$ref": "diagnostics-v1.json#/$defs/type"
+        },
+        "origin": {
+          "const": "manifest"
+        },
+        "trust": {
+          "enum": [
+            "pure",
+            "host"
+          ]
+        },
+        "source": {
+          "type": "string"
+        },
+        "span": {
+          "$ref": "diagnostics-v1.json#/$defs/span"
+        }
+      }
+    }
+  }
+}

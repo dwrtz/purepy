@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "name": "PurePy 0.1 local Apple M4 acceptance",
+  "hardware": {"label": "Apple M4", "machine": "arm64", "logical_cpus": 10, "memory_bytes": 17179869184},
+  "matrix": {"sizes": [100, 1000, 3000], "workers": [1, 4], "corpora": ["deep", "invalid", "manifest", "wide"], "functions_per_module": 10, "repeats": 3},
+  "verifier": {
+    "deep": {"wall_ms": {"fixed": 100, "per_module": 1.5}, "process_cpu_ms": {"fixed": 200, "per_module": 4}, "peak_rss_bytes": {"fixed": 67108864, "per_module": 262144}},
+    "wide": {"wall_ms": {"fixed": 100, "per_module": 1.5}, "process_cpu_ms": {"fixed": 200, "per_module": 4}, "peak_rss_bytes": {"fixed": 67108864, "per_module": 262144}},
+    "invalid": {"wall_ms": {"fixed": 100, "per_module": 3}, "process_cpu_ms": {"fixed": 200, "per_module": 8}, "peak_rss_bytes": {"fixed": 67108864, "per_module": 786432}},
+    "manifest": {"wall_ms": {"fixed": 100, "per_module": 2}, "process_cpu_ms": {"fixed": 200, "per_module": 6}, "peak_rss_bytes": {"fixed": 67108864, "per_module": 393216}}
+  },
+  "service": {
+    "options": {"duration": 300, "connections": 20, "sse_connections": 4, "database_delay": 0.01, "write_every": 5},
+    "minimum_requests_per_second": 500,
+    "maximum_latency_p95_ms": 100,
+    "maximum_latency_p99_ms": 250,
+    "maximum_sse_delivery_p99_ms": 500,
+    "maximum_peak_resident_bytes": 134217728,
+    "maximum_traced_bytes_after_cleanup": 8388608
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "manifest_schema": 1,
+  "json_schema": 1,
+  "files": {
+    "manifests/schema/v1.json": "0649e6259abc581f38a74a30754c367af80baa7ca310e7bbebd988ab638d9f96",
+    "docs/schema/diagnostics-v1.json": "b6f031693966f361bed53cbf63a141f0abb803922c3bfdddf36069a72face988",
+    "docs/schema/capabilities-v1.json": "a47ad98dadf4f13b89644c170344f01fee9ea45651d60013f66ef2b8bcffe57e",
+    "docs/schema/explain-v1.json": "c983418fb72039c0b2cd484890163a6e2007116eb741725b20085572e6c33470"
+  }
+}

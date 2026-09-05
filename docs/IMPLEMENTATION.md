@@ -154,15 +154,26 @@ records the measurements and the tolerant same-run base/head CI gate.
 
 ## Release gates and trust limits
 
-This is an experimental implementation, not a declaration that every PurePy 0.1
-release gate in the plan has been completed. Schemas are versioned but have not
-been declared frozen for public release. A broader independent soundness audit,
-broader campaigns beyond the recorded local runs, exhaustive CPython 3.14
-differential coverage, dedicated-runner performance targets, representative
-deployment workloads, and
-public binary/support-package publication remain release work. The packaging
-workflow prepares artifacts when explicitly run;
-no release is published by the implementation task.
+The PurePy 0.1 implementation includes the enumerated verifier pipeline, runtime,
+reference service and release preparation tooling. The final completion checks
+and their precise source/measurement identities are recorded in the
+[completion report](validation/2026-09-05/completion.md). The specification,
+syntax matrix and implementation now explicitly agree on recursive equality,
+resource-limit rejection and sealed intrinsic version 1.
+
+The [schema contracts](SCHEMA_CONTRACT.md) define compatibility for manifest v1
+and machine-readable output. The [release guide](RELEASE.md) describes reproducible
+source/binary/Python artifacts and the publication procedure. A local release
+candidate is not evidence that GitHub or PyPI publication has occurred; that is
+reported separately after upload verification.
+
+The coverage map retains partial rows for broad statements whose full scope
+cannot be established by a finite test suite. Focused required feature cases,
+trusted module/record/async differential programs, bounded fuzz campaigns and a
+fixed measured performance profile provide executable evidence. Further
+independent audits, additional deployment workloads and dedicated-runner
+measurements remain valuable validation work, rather than undocumented language
+features or a claim that arbitrary programs have been exhaustively tested.
 
 External implementations and their manifests remain trusted. The verifier does not
 prove their purity, deep immutability, import safety, or complete effect labels.

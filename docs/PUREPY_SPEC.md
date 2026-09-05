@@ -5,7 +5,7 @@
 **Initial conformance level:** PurePy `0.1`  
 **Target source syntax:** Python 3.14  
 **Status:** Design specification  
-**Last updated:** 2026-08-28
+**Last updated:** 2026-09-05
 
 ---
 
@@ -616,6 +616,15 @@ It MUST NOT contain:
 - metaclass declarations; or
 - executable statements.
 
+Identifiers in a record class body follow Python private-name mangling after Unicode NFKC normalization.
+
+For example, the source field `__key` in `class Secret` has the effective field
+name `_Secret__key`. Construction by keyword and field reads
+outside the class use that effective name; `Secret(__key=1)` has no matching
+field, while `Secret(_Secret__key=1)` and positional `Secret(1)` are permitted.
+This preserves Python's field-name semantics and does not grant reflection or
+access to prohibited double-leading-and-trailing-underscore names.
+
 ### 10.3 Field types
 
 Every field type MUST be a Pure Value type.
@@ -634,10 +643,14 @@ Permitted operations on a value record are:
 
 - construction;
 - field reads;
-- equality and inequality with the same exact record type; and
+- equality and inequality with the same exact record type when every field is recursively equality-comparable under section 14.6; and
 - pure formatting of approved field values through a verifier-recognized representation.
 
 Record identity is not observable.
+
+A record may contain immutable manifest-declared values without supporting
+equality. Construction, field reads, and forwarding remain permitted for such
+records; their fields do not acquire comparison behavior from the record wrapper.
 
 ### 10.6 Behavior belongs in functions
 
@@ -1001,8 +1014,17 @@ Permitted equality includes:
 
 - same-type primitives;
 - homogeneous tuples of equality-comparable Pure Values;
-- same-type `@value` records; and
-- comparison of an optional value to `None`.
+- same-type `@value` records whose fields are all recursively equality-comparable; and
+- comparison of an optional value to `None` when its non-`None` element type is recursively equality-comparable.
+
+Equality-comparability is closed over the exact primitives `None`, `bool`, `int`,
+`float`, `str`, and `bytes`, homogeneous tuples of comparable elements, optionals
+of comparable elements, and verified records whose fields are all comparable.
+Recursive record types are prohibited. An immutable manifest-declared value has
+no sealed equality rule, including when it occurs inside a tuple, optional, or
+record. For example, `token == None` is rejected for an opaque `Token | None`:
+Python could invoke `Token.__eq__` on the non-`None` path. Use `token is None`
+for the supported absence check.
 
 Identity operators `is` and `is not` are permitted only with `None`.
 
@@ -1137,6 +1159,13 @@ For example, `len(value)` is accepted only when `value` is exactly `str`, `bytes
 ### 15.4 Intrinsic versioning
 
 The verifier MUST version and test the intrinsic table. Adding an intrinsic is a language change.
+
+The PurePy 0.1 reference table has intrinsic contract version `1`, independent
+of the verifier build version. Its exact call forms and result types are listed
+in `SYNTAX_MATRIX.md`. The `purepy version` command identifies this version, and
+it participates in program-image cache identity. Changes to accepted calls or
+their semantics require a new intrinsic contract version and language review;
+implementation fixes preserving the contract do not.
 
 ---
 
@@ -2121,6 +2150,31 @@ Configured entrypoints are resolved and summarized. Their parameter categories d
 
 Diagnostics and summaries are sorted by stable module name, source position, code, and deterministic tie-breaker.
 
+### 30.11 Implementation resource limits
+
+A verifier MAY reject input exceeding documented implementation resource limits,
+including input that otherwise satisfies the language's typing and syntax rules.
+Such rejection MUST produce an explicit error and MUST NOT produce successful verification by skipping analysis.
+
+The reference verifier applies the following fixed limits per source file before
+recursive frontend lowering. Native syntax nodes include punctuation and rejected
+syntax; the root has depth zero. Overlapping text is the sum of each native node's
+source-span byte length, so the same source bytes can contribute more than once.
+
+| Resource | Limit | Failure behavior |
+| --- | ---: | --- |
+| Native syntax-tree depth | 512 | `PP003` at the node exceeding the limit; no semantic tree is accepted. |
+| Native syntax nodes | 100,000 | `PP003` at the node exceeding the limit; no semantic tree is accepted. |
+| Overlapping native-node text | 64 MiB | `PP003` at the node exceeding the limit; no semantic tree is accepted. |
+| Frontend diagnostics | 1,024 ordinary errors | One final `PP003` explains that further diagnostics were omitted. |
+
+Cache decoding has independent defensive bounds, including a 64 MiB entry size,
+100,000 lowered nodes, depth 1,024, and structural JSON budgets. Cache data that
+exceeds these bounds is ignored and source analysis is recomputed; a cache miss
+does not relax the source limits or semantic checks. These limits bound selected
+allocation and traversal risks and do not promise a universal wall-time or memory
+bound for the native parser, whole project, or executing Python program.
+
 ---
 
 ## 31. Performance and determinism requirements
@@ -2425,4 +2479,3 @@ persistent memoization certificates
 The defining invariant is:
 
 > A function can exercise only the external authority explicitly present in its parameter list, and a function accepting only Pure Values has no route to ambient state or observable mutation.
-
