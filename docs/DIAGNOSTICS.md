@@ -65,13 +65,16 @@ the underlying rule. Unassigned numbers remain reserved within their family.
 | `PP604` | An imported external module is not marked `import_safe`. | Supply an accurate import-safety assertion in its trusted manifest. |
 | `PP701` | An entrypoint is duplicate or does not name a verified top-level function. | Configure the exact qualified project function name. |
 
-The configuration and manifest loaders include the relevant file path in their
-messages. Errors produced before source parsing use an input-level location;
-semantic diagnostics use the rejected source range. A rejected construct may
+The configuration and manifest loaders locate invalid keys or declarations in
+their input files. Entrypoint errors point to the configured name, and discovery
+errors point to `source_root`. An unreadable input uses a zero-width location at
+the beginning of the file; semantic diagnostics use the rejected source range.
+A rejected construct may
 produce more than one diagnostic when multiple independent rules apply.
 
-`purepy check --format json` emits a report with integer `schema = 1`, verifier
-and language versions, `ok`, file/function summaries and `diagnostics`. Each
+`purepy check --format json` emits a report with integer `schema = 1`,
+`verifier_version`, `specification_version`, `language`, `python_syntax`, `ok`,
+file/function summaries and `diagnostics`. Each
 diagnostic contains:
 
 | JSON field | Meaning |
@@ -84,8 +87,11 @@ diagnostic contains:
 | `notes` | Ordered explanatory strings, possibly empty. |
 | `related_locations` | Other relevant spans, possibly empty. |
 
-Diagnostics sort by file, starting byte offset, code and message. Cache hits,
-worker scheduling and stage timings do not change the JSON report. Timing output
+Diagnostics sort by module identity, file, starting byte offset, code and message,
+with the complete diagnostic JSON breaking any remaining ties. Locations outside
+project modules use their file path as the module sort key. Text reports include
+related declaration locations. Cache hits, worker scheduling and stage timings
+do not change the JSON report. Timing output
 is requested with `--timings` and goes to stderr.
 
 The `check` command exits with `0` for successful verification, `1` for rejected

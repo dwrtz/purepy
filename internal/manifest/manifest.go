@@ -81,14 +81,23 @@ type rawFunction struct {
 // are errors even when their declarations are identical. Type resolution,
 // deep category checking and host capability authorization happen after the
 // project and manifest declarations have been linked into one program image.
-func Load(paths []string) (*Set, error) {
+func Load(paths []string) (result *Set, loadErr error) {
+	currentPath := ""
+	defer func() {
+		var located *Error
+		if loadErr != nil && !errors.As(loadErr, &located) {
+			loadErr = &Error{Err: loadErr, Span: sourceSpan(currentPath, nil, 0, 0)}
+		}
+	}()
 	set := &Set{Modules: []Module{}, Types: []Type{}, Functions: []Function{}}
 	seen := make(map[string]string)
 	for _, path := range paths {
+		currentPath = path
 		path, err := filepath.Abs(path)
 		if err != nil {
 			return nil, fmt.Errorf("manifest path: %w", err)
 		}
+		currentPath = path
 		info, err := os.Lstat(path)
 		if err != nil {
 			return nil, fmt.Errorf("manifest %s: %w", path, err)
@@ -102,10 +111,10 @@ func Load(paths []string) (*Set, error) {
 		}
 		var doc document
 		if err := toml.NewDecoder(bytes.NewReader(data)).DisallowUnknownFields().Decode(&doc); err != nil {
-			return nil, fmt.Errorf("manifest %s: %w", path, tomlFailure(err))
+			return nil, &Error{Err: fmt.Errorf("manifest %s: %w", path, tomlFailure(err)), Span: decodingSpan(path, data, err)}
 		}
 		if doc.Schema != SchemaVersion {
-			return nil, fmt.Errorf("manifest %s: unsupported schema %d; expected %d", path, doc.Schema, SchemaVersion)
+			return nil, &Error{Err: fmt.Errorf("manifest %s: unsupported schema %d; expected %d", path, doc.Schema, SchemaVersion), Span: declarationSpan(path, data, "")}
 		}
 		for _, m := range doc.Modules {
 			if !discovery.ValidModuleName(m.Name) {
@@ -232,7 +241,8 @@ func tomlFailure(err error) error {
 }
 
 func invalid(path, name, message string) error {
-	return fmt.Errorf("manifest %s, declaration %q: %s", path, name, message)
+	data, _ := os.ReadFile(path)
+	return &Error{Err: fmt.Errorf("manifest %s, declaration %q: %s", path, name, message), Span: declarationSpan(path, data, name)}
 }
 
 func register(seen map[string]string, name, source string) error {

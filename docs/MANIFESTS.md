@@ -85,6 +85,13 @@ duplicates and linked category rules. Trust reports retain the source manifest
 path for every declaration. A manifest is a trust assertion about host code,
 not proof of that code's behavior.
 
+`purepy capabilities` reports direct and reachable trusted functions, nominal
+types, and module import-safety contracts. JSON exposes module contracts through
+`trusted_modules`, with `name`, `import_safe`, and `source` for each assertion.
+The source points to the module declaration's manifest even when its functions
+and types are declared in separate files. Imports of reachable project modules
+contribute these contracts even when an imported function is never called.
+
 Configuration uses exactly these fields, with explicit empty arrays when needed:
 
 ```toml

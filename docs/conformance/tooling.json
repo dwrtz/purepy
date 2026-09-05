@@ -1,0 +1,1031 @@
+[
+  {
+    "section": "28.1",
+    "quote": "A diagnostic MUST include:",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/app/spec_diagnostics_test.go",
+        "test": "TestDiagnosticMetadataForVerificationAndConfigurationErrors"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/app/spec_diagnostics_test.go",
+        "test": "TestDiagnosticMetadataForVerificationAndConfigurationErrors"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Primary ranges, codes, severity, messages, and related declaration text have regression coverage. Contextual symbol/type information and declaration paths are not yet exhaustive across every rejection family."
+  },
+  {
+    "section": "28.1",
+    "quote": "- stable code;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/app/spec_diagnostics_test.go",
+        "test": "TestDiagnosticMetadataForVerificationAndConfigurationErrors"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/app/spec_diagnostics_test.go",
+        "test": "TestDiagnosticMetadataForVerificationAndConfigurationErrors"
+      }
+    ],
+    "fixtures": [
+      "arithmetic",
+      "unknown_call"
+    ],
+    "notes": "Negative fixtures assert stable diagnostic codes; repeated cached and uncached reports preserve those codes."
+  },
+  {
+    "section": "28.1",
+    "quote": "- severity;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/app/spec_diagnostics_test.go",
+        "test": "TestDiagnosticMetadataForVerificationAndConfigurationErrors"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/app/spec_diagnostics_test.go",
+        "test": "TestDiagnosticMetadataForVerificationAndConfigurationErrors"
+      }
+    ],
+    "fixtures": [],
+    "notes": "The error reports assert severity=error; a valid program reports no diagnostics."
+  },
+  {
+    "section": "28.1",
+    "quote": "- file and source range;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/frontend/parser_test.go",
+        "test": "TestSpansUnicodeAndNFKC"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/frontend/spec_parser_test.go",
+        "test": "TestUnsupportedSyntaxRetainsExactSourceRanges"
+      },
+      {
+        "path": "internal/app/spec_diagnostics_test.go",
+        "test": "TestEntrypointRejectionPointsToConfigurationDeclaration"
+      },
+      {
+        "path": "internal/app/spec_diagnostics_test.go",
+        "test": "TestDiagnosticMetadataForVerificationAndConfigurationErrors"
+      },
+      {
+        "path": "internal/app/spec_diagnostics_test.go",
+        "test": "TestManifestRejectionPointsToManifestDeclaration"
+      },
+      {
+        "path": "internal/app/spec_diagnostics_test.go",
+        "test": "TestDiscoveryFailurePointsToSourceRootDeclaration"
+      },
+      {
+        "path": "internal/config/spec_source_test.go",
+        "test": "TestMalformedConfigurationAlwaysReturnsLocatedError"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Source diagnostics retain exact byte/Unicode ranges, including multiline unsupported syntax and TOML entrypoints. Config, manifest, and discovery errors locate declarations; malformed TOML cannot produce an out-of-bounds range. Unreadable files have an explicit zero-width fallback."
+  },
+  {
+    "section": "28.1",
+    "quote": "- concise explanation;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/app/spec_diagnostics_test.go",
+        "test": "TestDiagnosticMetadataForVerificationAndConfigurationErrors"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/app/spec_diagnostics_test.go",
+        "test": "TestDiagnosticMetadataForVerificationAndConfigurationErrors"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Tests require a nonempty explanation and exercise representative human-readable errors; concision itself remains an editorial judgment."
+  },
+  {
+    "section": "28.1",
+    "quote": "- relevant symbol and type information; and",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/app/spec_diagnostics_test.go",
+        "test": "TestDiagnosticMetadataForVerificationAndConfigurationErrors"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/app/spec_diagnostics_test.go",
+        "test": "TestEntrypointRejectionPointsToConfigurationDeclaration"
+      }
+    ],
+    "fixtures": [
+      "bool_is_not_int",
+      "wrong_capability"
+    ],
+    "notes": "Entrypoint symbols and representative exact-type/capability messages are exercised. Some linker and declaration diagnostics still rely on prose instead of complete structured symbol/type context."
+  },
+  {
+    "section": "28.1",
+    "quote": "- a deterministic explanation path when another declaration is involved.",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/diag/spec_diagnostics_test.go",
+        "test": "TestDiagnosticTextIncludesDeclarationPath"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/diag/spec_diagnostics_test.go",
+        "test": "TestDiagnosticSortHasCompleteDeterministicTieBreaker"
+      }
+    ],
+    "fixtures": [
+      "capability_missing",
+      "wrong_capability"
+    ],
+    "notes": "Capability errors carry parameter declaration locations, human output renders them, and ties include complete context. Other declaration-dependent errors do not yet all carry related-location chains."
+  },
+  {
+    "section": "30.2",
+    "quote": "Parser-specific nodes MUST be isolated behind a frontend adapter. Unsupported syntax MUST still retain an accurate source range for diagnostics.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/frontend/spec_parser_test.go",
+        "test": "TestParserDependenciesStayBehindFrontend"
+      },
+      {
+        "path": "internal/frontend/parser_test.go",
+        "test": "TestParallelParsingDeterministicAndDetached"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/frontend/spec_parser_test.go",
+        "test": "TestUnsupportedSyntaxRetainsExactSourceRanges"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Static import checks confine tree-sitter to the frontend; returned IR is detached from parser storage; unsupported syntax asserts exact Unicode and multiline ranges."
+  },
+  {
+    "section": "30.3",
+    "quote": "The whole-program checker MUST NOT depend directly on tree-sitter node identities.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/frontend/spec_parser_test.go",
+        "test": "TestParserDependenciesStayBehindFrontend"
+      },
+      {
+        "path": "internal/frontend/parser_test.go",
+        "test": "TestParallelParsingDeterministicAndDetached"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityMalformedCachedAwaitIsNotAccepted"
+      }
+    ],
+    "fixtures": [],
+    "notes": "The checker imports only detached model nodes; its malformed-IR regressions run without parser node identities. An import guard prevents direct frontend/tree-sitter coupling."
+  },
+  {
+    "section": "31.3",
+    "quote": "Concurrent work products MUST be merged in stable order. Output MUST NOT depend on goroutine scheduling or Go map iteration.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/app/cli_test.go",
+        "test": "TestCacheColdWarmDisabledAndWorkersAreEquivalent"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/app/spec_diagnostics_test.go",
+        "test": "TestRejectedReportsAreEquivalentAcrossCacheAndWorkers"
+      },
+      {
+        "path": "internal/diag/spec_diagnostics_test.go",
+        "test": "TestDiagnosticSortHasCompleteDeterministicTieBreaker"
+      },
+      {
+        "path": "internal/app/spec_diagnostics_test.go",
+        "test": "TestDiagnosticOrderUsesModuleNames"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Accepted and rejected reports are byte-equal across worker counts and cache modes. Regressions cover equal-message context ties and package/module ordering; finite schedules are evidence, not a formal concurrency proof."
+  },
+  {
+    "section": "31.6",
+    "quote": "Cached and uncached runs MUST produce byte-for-byte equivalent machine-readable results.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/app/cli_test.go",
+        "test": "TestCacheColdWarmDisabledAndWorkersAreEquivalent"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/app/spec_diagnostics_test.go",
+        "test": "TestRejectedReportsAreEquivalentAcrossCacheAndWorkers"
+      },
+      {
+        "path": "internal/app/cli_test.go",
+        "test": "TestDependencySignatureChangeRelinksCachedCaller"
+      }
+    ],
+    "fixtures": [],
+    "notes": "JSON equivalence is checked for accepted projects plus parser, linker, local-call, and changed-signature rejections; text rejection output is also compared."
+  },
+  {
+    "section": "31.6",
+    "quote": "Cache corruption or schema mismatch MUST fall back safely to reanalysis.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/cache/cache_test.go",
+        "test": "TestRoundTripAndMalformedArtifactsAreMisses"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/cache/cache_test.go",
+        "test": "TestRoundTripAndMalformedArtifactsAreMisses"
+      },
+      {
+        "path": "internal/app/spec_diagnostics_test.go",
+        "test": "TestSchemaMismatchReanalyzesRejectedProject"
+      },
+      {
+        "path": "internal/app/cli_test.go",
+        "test": "TestTruncatedCacheRegeneratesEquivalentReport"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Valid artifacts round-trip; truncation, malformed payloads, checksums, and schema mismatch become misses. Integration tests reanalyze both accepted and rejected programs without changing their reports."
+  },
+  {
+    "section": "31.7",
+    "quote": "Performance optimizations MUST NOT cause unknown operations to be accepted, skip validation, or make results schedule-dependent.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/app/cli_test.go",
+        "test": "TestCacheColdWarmDisabledAndWorkersAreEquivalent"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/app/spec_diagnostics_test.go",
+        "test": "TestRejectedReportsAreEquivalentAcrossCacheAndWorkers"
+      },
+      {
+        "path": "internal/app/cli_test.go",
+        "test": "TestDependencySignatureChangeRelinksCachedCaller"
+      },
+      {
+        "path": "internal/app/cli_test.go",
+        "test": "TestManifestContentChangeInvalidatesAllModules"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Warm summaries never cache authorization decisions: unknown-call and changed dependency/manifest regressions require fresh rejection. Cache and workers cannot suppress those tested validations."
+  },
+  {
+    "section": "32.1",
+    "quote": "A conforming PurePy 0.1 verifier MUST:",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/app/conformance_test.go",
+        "test": "TestReferenceServiceConforms"
+      },
+      {
+        "path": "internal/app/cli_test.go",
+        "test": "TestCacheColdWarmDisabledAndWorkersAreEquivalent"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/app/spec_diagnostics_test.go",
+        "test": "TestRejectedReportsAreEquivalentAcrossCacheAndWorkers"
+      }
+    ],
+    "fixtures": [],
+    "notes": "The required fixture runner and representative safety/determinism tests run, but experimental status remains: full closed-language compliance and independent soundness evidence are not established."
+  },
+  {
+    "section": "32.1",
+    "quote": "- accept every valid required conformance fixture;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/app/conformance_test.go",
+        "test": "TestConformance"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/app/conformance_test.go",
+        "test": "TestConformance"
+      }
+    ],
+    "fixtures": [
+      "arithmetic",
+      "records",
+      "capability_host_call",
+      "pure_async"
+    ],
+    "notes": "The conformance runner checks every fixture validity bit and required diagnostic code; it includes both accepted and rejected images. This row covers the checked-in required set, not every possible program."
+  },
+  {
+    "section": "32.1",
+    "quote": "- reject every invalid required conformance fixture;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/app/conformance_test.go",
+        "test": "TestConformance"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/app/conformance_test.go",
+        "test": "TestConformance"
+      }
+    ],
+    "fixtures": [
+      "unknown_call",
+      "stored_coroutine",
+      "capability_missing",
+      "exception_handling"
+    ],
+    "notes": "Every invalid fixture must fail verification and emit its required diagnostic families; positive fixtures guard against rejecting everything."
+  },
+  {
+    "section": "32.1",
+    "quote": "- implement the closed syntax and semantic rules in this document;",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/frontend/parser_test.go",
+        "test": "TestControlFlowAndExpressions"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/frontend/parser_test.go",
+        "test": "TestUnsupportedSyntaxIsNeverDropped"
+      }
+    ],
+    "fixtures": [],
+    "notes": "The audit maps mandatory rules and feature families, but named Unicode escapes remain a documented primitive-literal gap, and finite fixtures do not exhaust the closed Python subset."
+  },
+  {
+    "section": "32.1",
+    "quote": "- never execute analyzed project code;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/app/cli_test.go",
+        "test": "TestVerificationNeverExecutesProjectOrHost"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/app/cli_test.go",
+        "test": "TestVerificationNeverExecutesProjectOrHost"
+      }
+    ],
+    "fixtures": [],
+    "notes": "A valid manifest-backed project and rejected executable module both leave execution sentinels untouched; host implementations are excluded from verification and never imported."
+  },
+  {
+    "section": "32.1",
+    "quote": "- reject unknown behavior;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/app/cli_test.go",
+        "test": "TestCacheColdWarmDisabledAndWorkersAreEquivalent"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/app/spec_diagnostics_test.go",
+        "test": "TestRejectedReportsAreEquivalentAcrossCacheAndWorkers"
+      }
+    ],
+    "fixtures": [
+      "unknown_call",
+      "unknown_external",
+      "method_call"
+    ],
+    "notes": "Unknown external symbols and dynamic/unknown calls reject, including across warm cache and bounded worker modes."
+  },
+  {
+    "section": "32.1",
+    "quote": "- produce deterministic machine-readable results; and",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/app/cli_test.go",
+        "test": "TestCacheColdWarmDisabledAndWorkersAreEquivalent"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/app/spec_diagnostics_test.go",
+        "test": "TestRejectedReportsAreEquivalentAcrossCacheAndWorkers"
+      },
+      {
+        "path": "internal/diag/spec_diagnostics_test.go",
+        "test": "TestDiagnosticSortHasCompleteDeterministicTieBreaker"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Accepted and rejected machine reports are compared byte for byte, including diagnostic tie-breaker context."
+  },
+  {
+    "section": "32.1",
+    "quote": "- identify its supported specification and language versions.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/app/cli_test.go",
+        "test": "TestCLIVersionAndHelp"
+      },
+      {
+        "path": "internal/app/spec_diagnostics_test.go",
+        "test": "TestReportsIdentifySpecificationAndLanguageVersions"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/config/config_test.go",
+        "test": "TestLoadRejectsInvalidConfiguration"
+      },
+      {
+        "path": "internal/app/spec_diagnostics_test.go",
+        "test": "TestReportsIdentifySpecificationAndLanguageVersions"
+      }
+    ],
+    "fixtures": [],
+    "notes": "CLI version and accepted/rejected JSON reports identify target specification 0.3-draft, language 0.1, and Python syntax 3.14. Invalid configuration versions reject; identifying the target does not assert complete conformance."
+  },
+  {
+    "section": "32.4",
+    "quote": "The conformance suite MUST include positive and negative fixtures for:",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/app/conformance_test.go",
+        "test": "TestConformance"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/frontend/parser_test.go",
+        "test": "TestUnsupportedSyntaxIsNeverDropped"
+      }
+    ],
+    "fixtures": [],
+    "notes": "The suite has positive and negative cases across required feature families; an exhaustive enumeration of statement/operator/type combinations remains open."
+  },
+  {
+    "section": "32.4",
+    "quote": "- every supported statement and expression;",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/frontend/parser_test.go",
+        "test": "TestControlFlowAndExpressions"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/frontend/parser_test.go",
+        "test": "TestUnsupportedSyntaxIsNeverDropped"
+      }
+    ],
+    "fixtures": [
+      "continue_and_break",
+      "while_loop",
+      "slicing",
+      "fstrings",
+      "unassigned_branch",
+      "discarded_result"
+    ],
+    "notes": "Fixtures span the supported statement/expression families, but all operator/type combinations and Python literal spellings are not yet exhaustive."
+  },
+  {
+    "section": "32.4",
+    "quote": "- every prohibited syntax family;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/frontend/parser_test.go",
+        "test": "TestControlFlowAndExpressions"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/frontend/parser_test.go",
+        "test": "TestUnsupportedSyntaxIsNeverDropped"
+      }
+    ],
+    "fixtures": [],
+    "notes": "The parser table rejects each listed prohibited syntax family, including exception handling, mutation, comprehensions, dynamic forms, and unsupported async; a supported control-flow sample guards the positive boundary."
+  },
+  {
+    "section": "32.4",
+    "quote": "- module and import rules;",
+    "status": "tested",
+    "positive": [],
+    "negative": [],
+    "fixtures": [
+      "import_constant",
+      "plain_import",
+      "unknown_external",
+      "import_cycle",
+      "import_reexport"
+    ],
+    "notes": "Named accepted and rejected integration fixtures exercise this conformance family; the more specific rule rows describe its individual limits."
+  },
+  {
+    "section": "32.4",
+    "quote": "- value records;",
+    "status": "tested",
+    "positive": [],
+    "negative": [],
+    "fixtures": [
+      "records",
+      "record_equality",
+      "record_method",
+      "record_default",
+      "recursive_record"
+    ],
+    "notes": "Named accepted and rejected integration fixtures exercise this conformance family; the more specific rule rows describe its individual limits."
+  },
+  {
+    "section": "32.4",
+    "quote": "- exact type matching;",
+    "status": "tested",
+    "positive": [],
+    "negative": [],
+    "fixtures": [
+      "arithmetic",
+      "numeric_comparison",
+      "bool_is_not_int",
+      "mixed_arithmetic"
+    ],
+    "notes": "Named accepted and rejected integration fixtures exercise this conformance family; the more specific rule rows describe its individual limits."
+  },
+  {
+    "section": "32.4",
+    "quote": "- optional narrowing;",
+    "status": "tested",
+    "positive": [],
+    "negative": [],
+    "fixtures": [
+      "narrowing",
+      "short_circuit_narrowing",
+      "truthiness",
+      "identity_non_none"
+    ],
+    "notes": "Named accepted and rejected integration fixtures exercise this conformance family; the more specific rule rows describe its individual limits."
+  },
+  {
+    "section": "32.4",
+    "quote": "- capability forwarding;",
+    "status": "tested",
+    "positive": [],
+    "negative": [],
+    "fixtures": [
+      "capability_host_call",
+      "capability_alias",
+      "capability_missing",
+      "wrong_capability"
+    ],
+    "notes": "Named accepted and rejected integration fixtures exercise this conformance family; the more specific rule rows describe its individual limits."
+  },
+  {
+    "section": "32.4",
+    "quote": "- host-reference restrictions;",
+    "status": "tested",
+    "positive": [],
+    "negative": [],
+    "fixtures": [
+      "capability_host_call",
+      "reference_alias"
+    ],
+    "notes": "Named accepted and rejected integration fixtures exercise this conformance family; the more specific rule rows describe its individual limits."
+  },
+  {
+    "section": "32.4",
+    "quote": "- direct async usage;",
+    "status": "tested",
+    "positive": [],
+    "negative": [],
+    "fixtures": [
+      "pure_async",
+      "async_none_statement",
+      "stored_coroutine",
+      "await_sync",
+      "sync_await",
+      "await_variable"
+    ],
+    "notes": "Named accepted and rejected integration fixtures exercise this conformance family; the more specific rule rows describe its individual limits."
+  },
+  {
+    "section": "32.4",
+    "quote": "- pure and effectful call boundaries;",
+    "status": "tested",
+    "positive": [],
+    "negative": [],
+    "fixtures": [
+      "recursive_calls",
+      "capability_host_call",
+      "host_authority_required",
+      "pure_manifest_cannot_require_capability"
+    ],
+    "notes": "Named accepted and rejected integration fixtures exercise this conformance family; the more specific rule rows describe its individual limits."
+  },
+  {
+    "section": "32.4",
+    "quote": "- manifest validation; and",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/app/conformance_test.go",
+        "test": "TestConformance"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/frontend/parser_test.go",
+        "test": "TestUnsupportedSyntaxIsNeverDropped"
+      }
+    ],
+    "fixtures": [],
+    "notes": "The suite has positive and negative cases across required feature families; an exhaustive enumeration of statement/operator/type combinations remains open."
+  },
+  {
+    "section": "32.4",
+    "quote": "- deterministic diagnostics.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/app/cli_test.go",
+        "test": "TestCacheColdWarmDisabledAndWorkersAreEquivalent"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/app/spec_diagnostics_test.go",
+        "test": "TestRejectedReportsAreEquivalentAcrossCacheAndWorkers"
+      },
+      {
+        "path": "internal/diag/spec_diagnostics_test.go",
+        "test": "TestDiagnosticSortHasCompleteDeterministicTieBreaker"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Accepted and rejected project fixtures compare cold/warm/no-cache reports and worker counts; diagnostic context ties have a focused regression."
+  },
+  {
+    "section": "32.5",
+    "quote": "Before PurePy 0.1 is considered complete, a reference workload MUST demonstrate:",
+    "status": "release",
+    "positive": [
+      {
+        "path": "internal/app/conformance_test.go",
+        "test": "TestReferenceServiceConforms"
+      },
+      {
+        "path": "examples/reference_service/tests/test_service.py",
+        "test": "test_reads_overlap_across_host_invocations"
+      },
+      {
+        "path": "examples/reference_service/tests/test_service.py",
+        "test": "test_atomic_updates_under_concurrency"
+      }
+    ],
+    "negative": [
+      {
+        "path": "examples/reference_service/tests/test_service.py",
+        "test": "test_update_rolls_back_if_event_insert_fails"
+      }
+    ],
+    "fixtures": [],
+    "notes": "The reference service demonstrates the required behavior and has a documented sample load run. Release still needs agreed performance budgets and representative load evidence."
+  },
+  {
+    "section": "32.5",
+    "quote": "- host-managed concurrent entrypoint invocation;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "examples/reference_service/tests/test_service.py",
+        "test": "test_reads_overlap_across_host_invocations"
+      }
+    ],
+    "negative": [
+      {
+        "path": "examples/reference_service/tests/test_service.py",
+        "test": "test_cancelled_write_finishes_before_database_closes"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Socket requests overlap in separate host invocations; cancellation waits for a started database mutation before releasing host resources."
+  },
+  {
+    "section": "32.5",
+    "quote": "- an async verified handler;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/app/conformance_test.go",
+        "test": "TestReferenceServiceConforms"
+      },
+      {
+        "path": "examples/reference_service/tests/test_service.py",
+        "test": "test_health_lookup_and_errors"
+      }
+    ],
+    "negative": [
+      {
+        "path": "examples/reference_service/tests/test_service.py",
+        "test": "test_expected_database_failure_is_a_value"
+      }
+    ],
+    "fixtures": [
+      "sync_await",
+      "stored_coroutine"
+    ],
+    "notes": "The service verifies its async entrypoint and handles success plus expected database failure as values; invalid async forms have verifier fixtures."
+  },
+  {
+    "section": "32.5",
+    "quote": "- immutable HTTP-like request parsing;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "examples/reference_service/tests/test_service.py",
+        "test": "test_parse_and_routes"
+      },
+      {
+        "path": "python/tests/test_value.py",
+        "test": "test_frozen_slots"
+      }
+    ],
+    "negative": [
+      {
+        "path": "examples/reference_service/tests/test_service.py",
+        "test": "test_malformed_requests_are_values"
+      }
+    ],
+    "fixtures": [],
+    "notes": "The service parses immutable bytes into verified value records, routes well-formed requests, and represents malformed requests as values; runtime mutation tests enforce record immutability."
+  },
+  {
+    "section": "32.5",
+    "quote": "- static routing;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "examples/reference_service/tests/test_service.py",
+        "test": "test_parse_and_routes"
+      }
+    ],
+    "negative": [
+      {
+        "path": "examples/reference_service/tests/test_service.py",
+        "test": "test_parse_and_routes"
+      },
+      {
+        "path": "examples/reference_service/tests/test_service.py",
+        "test": "test_health_lookup_and_errors"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Concrete health/read/write/SSE paths route statically; unknown and malformed paths produce expected 404/400 values."
+  },
+  {
+    "section": "32.5",
+    "quote": "- one database read;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "examples/reference_service/tests/test_service.py",
+        "test": "test_health_lookup_and_errors"
+      }
+    ],
+    "negative": [
+      {
+        "path": "examples/reference_service/tests/test_service.py",
+        "test": "test_expected_database_failure_is_a_value"
+      }
+    ],
+    "fixtures": [],
+    "notes": "A socket request retrieves Ada through the capability-authorized read; unavailable storage returns an application failure value."
+  },
+  {
+    "section": "32.5",
+    "quote": "- one atomic database write or transaction-plan call;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "examples/reference_service/tests/test_service.py",
+        "test": "test_atomic_updates_under_concurrency"
+      }
+    ],
+    "negative": [
+      {
+        "path": "examples/reference_service/tests/test_service.py",
+        "test": "test_update_rolls_back_if_event_insert_fails"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Concurrent increments preserve every update and event; an injected event-write failure rolls back the balance mutation."
+  },
+  {
+    "section": "32.5",
+    "quote": "- an SSE-style send loop;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "examples/reference_service/tests/test_service.py",
+        "test": "test_sse_repeated_events_and_host_cancellation"
+      }
+    ],
+    "negative": [
+      {
+        "path": "examples/reference_service/tests/test_service.py",
+        "test": "test_sse_repeated_events_and_host_cancellation"
+      }
+    ],
+    "fixtures": [],
+    "notes": "The socket test receives repeated balance events and verifies host cancellation empties tasks and closes the stream."
+  },
+  {
+    "section": "32.5",
+    "quote": "- pure domain and rendering functions; and",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/app/conformance_test.go",
+        "test": "TestReferenceServiceConforms"
+      },
+      {
+        "path": "examples/reference_service/tests/test_service.py",
+        "test": "test_health_lookup_and_errors"
+      }
+    ],
+    "negative": [
+      {
+        "path": "examples/reference_service/tests/test_service.py",
+        "test": "test_parse_and_routes"
+      }
+    ],
+    "fixtures": [],
+    "notes": "The verifier accepts domain/render modules without authority parameters; socket responses and invalid routes exercise their value outputs."
+  },
+  {
+    "section": "32.5",
+    "quote": "- acceptable verifier and runtime performance under a documented load test.",
+    "status": "release",
+    "positive": [
+      {
+        "path": "examples/reference_service/tests/test_service.py",
+        "test": "test_reads_overlap_across_host_invocations"
+      }
+    ],
+    "negative": [],
+    "fixtures": [],
+    "notes": "docs/PERFORMANCE.md and loadtest/sample.json record the harness and a local sample; acceptable release-scale verifier/runtime budgets and sustained representative measurements are not established."
+  },
+  {
+    "section": "29.1",
+    "quote": "Checks the configured project and emits deterministic human-readable diagnostics.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/app/cli_test.go",
+        "test": "TestCacheColdWarmDisabledAndWorkersAreEquivalent"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/app/spec_diagnostics_test.go",
+        "test": "TestRejectedReportsAreEquivalentAcrossCacheAndWorkers"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Text and JSON rejection output are compared across worker counts and cache modes."
+  },
+  {
+    "section": "29.2",
+    "quote": "Explains the resolved symbol, type, category, capability requirement, or rejection at a source location.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/app/cli_test.go",
+        "test": "TestCLIReportsAndExplain"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/app/spec_diagnostics_test.go",
+        "test": "TestEntrypointRejectionPointsToConfigurationDeclaration"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Successful call locations explain their resolved host target; a missing entrypoint explains its TOML declaration rejection."
+  },
+  {
+    "section": "29.3",
+    "quote": "Reports configured entrypoints or a selected function with:",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/app/cli_test.go",
+        "test": "TestCLIReportsAndExplain"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/app/cli_test.go",
+        "test": "TestCLIUsageAndConfigurationFailures"
+      }
+    ],
+    "fixtures": [],
+    "notes": "The report includes capability labels, host references, and directly called trusted operations; unknown selected functions reject."
+  },
+  {
+    "section": "29.4",
+    "quote": "Removes verifier analysis artifacts.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/app/cli_test.go",
+        "test": "TestCLICacheCleanRejectsSymlink"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/cache/cache_test.go",
+        "test": "TestCleanOwnsOnlyRegularArtifacts"
+      },
+      {
+        "path": "internal/cache/cache_test.go",
+        "test": "TestSymlinkAndInvalidKeySafety"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Cleanup removes owned cache artifacts while preserving unrelated files, directories, and symlink targets."
+  },
+  {
+    "section": "30.10",
+    "quote": "Diagnostics and summaries are sorted by stable module name, source position, code, and deterministic tie-breaker.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/app/cli_test.go",
+        "test": "TestCacheColdWarmDisabledAndWorkersAreEquivalent"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/app/spec_diagnostics_test.go",
+        "test": "TestDiagnosticOrderUsesModuleNames"
+      },
+      {
+        "path": "internal/diag/spec_diagnostics_test.go",
+        "test": "TestDiagnosticSortHasCompleteDeterministicTieBreaker"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Package diagnostics sort before child modules, and equal-message diagnostics compare their complete stable context."
+  }
+]

@@ -40,7 +40,7 @@ func Run(args []string, out, errOut io.Writer) (status int) {
 		return 0
 	}
 	if args[0] == "version" || args[0] == "--version" {
-		fmt.Fprintf(out, "purepy %s (language 0.1, Python syntax 3.14)\n", Version)
+		fmt.Fprintf(out, "purepy %s (specification %s, language %s, Python syntax %s)\n", Version, SpecificationVersion, LanguageVersion, PythonSyntaxVersion)
 		return 0
 	}
 	command := args[0]
@@ -185,6 +185,9 @@ func Run(args []string, out, errOut io.Writer) (status int) {
 			}
 			for _, typ := range a.TrustedTypes {
 				fmt.Fprintf(out, "  trusted %s type %s (%s)\n", typ.Category, typ.Name, typ.Source)
+			}
+			for _, module := range a.TrustedModules {
+				fmt.Fprintf(out, "  trusted module %s import_safe=%t (%s)\n", module.Name, module.ImportSafe, module.Source)
 			}
 			for _, name := range a.UnusedCapabilities {
 				fmt.Fprintf(out, "  unused capability %s\n", name)

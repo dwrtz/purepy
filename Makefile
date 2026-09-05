@@ -4,7 +4,7 @@ PYTHON_VERSION ?= 3.14
 VENV := $(CURDIR)/.venv
 PYTHON := $(VENV)/bin/python
 
-.PHONY: setup build test race python-test service-test syntax-test example serve loadtest benchmark package clean
+.PHONY: setup build test race python-test service-test syntax-test coverage-test example serve loadtest benchmark package clean
 setup:
 	UV_PROJECT_ENVIRONMENT="$(VENV)" $(UV) sync --locked --project python --python $(PYTHON_VERSION)
 build:
@@ -19,6 +19,9 @@ service-test: setup
 	cd examples/reference_service && PYTHONPATH=src $(PYTHON) -m unittest discover -s tests -v
 syntax-test: setup
 	$(PYTHON) tools/differential_syntax.py
+coverage-test: setup
+	$(PYTHON) -m unittest discover -s tools/tests -p 'test_spec_coverage.py' -v
+	$(PYTHON) tools/spec_coverage.py --check
 example:
 	go run ./cmd/purepy check examples/reference_service
 serve: setup

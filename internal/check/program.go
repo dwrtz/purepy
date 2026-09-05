@@ -32,17 +32,18 @@ type Symbol struct {
 	Source   string
 }
 type Program struct {
-	Modules         map[string]*Module
-	Order           []string
-	Symbols         map[string]*Symbol
-	Functions       map[string]*model.Function
-	Records         map[string]*model.Record
-	Diagnostics     []diag.Diagnostic
-	ExternalModules map[string]bool
+	Modules                    map[string]*Module
+	Order                      []string
+	Symbols                    map[string]*Symbol
+	Functions                  map[string]*model.Function
+	Records                    map[string]*model.Record
+	Diagnostics                []diag.Diagnostic
+	ExternalModules            map[string]bool
+	ExternalModuleDeclarations map[string]manifest.Module
 }
 
 func Link(modules []*Module, external *manifest.Set, entrypoints []string) *Program {
-	p := &Program{Modules: map[string]*Module{}, Symbols: map[string]*Symbol{}, Functions: map[string]*model.Function{}, Records: map[string]*model.Record{}, ExternalModules: map[string]bool{}, Diagnostics: []diag.Diagnostic{}}
+	p := &Program{Modules: map[string]*Module{}, Symbols: map[string]*Symbol{}, Functions: map[string]*model.Function{}, Records: map[string]*model.Record{}, ExternalModules: map[string]bool{}, ExternalModuleDeclarations: map[string]manifest.Module{}, Diagnostics: []diag.Diagnostic{}}
 	for _, m := range modules {
 		m.Bindings = map[string]*Symbol{}
 		m.ImportedAt = map[string]model.Span{}
@@ -58,6 +59,7 @@ func Link(modules []*Module, external *manifest.Set, entrypoints []string) *Prog
 			p.error("PP601", "manifests cannot replace sealed support packages: "+m.Name, model.Span{File: m.Source, Line: 1, Column: 1})
 		}
 		p.ExternalModules[m.Name] = m.ImportSafe
+		p.ExternalModuleDeclarations[m.Name] = m
 		if _, ok := p.Modules[m.Name]; ok {
 			p.error("PP601", "manifest module conflicts with verified module "+m.Name, model.Span{File: m.Source, Line: 1, Column: 1})
 		}
@@ -131,12 +133,14 @@ func Link(modules []*Module, external *manifest.Set, entrypoints []string) *Prog
 	for _, name := range entrypoints {
 		if seen[name] {
 			p.error("PP701", "duplicate entrypoint "+name, model.Span{})
+			p.Diagnostics[len(p.Diagnostics)-1].Symbol = name
 			continue
 		}
 		seen[name] = true
 		f := p.Functions[name]
 		if f == nil || f.Origin != "project" {
 			p.error("PP701", "entrypoint must name a verified top-level function: "+name, model.Span{})
+			p.Diagnostics[len(p.Diagnostics)-1].Symbol = name
 		}
 	}
 	return p

@@ -3,6 +3,7 @@ package app
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -21,6 +22,9 @@ import (
 )
 
 const Version = "0.1.0-dev"
+const SpecificationVersion = "0.3-draft"
+const LanguageVersion = "0.1"
+const PythonSyntaxVersion = "3.14"
 const JSONSchema = 1
 
 type Options struct {
@@ -29,19 +33,21 @@ type Options struct {
 	NoCache      bool
 }
 type Report struct {
-	Schema      int                `json:"schema"`
-	Version     string             `json:"verifier_version"`
-	Language    string             `json:"language"`
-	OK          bool               `json:"ok"`
-	Files       int                `json:"files"`
-	Diagnostics []diag.Diagnostic  `json:"diagnostics"`
-	Functions   []FunctionReport   `json:"functions"`
-	Program     *check.Program     `json:"-"`
-	Config      *config.Config     `json:"-"`
-	Calls       []model.CallEdge   `json:"-"`
-	Facts       []model.Fact       `json:"-"`
-	Timings     map[string]float64 `json:"-"`
-	CacheHits   int                `json:"-"`
+	Schema        int                `json:"schema"`
+	Version       string             `json:"verifier_version"`
+	Specification string             `json:"specification_version"`
+	Language      string             `json:"language"`
+	PythonSyntax  string             `json:"python_syntax"`
+	OK            bool               `json:"ok"`
+	Files         int                `json:"files"`
+	Diagnostics   []diag.Diagnostic  `json:"diagnostics"`
+	Functions     []FunctionReport   `json:"functions"`
+	Program       *check.Program     `json:"-"`
+	Config        *config.Config     `json:"-"`
+	Calls         []model.CallEdge   `json:"-"`
+	Facts         []model.Fact       `json:"-"`
+	Timings       map[string]float64 `json:"-"`
+	CacheHits     int                `json:"-"`
 }
 type FunctionReport struct {
 	Name           string            `json:"name"`
@@ -52,7 +58,7 @@ type FunctionReport struct {
 }
 
 func Check(opts Options) *Report {
-	r := &Report{Schema: JSONSchema, Version: Version, Language: "0.1", Diagnostics: []diag.Diagnostic{}, Functions: []FunctionReport{}, Calls: []model.CallEdge{}, Facts: []model.Fact{}, Timings: map[string]float64{}}
+	r := &Report{Schema: JSONSchema, Version: Version, Specification: SpecificationVersion, Language: LanguageVersion, PythonSyntax: PythonSyntaxVersion, Diagnostics: []diag.Diagnostic{}, Functions: []FunctionReport{}, Calls: []model.CallEdge{}, Facts: []model.Fact{}, Timings: map[string]float64{}}
 	mark := time.Now()
 	stamp := func(stage string) { r.Timings[stage] = time.Since(mark).Seconds(); mark = time.Now() }
 	path := opts.Path
@@ -65,21 +71,35 @@ func Check(opts Options) *Report {
 	cfg, err := config.Load(path)
 	stamp("configuration")
 	if err != nil {
-		r.failure("PP001", err.Error(), path)
+		var located *config.Error
+		if errors.As(err, &located) {
+			r.Diagnostics = append(r.Diagnostics, diag.New("PP001", err.Error(), located.Span))
+		} else {
+			r.failure("PP001", err.Error(), path)
+		}
 		return r
 	}
 	r.Config = cfg
 	files, err := discovery.Discover(cfg.SourceRoot)
 	stamp("discovery")
 	if err != nil {
-		r.failure("PP101", err.Error(), cfg.SourceRoot)
+		r.Diagnostics = append(r.Diagnostics, diag.New("PP101", err.Error(), cfg.FieldSpans["source_root"]))
 		return r
 	}
 	r.Files = len(files)
+	moduleNames := make(map[string]string, len(files))
+	for _, f := range files {
+		moduleNames[f.Path] = f.Module
+	}
 	ext, err := manifest.Load(cfg.Manifests)
 	stamp("manifests")
 	if err != nil {
-		r.failure("PP601", err.Error(), cfg.Path)
+		var located *manifest.Error
+		if errors.As(err, &located) {
+			r.Diagnostics = append(r.Diagnostics, diag.New("PP601", err.Error(), located.Span))
+		} else {
+			r.failure("PP601", err.Error(), cfg.Path)
+		}
 		return r
 	}
 	semantic, _ := json.Marshal(struct {
@@ -162,10 +182,16 @@ func Check(opts Options) *Report {
 		modules = append(modules, &check.Module{Name: f.Module, Path: f.Path, Package: f.IsPackage, Tree: item.tree})
 	}
 	if len(r.Diagnostics) > 0 {
-		diag.Sort(r.Diagnostics)
+		diag.SortModules(r.Diagnostics, moduleNames)
 		return r
 	}
 	p := check.Link(modules, ext, cfg.Entrypoints)
+	for i := range p.Diagnostics {
+		d := &p.Diagnostics[i]
+		if d.Code == "PP701" && d.Span.File == "" {
+			d.Span = cfg.EntrypointSpans[d.Symbol]
+		}
+	}
 	r.Program = p
 	stamp("link")
 	checkJobs := opts.Jobs
@@ -183,7 +209,7 @@ func Check(opts Options) *Report {
 		}
 	}
 	sort.Slice(r.Functions, func(i, j int) bool { return r.Functions[i].Name < r.Functions[j].Name })
-	diag.Sort(r.Diagnostics)
+	diag.SortModules(r.Diagnostics, moduleNames)
 	r.OK = len(r.Diagnostics) == 0
 	return r
 }

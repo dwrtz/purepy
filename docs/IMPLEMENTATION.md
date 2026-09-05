@@ -72,6 +72,19 @@ and deferred/external annotations. Service tests cover parallel reads, concurren
 atomic writes, rollback, parsing, SSE events, cancellation, and host cleanup.
 Fuzz targets exercise parsing, manifest type syntax, and other data boundaries.
 
+The [specification-to-test audit](CONFORMANCE.md) maps mandatory keyword-bearing
+rules and their attached list items, plus additional prose restrictions, to named
+positive and negative tests. `make coverage-test` checks source quotes, evidence
+references, missing rules, and the generated report in CI. The map distinguishes
+focused coverage from partial evidence, host trust contracts, and open release
+gates; its counts are not a correctness percentage.
+
+The audit added focused declaration, expression, control-flow, boundary, and
+tooling regressions. It also fixed function-wide local types being forgotten after
+a returning branch, missing import-safety module provenance in trust reports,
+incomplete configuration and manifest error locations, diagnostic tie ordering,
+and missing specification/syntax version metadata.
+
 ## Release gates and trust limits
 
 This is an experimental implementation, not a declaration that every PurePy 0.1

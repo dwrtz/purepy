@@ -320,6 +320,12 @@ func (c *checker) join(a, b map[string]variable, aliveA, aliveB bool, at model.S
 			continue
 		}
 		if !aliveA && aliveB {
+			// Declared local types are function-wide even when the assignment
+			// occurred on a branch that returned. Only assignment/refinement
+			// facts come from the surviving path.
+			if y.Type.Kind == "invalid" || y.Type.Kind == "" {
+				y.Type = x.Type
+			}
 			out[name] = y
 			continue
 		}

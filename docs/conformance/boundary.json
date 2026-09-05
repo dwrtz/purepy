@@ -1,0 +1,832 @@
+[
+  {
+    "section": "17.7",
+    "quote": "For each function, the verifier MUST report the set of capability labels present in its signature.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/app/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityAndEntrypointReports"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/app/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityAndEntrypointReports"
+      },
+      {
+        "path": "internal/app/spec_boundary_test.go",
+        "test": "TestBoundaryReportsRejectUnknownOrExternalFunction"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Every verified helper is queried, including functions outside the entrypoint list. Tests compare the union of per-parameter labels with the signature and assert no spurious labels for pure functions; unused authority remains visible. The report exposes the set through exact parameter labels rather than a separate flattened field."
+  },
+  {
+    "section": "19.2",
+    "quote": "An `await` expression MUST directly contain a call to a statically known async function:",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAsyncCalls/async_awaits_async"
+      },
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAsyncCalls/await_none_statement"
+      },
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAsyncCalls/nested_direct_await"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAsyncCalls"
+      },
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityMalformedCachedAwaitIsNotAccepted"
+      }
+    ],
+    "fixtures": [
+      "pure_async",
+      "async_none_statement",
+      "stored_coroutine",
+      "await_sync",
+      "sync_await"
+    ],
+    "notes": "Matrix covers local and trusted sync/async calls, direct nested awaits, ordinary async loops, and coroutine assignment/return/arguments/tuples/comparison/conditional selection/discard. Malformed cached await nodes are rejected."
+  },
+  {
+    "section": "21.1",
+    "quote": "Expected application failures MUST be represented as Pure Values.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryExpectedFailuresAreValues/explicit_result"
+      },
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryExpectedFailuresAreValues/primitive_failure_allowed"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryExpectedFailuresAreValues/raise_failure"
+      },
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryExpectedFailuresAreValues/catch_failure"
+      },
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryExpectedFailuresAreValues/exception_as_result"
+      }
+    ],
+    "fixtures": [
+      "exception_handling"
+    ],
+    "notes": "An immutable result record represents expected application failures; explicit exception creation/raising/catching is rejected. Deterministic primitive failures remain permitted. This does not infer which host failures are expected."
+  },
+  {
+    "section": "22.4",
+    "quote": "A function declaration MUST provide:",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/manifest/manifest_test.go",
+        "test": "TestLoadManifest"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/manifest/spec_boundary_test.go",
+        "test": "TestBoundaryRequiredFunctionFields"
+      },
+      {
+        "path": "internal/manifest/manifest_test.go",
+        "test": "TestManifestRequiresExplicitEmptyParameters"
+      },
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryExternalContracts"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Loader tests validate every required signature field and preserve parameter order; linker tests resolve exact types/categories and reject authority-bearing returns. Host behavior is not executed or proven."
+  },
+  {
+    "section": "22.4",
+    "quote": "- one exact qualified name;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/manifest/manifest_test.go",
+        "test": "TestLoadManifest"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/manifest/spec_boundary_test.go",
+        "test": "TestBoundaryRequiredFunctionFields/name"
+      },
+      {
+        "path": "internal/manifest/manifest_test.go",
+        "test": "TestRejectInvalidManifest/function identifier"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Loader requires a canonical qualified function name and retains it exactly."
+  },
+  {
+    "section": "22.4",
+    "quote": "- sync or async kind;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAsyncCalls"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/manifest/spec_boundary_test.go",
+        "test": "TestBoundaryRequiredFunctionFields/kind"
+      },
+      {
+        "path": "internal/manifest/manifest_test.go",
+        "test": "TestRejectInvalidManifest/kind"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Both declared kinds are exercised; missing and unsupported kinds are rejected."
+  },
+  {
+    "section": "22.4",
+    "quote": "- a fixed ordered parameter list;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/manifest/manifest_test.go",
+        "test": "TestLoadManifest"
+      },
+      {
+        "path": "internal/manifest/manifest_test.go",
+        "test": "TestManifestRequiresExplicitEmptyParameters"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/manifest/manifest_test.go",
+        "test": "TestManifestRequiresExplicitEmptyParameters"
+      },
+      {
+        "path": "internal/manifest/manifest_test.go",
+        "test": "TestRejectInvalidManifest/duplicate parameter"
+      },
+      {
+        "path": "internal/manifest/manifest_test.go",
+        "test": "TestRejectInvalidManifest/unknown parameter field"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Ordered named parameters and explicitly empty lists survive loading. Missing parameters, duplicate names, and default/unknown metadata are rejected."
+  },
+  {
+    "section": "22.4",
+    "quote": "- exact parameter types and categories;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryExternalContracts/host_capability_and_reference"
+      },
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryExternalContracts/pure_external_values"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryExternalContracts/unknown_parameter_type"
+      },
+      {
+        "path": "internal/manifest/spec_boundary_test.go",
+        "test": "TestBoundaryRequiredFunctionFields/parameter_name"
+      },
+      {
+        "path": "internal/manifest/spec_boundary_test.go",
+        "test": "TestBoundaryRequiredFunctionFields/parameter_type"
+      },
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityForwarding"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Manifest names and types are required and resolved to exact categories; forwarding rejects nominally different capabilities even when reporting labels overlap."
+  },
+  {
+    "section": "22.4",
+    "quote": "- one exact Pure Value return type; and",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryExternalContracts/pure_external_values"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryExternalContracts/capability_return"
+      },
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryExternalContracts/reference_return"
+      },
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryExternalContracts/reference_inside_tuple_return"
+      },
+      {
+        "path": "internal/manifest/spec_boundary_test.go",
+        "test": "TestBoundaryRequiredFunctionFields/return"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Declared return types must be Pure Values, recursively through tuple/optional containers. Actual external object immutability remains a host trust assertion."
+  },
+  {
+    "section": "22.4",
+    "quote": "- a trust classification.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/manifest/manifest_test.go",
+        "test": "TestLoadManifest"
+      },
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryExternalContracts/pure_external_values"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/manifest/spec_boundary_test.go",
+        "test": "TestBoundaryRequiredFunctionFields/trust"
+      },
+      {
+        "path": "internal/manifest/manifest_test.go",
+        "test": "TestRejectInvalidManifest/trust"
+      },
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryExternalContracts/pure_with_reference"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Only explicit pure/host trust classifications are admitted; trusted-pure declarations cannot accept capabilities or host references. The host purity assertion itself is not verified."
+  },
+  {
+    "section": "22.6",
+    "quote": "A host operation MUST require at least one capability parameter unless it is a pure external operation.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryExternalContracts/host_capability_and_reference"
+      },
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryExternalContracts/pure_external_values"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryExternalContracts/host_without_capability"
+      },
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryExternalContracts/reference_without_capability"
+      }
+    ],
+    "fixtures": [
+      "host_authority_required",
+      "pure_manifest_cannot_require_capability"
+    ],
+    "notes": "A host declaration needs at least one capability; an opaque reference alone grants no authority. Pure external signatures accept only Pure Values."
+  },
+  {
+    "section": "22.6",
+    "quote": "Every externally observable effect of the host operation MUST be represented by the labels of one or more capability parameters in its declared signature. An operation that reads a database and a clock, for example, must require capabilities authorizing both categories. The host implementation is trusted to obey this declaration.",
+    "status": "trust",
+    "positive": [],
+    "negative": [],
+    "fixtures": [],
+    "notes": "The verifier validates declared capability categories, exact forwarding, and reports labels. It cannot prove that native/host code discloses every effect or uses the granted authority correctly; effect completeness is explicitly part of the trusted host contract."
+  },
+  {
+    "section": "22.7",
+    "quote": "A manifest module imported by verified source MUST be marked `import_safe`.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryImportSafety/safe_function"
+      },
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryImportSafety/unimported_unsafe_module"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryImportSafety/unsafe_function"
+      },
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryImportSafety/unsafe_type"
+      },
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryImportSafety/unsafe_unused_import"
+      }
+    ],
+    "fixtures": [],
+    "notes": "An imported manifest module must explicitly assert import_safe, including unused imports and type-only uses. An unimported unsafe module is not rejected solely for existing. Truth of import safety remains trusted."
+  },
+  {
+    "section": "22.8",
+    "quote": "Manifests are declarative data. Unknown fields MUST be rejected unless the schema version explicitly permits them.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/manifest/manifest_test.go",
+        "test": "TestLoadManifest"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/manifest/manifest_test.go",
+        "test": "TestRejectInvalidManifest/unknown root"
+      },
+      {
+        "path": "internal/manifest/manifest_test.go",
+        "test": "TestRejectInvalidManifest/unknown function field"
+      },
+      {
+        "path": "internal/manifest/manifest_test.go",
+        "test": "TestRejectInvalidManifest/unknown parameter field"
+      },
+      {
+        "path": "internal/manifest/spec_boundary_test.go",
+        "test": "TestBoundaryRequiredFunctionFields/unknown_module_field"
+      },
+      {
+        "path": "internal/manifest/spec_boundary_test.go",
+        "test": "TestBoundaryRequiredFunctionFields/unknown_type_field"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Schema 1 rejects unknown keys at root, module, type, function, and parameter levels. Inputs are declarative TOML; no executable adapter/plugin field is accepted."
+  },
+  {
+    "section": "22.9",
+    "quote": "The verifier MUST use a deterministic manifest search order defined by configuration.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/config/config_test.go",
+        "test": "TestLoadResolvesPathsAndPreservesOrder"
+      },
+      {
+        "path": "internal/app/spec_boundary_test.go",
+        "test": "TestBoundaryManifestOrderAndConflict"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/manifest/manifest_test.go",
+        "test": "TestDuplicateDeclarationsNeverOverride"
+      },
+      {
+        "path": "internal/app/spec_boundary_test.go",
+        "test": "TestBoundaryManifestOrderAndConflict"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Both configured orders load cross-file declarations deterministically, preserve list order and each declaration source, and reject collisions instead of order-dependent overrides."
+  },
+  {
+    "section": "22.9",
+    "quote": "Conflicting declarations are errors. Later manifests MUST NOT silently override earlier ones.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/app/spec_boundary_test.go",
+        "test": "TestBoundaryManifestOrderAndConflict"
+      },
+      {
+        "path": "internal/manifest/manifest_test.go",
+        "test": "TestCrossManifestModuleAndConfiguredOrder"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/manifest/manifest_test.go",
+        "test": "TestDuplicateDeclarationsNeverOverride"
+      },
+      {
+        "path": "internal/manifest/spec_boundary_test.go",
+        "test": "TestBoundaryManifestConflictLocation"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Nonconflicting declarations may span manifests in either configured order. Identical duplicates and cross-kind names are errors; the rejected later declaration retains both provenance paths."
+  },
+  {
+    "section": "22.10",
+    "quote": "The verifier MUST be able to report every trusted external declaration reachable from a configured entrypoint.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/app/spec_boundary_test.go",
+        "test": "TestBoundaryTransitiveTrustReports"
+      },
+      {
+        "path": "internal/app/spec_boundary_test.go",
+        "test": "TestBoundaryTransitiveImportSafetyReports"
+      },
+      {
+        "path": "internal/app/spec_boundary_test.go",
+        "test": "TestBoundaryManifestOrderAndConflict"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/app/spec_boundary_test.go",
+        "test": "TestBoundaryTransitiveTrustReports"
+      },
+      {
+        "path": "internal/app/spec_boundary_test.go",
+        "test": "TestBoundaryTransitiveImportSafetyReports"
+      },
+      {
+        "path": "internal/app/spec_boundary_test.go",
+        "test": "TestBoundaryReportsRejectUnknownOrExternalFunction"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Reports follow verified calls through recursion and collect external function signatures, type contracts in signatures/records/expressions/local annotations, and import-safe module contracts with their own manifest provenance. Tests exclude disconnected modules, uncalled external functions/types, and invalid claims; repeated cached/uncached worker configurations are equivalent. Explicitly declared parent package contracts are reported; undeclared parent behavior remains within the imported module trust assertion."
+  },
+  {
+    "section": "25.2",
+    "quote": "PurePy 0.1 configuration MUST identify:",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/config/config_test.go",
+        "test": "TestLoadResolvesPathsAndPreservesOrder"
+      },
+      {
+        "path": "internal/config/config_test.go",
+        "test": "TestLoadAllowsExplicitEmptyLists"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/config/config_test.go",
+        "test": "TestLoadRejectsInvalidConfiguration"
+      },
+      {
+        "path": "internal/config/spec_boundary_test.go",
+        "test": "TestBoundaryRequiredVersions"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Configuration tests cover all five required fields, explicit empty lists, supported versions, one contained source root, manifest order, invalid values, and missing fields."
+  },
+  {
+    "section": "25.2",
+    "quote": "- language version;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/config/config_test.go",
+        "test": "TestLoadResolvesPathsAndPreservesOrder"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/config/spec_boundary_test.go",
+        "test": "TestBoundaryRequiredVersions/language_missing"
+      },
+      {
+        "path": "internal/config/config_test.go",
+        "test": "TestLoadRejectsInvalidConfiguration/language"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Language version is explicit and must be supported."
+  },
+  {
+    "section": "25.2",
+    "quote": "- target Python syntax version;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/config/config_test.go",
+        "test": "TestLoadResolvesPathsAndPreservesOrder"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/config/spec_boundary_test.go",
+        "test": "TestBoundaryRequiredVersions/python_syntax_missing"
+      },
+      {
+        "path": "internal/config/config_test.go",
+        "test": "TestLoadRejectsInvalidConfiguration/syntax"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Target Python syntax version is explicit and must be supported."
+  },
+  {
+    "section": "25.2",
+    "quote": "- one source root;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/config/config_test.go",
+        "test": "TestLoadResolvesPathsAndPreservesOrder"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/config/config_test.go",
+        "test": "TestLoadRejectsInvalidConfiguration/source missing"
+      },
+      {
+        "path": "internal/config/config_test.go",
+        "test": "TestLoadRejectsInvalidConfiguration/escape"
+      }
+    ],
+    "fixtures": [],
+    "notes": "A single explicit source_root is resolved relative to the configuration; missing and escaping paths are rejected."
+  },
+  {
+    "section": "25.2",
+    "quote": "- zero or more entrypoints; and",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/config/config_test.go",
+        "test": "TestLoadAllowsExplicitEmptyLists"
+      },
+      {
+        "path": "internal/app/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityAndEntrypointReports"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/config/config_test.go",
+        "test": "TestLoadRejectsInvalidConfiguration/entrypoints missing"
+      },
+      {
+        "path": "internal/config/config_test.go",
+        "test": "TestLoadRejectsInvalidConfiguration/duplicate entrypoint"
+      }
+    ],
+    "fixtures": [],
+    "notes": "An explicit empty list is allowed; omitted, malformed, and duplicate entries are rejected."
+  },
+  {
+    "section": "25.2",
+    "quote": "- an ordered manifest list.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/config/config_test.go",
+        "test": "TestLoadResolvesPathsAndPreservesOrder"
+      },
+      {
+        "path": "internal/config/config_test.go",
+        "test": "TestLoadAllowsExplicitEmptyLists"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/config/config_test.go",
+        "test": "TestLoadRejectsInvalidConfiguration/manifests missing"
+      },
+      {
+        "path": "internal/config/config_test.go",
+        "test": "TestLoadRejectsInvalidConfiguration/duplicate manifest"
+      }
+    ],
+    "fixtures": [],
+    "notes": "The manifest list is explicit, may be empty, and retains order; omitted/duplicate manifest paths are rejected."
+  },
+  {
+    "section": "25.4",
+    "quote": "Every configured entrypoint MUST resolve to one top-level verified function.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/app/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityAndEntrypointReports"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/app/spec_boundary_test.go",
+        "test": "TestBoundaryEntrypointRejections"
+      },
+      {
+        "path": "internal/app/spec_boundary_test.go",
+        "test": "TestBoundaryReportsRejectUnknownOrExternalFunction"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Both sync pure and async effectful entrypoints report exact signatures, pure arguments, capability labels, host references, and return type. Failed verification, records, imports, missing names, and host declarations cannot produce verified-entrypoint claims."
+  },
+  {
+    "section": "25.4",
+    "quote": "The verifier MUST report:",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/app/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityAndEntrypointReports"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/app/spec_boundary_test.go",
+        "test": "TestBoundaryEntrypointRejections"
+      },
+      {
+        "path": "internal/app/spec_boundary_test.go",
+        "test": "TestBoundaryReportsRejectUnknownOrExternalFunction"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Both sync pure and async effectful entrypoints report exact signatures, pure arguments, capability labels, host references, and return type. Failed verification, records, imports, missing names, and host declarations cannot produce verified-entrypoint claims."
+  },
+  {
+    "section": "25.4",
+    "quote": "- sync or async kind;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/app/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityAndEntrypointReports"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/app/spec_boundary_test.go",
+        "test": "TestBoundaryEntrypointRejections"
+      },
+      {
+        "path": "internal/app/spec_boundary_test.go",
+        "test": "TestBoundaryReportsRejectUnknownOrExternalFunction"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Both sync pure and async effectful entrypoints report exact signatures, pure arguments, capability labels, host references, and return type. Failed verification, records, imports, missing names, and host declarations cannot produce verified-entrypoint claims."
+  },
+  {
+    "section": "25.4",
+    "quote": "- Pure Value parameters;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/app/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityAndEntrypointReports"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/app/spec_boundary_test.go",
+        "test": "TestBoundaryEntrypointRejections"
+      },
+      {
+        "path": "internal/app/spec_boundary_test.go",
+        "test": "TestBoundaryReportsRejectUnknownOrExternalFunction"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Both sync pure and async effectful entrypoints report exact signatures, pure arguments, capability labels, host references, and return type. Failed verification, records, imports, missing names, and host declarations cannot produce verified-entrypoint claims."
+  },
+  {
+    "section": "25.4",
+    "quote": "- capability parameters and labels;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/app/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityAndEntrypointReports"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/app/spec_boundary_test.go",
+        "test": "TestBoundaryEntrypointRejections"
+      },
+      {
+        "path": "internal/app/spec_boundary_test.go",
+        "test": "TestBoundaryReportsRejectUnknownOrExternalFunction"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Both sync pure and async effectful entrypoints report exact signatures, pure arguments, capability labels, host references, and return type. Failed verification, records, imports, missing names, and host declarations cannot produce verified-entrypoint claims."
+  },
+  {
+    "section": "25.4",
+    "quote": "- host-reference parameters; and",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/app/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityAndEntrypointReports"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/app/spec_boundary_test.go",
+        "test": "TestBoundaryEntrypointRejections"
+      },
+      {
+        "path": "internal/app/spec_boundary_test.go",
+        "test": "TestBoundaryReportsRejectUnknownOrExternalFunction"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Both sync pure and async effectful entrypoints report exact signatures, pure arguments, capability labels, host references, and return type. Failed verification, records, imports, missing names, and host declarations cannot produce verified-entrypoint claims."
+  },
+  {
+    "section": "25.4",
+    "quote": "- return type.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/app/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityAndEntrypointReports"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/app/spec_boundary_test.go",
+        "test": "TestBoundaryEntrypointRejections"
+      },
+      {
+        "path": "internal/app/spec_boundary_test.go",
+        "test": "TestBoundaryReportsRejectUnknownOrExternalFunction"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Both sync pure and async effectful entrypoints report exact signatures, pure arguments, capability labels, host references, and return type. Failed verification, records, imports, missing names, and host declarations cannot produce verified-entrypoint claims."
+  },
+  {
+    "section": "26.3",
+    "quote": "Database rows and operation results MUST cross into verified code as Pure Values.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryExternalContracts/pure_external_values"
+      },
+      {
+        "path": "internal/app/conformance_test.go",
+        "test": "TestReferenceServiceConforms"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryExternalContracts/reference_return"
+      },
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryExternalContracts/capability_return"
+      },
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryExternalContracts/reference_inside_tuple_return"
+      }
+    ],
+    "fixtures": [],
+    "notes": "The static boundary admits database result declarations only as Pure Value types and rejects authority/handle returns even inside tuples. The reference service exercises database operations with immutable result records; actual host data and deep immutability remain trusted."
+  }
+]

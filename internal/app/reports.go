@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/dwrtz/purepy/internal/diag"
 	"github.com/dwrtz/purepy/internal/model"
@@ -22,6 +23,7 @@ type Authority struct {
 	TrustedExternal          []model.Function  `json:"trusted_external"`
 	ReachableTrustedExternal []model.Function  `json:"reachable_trusted_external"`
 	TrustedTypes             []TrustedType     `json:"trusted_types"`
+	TrustedModules           []TrustedModule   `json:"trusted_modules"`
 }
 
 type TrustedType struct {
@@ -29,6 +31,12 @@ type TrustedType struct {
 	Category string   `json:"category"`
 	Labels   []string `json:"labels"`
 	Source   string   `json:"source"`
+}
+
+type TrustedModule struct {
+	Name       string `json:"name"`
+	ImportSafe bool   `json:"import_safe"`
+	Source     string `json:"source"`
 }
 
 func (r *Report) Capabilities(name string) (AuthorityReport, error) {
@@ -46,7 +54,7 @@ func (r *Report) Capabilities(name string) (AuthorityReport, error) {
 		if f == nil || f.Origin != "project" {
 			return out, fmt.Errorf("unknown verified function %s", name)
 		}
-		a := Authority{FunctionReport: FunctionReport{Name: f.Name, Kind: f.Kind, Classification: f.Classification(), Parameters: f.Parameters, Returns: f.Returns}, Capabilities: []model.Parameter{}, HostReferences: []model.Parameter{}, UnusedCapabilities: []string{}, DirectCalls: []model.CallEdge{}, TrustedExternal: []model.Function{}, ReachableTrustedExternal: []model.Function{}, TrustedTypes: []TrustedType{}}
+		a := Authority{FunctionReport: FunctionReport{Name: f.Name, Kind: f.Kind, Classification: f.Classification(), Parameters: f.Parameters, Returns: f.Returns}, Capabilities: []model.Parameter{}, HostReferences: []model.Parameter{}, UnusedCapabilities: []string{}, DirectCalls: []model.CallEdge{}, TrustedExternal: []model.Function{}, ReachableTrustedExternal: []model.Function{}, TrustedTypes: []TrustedType{}, TrustedModules: []TrustedModule{}}
 		for _, p := range f.Parameters {
 			if p.Type.Kind == "capability" {
 				a.Capabilities = append(a.Capabilities, p)
@@ -144,6 +152,47 @@ func (r *Report) Capabilities(name string) (AuthorityReport, error) {
 			decl := r.Program.Symbols[name]
 			if decl != nil && decl.Kind == "type" && decl.Source != "" {
 				a.TrustedTypes = append(a.TrustedTypes, TrustedType{Name: name, Category: decl.Type.Category(), Labels: append([]string{}, decl.Labels...), Source: decl.Source})
+			}
+		}
+		// Import safety is a separate trusted declaration: its manifest may
+		// differ from the files declaring functions and types. Module imports
+		// execute even when the imported callable is never invoked.
+		modules := map[string]bool{}
+		var collectModule func(string)
+		collectModule = func(name string) {
+			if name == "" || modules[name] {
+				return
+			}
+			modules[name] = true
+			if at := strings.LastIndexByte(name, '.'); at >= 0 {
+				collectModule(name[:at])
+			}
+			if module := r.Program.Modules[name]; module != nil {
+				for _, dependency := range module.Imports {
+					collectModule(dependency)
+				}
+				for _, item := range module.Tree.Items("body") {
+					if item.Kind == "Import" {
+						collectModule(item.A("module"))
+					}
+				}
+			}
+		}
+		for fn := range visited {
+			if decl := r.Program.Functions[fn]; decl != nil {
+				if at := strings.LastIndexByte(decl.Name, '.'); at >= 0 {
+					collectModule(decl.Name[:at])
+				}
+			}
+		}
+		for _, typ := range a.TrustedTypes {
+			if at := strings.LastIndexByte(typ.Name, '.'); at >= 0 {
+				collectModule(typ.Name[:at])
+			}
+		}
+		for _, name := range sortedKeys(modules) {
+			if decl, ok := r.Program.ExternalModuleDeclarations[name]; ok {
+				a.TrustedModules = append(a.TrustedModules, TrustedModule{Name: decl.Name, ImportSafe: decl.ImportSafe, Source: decl.Source})
 			}
 		}
 		out.Functions = append(out.Functions, a)

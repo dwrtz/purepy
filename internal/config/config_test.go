@@ -6,6 +6,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/dwrtz/purepy/internal/model"
 )
 
 const validConfig = `[tool.purepy]
@@ -53,6 +55,8 @@ func TestLoadResolvesPathsAndPreservesOrder(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := &Config{Path: filepath.Join(canonical, "purepy.toml"), ProjectRoot: canonical, SourceRoot: filepath.Join(canonical, "src"), Language: "0.1", PythonSyntax: "3.14", Entrypoints: []string{"app.main"}, Manifests: []string{filepath.Join(canonical, "manifests/host.toml"), filepath.Join(canonical, "second.toml")}}
+	want.FieldSpans, _ = declarationSpans(want.Path, []byte(strings.Replace(validConfig, `["manifests/host.toml"]`, `["manifests/host.toml", "second.toml"]`, 1)))
+	want.EntrypointSpans = map[string]model.Span{"app.main": {File: want.Path, Start: 89, End: 99, Line: 5, Column: 16, EndLine: 5, EndColumn: 26}}
 	if !reflect.DeepEqual(fromFile, want) {
 		t.Fatalf("got %#v, want %#v", fromFile, want)
 	}

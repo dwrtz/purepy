@@ -74,6 +74,7 @@ make race
 make python-test
 make service-test
 make syntax-test
+make coverage-test
 make loadtest
 make serve
 ```
@@ -96,6 +97,7 @@ artifacts in `dist`. Neither target publishes a release.
 - [Host-boundary guide](docs/HOST_BOUNDARY.md)
 - [Diagnostics](docs/DIAGNOSTICS.md)
 - [Implementation and conformance status](docs/IMPLEMENTATION.md)
+- [Specification-to-test coverage](docs/CONFORMANCE.md)
 - [Measured verifier performance](docs/PERFORMANCE.md)
 - [Reference service](examples/reference_service/README.md)
 

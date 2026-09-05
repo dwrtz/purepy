@@ -10,17 +10,20 @@ import (
 	"strings"
 
 	"github.com/dwrtz/purepy/internal/discovery"
+	"github.com/dwrtz/purepy/internal/model"
 	"github.com/pelletier/go-toml/v2"
 )
 
 type Config struct {
-	Path         string
-	ProjectRoot  string
-	SourceRoot   string
-	Language     string
-	PythonSyntax string
-	Entrypoints  []string
-	Manifests    []string
+	Path            string
+	ProjectRoot     string
+	SourceRoot      string
+	Language        string
+	PythonSyntax    string
+	Entrypoints     []string
+	Manifests       []string
+	EntrypointSpans map[string]model.Span
+	FieldSpans      map[string]model.Span
 }
 
 type document struct {
@@ -39,14 +42,21 @@ type settings struct {
 
 // Load accepts a purepy.toml path or its containing directory. Every configured
 // path is resolved relative to that file and must stay inside its project root.
-func Load(path string) (*Config, error) {
+func Load(path string) (result *Config, failure error) {
 	if path == "" {
 		path = "."
 	}
+	at := model.Span{File: path, Line: 1, Column: 1, EndLine: 1, EndColumn: 1}
+	defer func() {
+		if failure != nil {
+			failure = &Error{Err: failure, Span: at}
+		}
+	}()
 	abs, err := filepath.Abs(path)
 	if err != nil {
 		return nil, fmt.Errorf("configuration path: %w", err)
 	}
+	at.File = abs
 	info, err := os.Lstat(abs)
 	if err != nil {
 		return nil, fmt.Errorf("configuration %s: %w", abs, err)
@@ -56,6 +66,7 @@ func Load(path string) (*Config, error) {
 	}
 	if info.IsDir() {
 		abs = filepath.Join(abs, "purepy.toml")
+		at.File = abs
 	}
 	// Canonicalize the project directory first (e.g. /tmp on macOS), then
 	// prohibit all symlinks within the project boundary.
@@ -64,6 +75,7 @@ func Load(path string) (*Config, error) {
 		return nil, fmt.Errorf("configuration directory: %w", err)
 	}
 	abs = filepath.Join(root, filepath.Base(abs))
+	at.File = abs
 	if err := checkPath(root, abs, false); err != nil {
 		return nil, fmt.Errorf("configuration: %w", err)
 	}
@@ -73,16 +85,33 @@ func Load(path string) (*Config, error) {
 	}
 	var doc document
 	if err := toml.NewDecoder(bytes.NewReader(data)).DisallowUnknownFields().Decode(&doc); err != nil {
+		var syntax *toml.DecodeError
+		var unknown *toml.StrictMissingError
+		if errors.As(err, &syntax) {
+			line, column := syntax.Position()
+			at = errorPosition(abs, data, line, column)
+		} else if errors.As(err, &unknown) && len(unknown.Errors) > 0 {
+			line, column := unknown.Errors[0].Position()
+			at = errorPosition(abs, data, line, column)
+		}
 		return nil, fmt.Errorf("configuration %s: %w", abs, tomlFailure(err))
+	}
+	fields, entries := declarationSpans(abs, data)
+	field := func(name string) {
+		if span, ok := fields[name]; ok {
+			at = span
+		}
 	}
 	p := doc.Tool.PurePy
 	if p == nil {
 		return nil, fmt.Errorf("configuration %s: missing [tool.purepy]", abs)
 	}
 	if p.Language != "0.1" {
+		field("language")
 		return nil, fmt.Errorf("configuration %s: language must be %q, got %q", abs, "0.1", p.Language)
 	}
 	if p.PythonSyntax != "3.14" {
+		field("python_syntax")
 		return nil, fmt.Errorf("configuration %s: python_syntax must be %q, got %q", abs, "3.14", p.PythonSyntax)
 	}
 	if p.Entrypoints == nil || p.Manifests == nil {
@@ -90,11 +119,16 @@ func Load(path string) (*Config, error) {
 	}
 	source, err := resolve(root, p.SourceRoot, true)
 	if err != nil {
+		field("source_root")
 		return nil, fmt.Errorf("configuration %s: source_root: %w", abs, err)
 	}
-	cfg := &Config{Path: abs, ProjectRoot: root, SourceRoot: source, Language: p.Language, PythonSyntax: p.PythonSyntax, Entrypoints: append([]string{}, (*p.Entrypoints)...), Manifests: []string{}}
+	cfg := &Config{Path: abs, ProjectRoot: root, SourceRoot: source, Language: p.Language, PythonSyntax: p.PythonSyntax, Entrypoints: append([]string{}, (*p.Entrypoints)...), Manifests: []string{}, EntrypointSpans: entries, FieldSpans: fields}
 	seen := make(map[string]bool)
 	for _, entry := range cfg.Entrypoints {
+		field("entrypoints")
+		if span, ok := entries[entry]; ok {
+			at = span
+		}
 		if !strings.Contains(entry, ".") || !discovery.ValidModuleName(entry) {
 			return nil, fmt.Errorf("configuration %s: invalid fully qualified entrypoint %q", abs, entry)
 		}
@@ -105,6 +139,7 @@ func Load(path string) (*Config, error) {
 	}
 	seen = make(map[string]bool)
 	for _, manifest := range *p.Manifests {
+		field("manifests")
 		resolved, err := resolve(root, manifest, false)
 		if err != nil {
 			return nil, fmt.Errorf("configuration %s: manifest %q: %w", abs, manifest, err)

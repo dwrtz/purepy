@@ -1,0 +1,3269 @@
+[
+  {
+    "section": "1",
+    "quote": "The reference `purepy` tool is a static verifier. It MUST NOT import or execute analyzed project code.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/app/cli_test.go",
+        "test": "TestVerificationNeverExecutesProjectOrHost"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/app/cli_test.go",
+        "test": "TestVerificationNeverExecutesProjectOrHost"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Sentinel files prove that rejected project statements and accepted manifest-backed imports do not execute project or host code."
+  },
+  {
+    "section": "1.2",
+    "quote": "Later language levels MAY add features, but they MUST preserve the guarantees of accepted PurePy 0.1 programs. New features MUST be independently specified and MUST NOT retroactively reinterpret unsupported PurePy 0.1 syntax as trusted behavior.",
+    "status": "deferred",
+    "positive": [],
+    "negative": [],
+    "fixtures": [],
+    "notes": "Future language evolution obligation. Only PurePy 0.1 is implemented; preserving prior semantics across future versions is not established by the present tests."
+  },
+  {
+    "section": "3.2",
+    "quote": "When the verifier cannot establish the exact meaning of an operation, it MUST reject the operation.",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/primitive_intrinsics"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreSuppressionDoesNotAuthorizeUnknownCalls"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/unknown_local_first_use"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/intrinsic_no_protocol_dispatch"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Exact supported operations and unknown-operation/suppression rejection have direct controls. Fail-closed behavior for every parser and semantic combination still requires independent soundness and fuzz testing."
+  },
+  {
+    "section": "3.2",
+    "quote": "Unknown behavior MUST NOT be downgraded to a warning, inferred as pure, or authorized by a broad suppression comment.",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/primitive_intrinsics"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreSuppressionDoesNotAuthorizeUnknownCalls"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/unknown_local_first_use"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/intrinsic_no_protocol_dispatch"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Exact supported operations and unknown-operation/suppression rejection have direct controls. Fail-closed behavior for every parser and semantic combination still requires independent soundness and fuzz testing."
+  },
+  {
+    "section": "3.3",
+    "quote": "External authority MUST enter verified code as a capability parameter supplied by the host or by another verified caller that already possesses the capability.",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityAuthorityForwardingAccepted"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityCategoryAndCallRejections"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Tests establish direct parameter forwarding and representative construction/storage/ambient-call rejection. Host entrypoint argument provenance remains trusted."
+  },
+  {
+    "section": "3.4",
+    "quote": "Every call target MUST resolve statically to:",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/direct_recursive_call"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreDirectProjectImports"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/primitive_intrinsics"
+      },
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityAuthorityForwardingAccepted"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/dynamic_call_target"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/unknown_import"
+      },
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityCategoryAndCallRejections/function_as_data"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Direct project, intrinsic, and manifest calls are accepted; local callable values, conditional targets, and unknown imports are rejected."
+  },
+  {
+    "section": "3.4",
+    "quote": "- a top-level project function;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/direct_recursive_call"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreDirectProjectImports"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/primitive_intrinsics"
+      },
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityAuthorityForwardingAccepted"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/dynamic_call_target"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/unknown_import"
+      },
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityCategoryAndCallRejections/function_as_data"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Direct project, intrinsic, and manifest calls are accepted; local callable values, conditional targets, and unknown imports are rejected."
+  },
+  {
+    "section": "3.4",
+    "quote": "- a top-level trusted external function declared in a manifest; or",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/direct_recursive_call"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreDirectProjectImports"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/primitive_intrinsics"
+      },
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityAuthorityForwardingAccepted"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/dynamic_call_target"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/unknown_import"
+      },
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityCategoryAndCallRejections/function_as_data"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Direct project, intrinsic, and manifest calls are accepted; local callable values, conditional targets, and unknown imports are rejected."
+  },
+  {
+    "section": "3.4",
+    "quote": "- a sealed PurePy intrinsic.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/direct_recursive_call"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreDirectProjectImports"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/primitive_intrinsics"
+      },
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityAuthorityForwardingAccepted"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/dynamic_call_target"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/unknown_import"
+      },
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityCategoryAndCallRejections/function_as_data"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Direct project, intrinsic, and manifest calls are accepted; local callable values, conditional targets, and unknown imports are rejected."
+  },
+  {
+    "section": "3.7",
+    "quote": "`await` MUST directly contain a known async call. The verifier lowers the call and await as one semantic operation.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/direct_none_statements"
+      },
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityAuthorityForwardingAccepted"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityCategoryAndCallRejections/bare_coroutine"
+      },
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityCategoryAndCallRejections/nested_coroutine"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Direct awaited project/external calls are accepted, and stored/nested coroutine values are rejected. Await edges are also covered by boundary reporting tests."
+  },
+  {
+    "section": "3.9",
+    "quote": "The initial language MUST be able to verify a useful nonblocking service above a narrow host boundary, including:",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/app/conformance_test.go",
+        "test": "TestReferenceServiceConforms"
+      },
+      {
+        "path": "examples/reference_service/tests/test_service.py",
+        "test": "ServiceTests.test_health_lookup_and_errors"
+      }
+    ],
+    "negative": [],
+    "fixtures": [],
+    "notes": "The reference service statically verifies and the cited runtime test exercises this workload behavior. This workload evidence is not a general service-correctness or host-implementation proof; host scheduling/resources and integration environment remain trusted."
+  },
+  {
+    "section": "3.9",
+    "quote": "- immutable request parsing;",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/app/conformance_test.go",
+        "test": "TestReferenceServiceConforms"
+      },
+      {
+        "path": "examples/reference_service/tests/test_service.py",
+        "test": "ParsingTests.test_parse_and_routes"
+      }
+    ],
+    "negative": [],
+    "fixtures": [],
+    "notes": "The reference service statically verifies and the cited runtime test exercises this workload behavior. This workload evidence is not a general service-correctness or host-implementation proof; host scheduling/resources and integration environment remain trusted."
+  },
+  {
+    "section": "3.9",
+    "quote": "- static routing;",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/app/conformance_test.go",
+        "test": "TestReferenceServiceConforms"
+      },
+      {
+        "path": "examples/reference_service/tests/test_service.py",
+        "test": "ParsingTests.test_parse_and_routes"
+      }
+    ],
+    "negative": [],
+    "fixtures": [],
+    "notes": "The reference service statically verifies and the cited runtime test exercises this workload behavior. This workload evidence is not a general service-correctness or host-implementation proof; host scheduling/resources and integration environment remain trusted."
+  },
+  {
+    "section": "3.9",
+    "quote": "- database reads and atomic writes;",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/app/conformance_test.go",
+        "test": "TestReferenceServiceConforms"
+      },
+      {
+        "path": "examples/reference_service/tests/test_service.py",
+        "test": "ServiceTests.test_atomic_updates_under_concurrency"
+      }
+    ],
+    "negative": [],
+    "fixtures": [],
+    "notes": "The reference service statically verifies and the cited runtime test exercises this workload behavior. This workload evidence is not a general service-correctness or host-implementation proof; host scheduling/resources and integration environment remain trusted."
+  },
+  {
+    "section": "3.9",
+    "quote": "- explicit network reads and writes;",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/app/conformance_test.go",
+        "test": "TestReferenceServiceConforms"
+      },
+      {
+        "path": "examples/reference_service/tests/test_service.py",
+        "test": "ServiceTests.test_fragmented_request"
+      }
+    ],
+    "negative": [],
+    "fixtures": [],
+    "notes": "The reference service statically verifies and the cited runtime test exercises this workload behavior. This workload evidence is not a general service-correctness or host-implementation proof; host scheduling/resources and integration environment remain trusted."
+  },
+  {
+    "section": "3.9",
+    "quote": "- server-sent-event loops;",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/app/conformance_test.go",
+        "test": "TestReferenceServiceConforms"
+      },
+      {
+        "path": "examples/reference_service/tests/test_service.py",
+        "test": "ServiceTests.test_sse_repeated_events_and_host_cancellation"
+      }
+    ],
+    "negative": [],
+    "fixtures": [],
+    "notes": "The reference service statically verifies and the cited runtime test exercises this workload behavior. This workload evidence is not a general service-correctness or host-implementation proof; host scheduling/resources and integration environment remain trusted."
+  },
+  {
+    "section": "3.9",
+    "quote": "- pure business logic and rendering; and",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/app/conformance_test.go",
+        "test": "TestReferenceServiceConforms"
+      },
+      {
+        "path": "examples/reference_service/tests/test_service.py",
+        "test": "ServiceTests.test_health_lookup_and_errors"
+      }
+    ],
+    "negative": [],
+    "fixtures": [],
+    "notes": "The reference service statically verifies and the cited runtime test exercises this workload behavior. This workload evidence is not a general service-correctness or host-implementation proof; host scheduling/resources and integration environment remain trusted."
+  },
+  {
+    "section": "3.9",
+    "quote": "- host-managed concurrent invocation.",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/app/conformance_test.go",
+        "test": "TestReferenceServiceConforms"
+      },
+      {
+        "path": "examples/reference_service/tests/test_service.py",
+        "test": "ServiceTests.test_reads_overlap_across_host_invocations"
+      }
+    ],
+    "negative": [],
+    "fixtures": [],
+    "notes": "The reference service statically verifies and the cited runtime test exercises this workload behavior. This workload evidence is not a general service-correctness or host-implementation proof; host scheduling/resources and integration environment remain trusted."
+  },
+  {
+    "section": "6.2",
+    "quote": "Every imported symbol and every call target must resolve within the program image. Code loaded dynamically after verification is outside the guarantee.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreDirectProjectImports"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/unknown_import"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/dynamic_call_target"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Project symbols resolve without execution; unresolved imports and dynamic targets reject. Host loading after verification remains outside the guarantee."
+  },
+  {
+    "section": "6.3",
+    "quote": "Each `.py` file beneath the source root maps deterministically to one module name. Namespace packages are not supported. Package directories MUST contain `__init__.py` files.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/discovery/discovery_test.go",
+        "test": "TestDiscoverDeterministicMapping"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/discovery/discovery_test.go",
+        "test": "TestDiscoverRejectsUnresolvableModules"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Tests assert deterministic file/module mapping, nested packages, and rejection of missing initializers and ambiguous names."
+  },
+  {
+    "section": "6.5",
+    "quote": "An entrypoint MAY be synchronous or asynchronous. Its parameters MAY include Pure Values, capabilities, and host references. Its return type MUST be a Pure Value type.",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/app/conformance_test.go",
+        "test": "TestReferenceServiceConforms"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityCategoryAndCallRejections/authority_return"
+      }
+    ],
+    "fixtures": [
+      "pure_async",
+      "capability_return"
+    ],
+    "notes": "Function return category checks apply to entrypoints. The service exercises effectful async entrypoints; this aggregate line also permits sync and varied parameter categories, whose full entrypoint product matrix is not exhaustively tested here."
+  },
+  {
+    "section": "7.1",
+    "quote": "For a fixed program image and equivalent Pure Value arguments, evaluating a pure synchronous function MUST have one of these outcomes:",
+    "status": "trust",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/explicit_numeric_conversions"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/same_record_equality"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/identity_exposes_object_identity"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/mixed_numeric_arithmetic"
+      }
+    ],
+    "fixtures": [
+      "arithmetic",
+      "pure_async",
+      "infinite_loop_no_return"
+    ],
+    "notes": "Finite static tests cannot prove observational equivalence, exception determinism, or divergence for arbitrary programs. These guarantees additionally rely on Python/platform behavior, sealed operations, runtime support, and truthful trusted external declarations."
+  },
+  {
+    "section": "7.1",
+    "quote": "1. return an equivalent Pure Value;",
+    "status": "trust",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/explicit_numeric_conversions"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/same_record_equality"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/identity_exposes_object_identity"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/mixed_numeric_arithmetic"
+      }
+    ],
+    "fixtures": [
+      "arithmetic",
+      "pure_async",
+      "infinite_loop_no_return"
+    ],
+    "notes": "Finite static tests cannot prove observational equivalence, exception determinism, or divergence for arbitrary programs. These guarantees additionally rely on Python/platform behavior, sealed operations, runtime support, and truthful trusted external declarations."
+  },
+  {
+    "section": "7.1",
+    "quote": "2. terminate through the same deterministic runtime exception class under the same operation and equivalent operands; or",
+    "status": "trust",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/explicit_numeric_conversions"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/same_record_equality"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/identity_exposes_object_identity"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/mixed_numeric_arithmetic"
+      }
+    ],
+    "fixtures": [
+      "arithmetic",
+      "pure_async",
+      "infinite_loop_no_return"
+    ],
+    "notes": "Finite static tests cannot prove observational equivalence, exception determinism, or divergence for arbitrary programs. These guarantees additionally rely on Python/platform behavior, sealed operations, runtime support, and truthful trusted external declarations."
+  },
+  {
+    "section": "7.1",
+    "quote": "3. fail to terminate.",
+    "status": "trust",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/explicit_numeric_conversions"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/same_record_equality"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/identity_exposes_object_identity"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/mixed_numeric_arithmetic"
+      }
+    ],
+    "fixtures": [
+      "arithmetic",
+      "pure_async",
+      "infinite_loop_no_return"
+    ],
+    "notes": "Finite static tests cannot prove observational equivalence, exception determinism, or divergence for arbitrary programs. These guarantees additionally rely on Python/platform behavior, sealed operations, runtime support, and truthful trusted external declarations."
+  },
+  {
+    "section": "7.1",
+    "quote": "The outcome MUST NOT depend on ambient state.",
+    "status": "trust",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/explicit_numeric_conversions"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/same_record_equality"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/identity_exposes_object_identity"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/mixed_numeric_arithmetic"
+      }
+    ],
+    "fixtures": [
+      "arithmetic",
+      "pure_async",
+      "infinite_loop_no_return"
+    ],
+    "notes": "Finite static tests cannot prove observational equivalence, exception determinism, or divergence for arbitrary programs. These guarantees additionally rely on Python/platform behavior, sealed operations, runtime support, and truthful trusted external declarations."
+  },
+  {
+    "section": "7.2",
+    "quote": "For equivalent inputs, if a conforming host drives the coroutine to completion without externally cancelling it, it MUST produce the same eventual Pure Value, the same deterministic runtime exception, or divergence.",
+    "status": "trust",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/explicit_numeric_conversions"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/same_record_equality"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/identity_exposes_object_identity"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/mixed_numeric_arithmetic"
+      }
+    ],
+    "fixtures": [
+      "arithmetic",
+      "pure_async",
+      "infinite_loop_no_return"
+    ],
+    "notes": "Finite static tests cannot prove observational equivalence, exception determinism, or divergence for arbitrary programs. These guarantees additionally rely on Python/platform behavior, sealed operations, runtime support, and truthful trusted external declarations."
+  },
+  {
+    "section": "7.3",
+    "quote": "Pure functions MUST NOT depend on:",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreUnmanifestedAmbientOperations"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+  },
+  {
+    "section": "7.3",
+    "quote": "- wall, monotonic, CPU, or process time;",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreUnmanifestedAmbientOperations"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+  },
+  {
+    "section": "7.3",
+    "quote": "- entropy or nondeterministic randomness;",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreUnmanifestedAmbientOperations"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+  },
+  {
+    "section": "7.3",
+    "quote": "- environment variables;",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreUnmanifestedAmbientOperations"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+  },
+  {
+    "section": "7.3",
+    "quote": "- filesystem contents or metadata;",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreUnmanifestedAmbientOperations"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+  },
+  {
+    "section": "7.3",
+    "quote": "- network state;",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreUnmanifestedAmbientOperations"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+  },
+  {
+    "section": "7.3",
+    "quote": "- database state;",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreUnmanifestedAmbientOperations"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+  },
+  {
+    "section": "7.3",
+    "quote": "- process identifiers, arguments, or working directory;",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreUnmanifestedAmbientOperations"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+  },
+  {
+    "section": "7.3",
+    "quote": "- thread, task, or event-loop identity;",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreUnmanifestedAmbientOperations"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+  },
+  {
+    "section": "7.3",
+    "quote": "- mutable module state;",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/constant_rebinding"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/constant_local_rebinding"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+  },
+  {
+    "section": "7.3",
+    "quote": "- mutable closure state;",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/nested_function"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/nonlocal"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+  },
+  {
+    "section": "7.3",
+    "quote": "- object identity;",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/identity_exposes_object_identity"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreIdentityAndHashIntrinsicsRejected/id"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+  },
+  {
+    "section": "7.3",
+    "quote": "- Python hash randomization;",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreIdentityAndHashIntrinsicsRejected/hash"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Calling hash on a string is rejected by the sealed intrinsic table, removing the direct Python hash-randomization dependency. Indirect behavior in trusted external functions is outside verifier enforcement."
+  },
+  {
+    "section": "7.3",
+    "quote": "- locale or mutable numeric context;",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreUnmanifestedAmbientOperations"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+  },
+  {
+    "section": "7.3",
+    "quote": "- import-cache state;",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreUnmanifestedAmbientOperations"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+  },
+  {
+    "section": "7.3",
+    "quote": "- signal state;",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreUnmanifestedAmbientOperations"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+  },
+  {
+    "section": "7.3",
+    "quote": "- tracing or debugger state;",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreUnmanifestedAmbientOperations"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+  },
+  {
+    "section": "7.3",
+    "quote": "- garbage-collector timing; or",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreUnmanifestedAmbientOperations"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+  },
+  {
+    "section": "7.3",
+    "quote": "- any other ambient value not represented by Pure Value arguments or immutable program constants.",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreUnmanifestedAmbientOperations"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; no dedicated hash-randomization runtime test is claimed."
+  },
+  {
+    "section": "7.4",
+    "quote": "Calling a pure function MUST NOT modify:",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/record_fields_and_top_level_behavior"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/local_annotation_then_assignment"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/attribute_assignment"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/subscription_assignment"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/global"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/nonlocal"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Pure construction/rebinding controls and specific mutation syntax bans are tested. The whole observational-mutation guarantee also depends on trusted host inputs and external implementations and is not a theorem established by these fixtures."
+  },
+  {
+    "section": "7.4",
+    "quote": "- any object reachable before the call;",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/record_fields_and_top_level_behavior"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/local_annotation_then_assignment"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/attribute_assignment"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/subscription_assignment"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/global"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/nonlocal"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Pure construction/rebinding controls and specific mutation syntax bans are tested. The whole observational-mutation guarantee also depends on trusted host inputs and external implementations and is not a theorem established by these fixtures."
+  },
+  {
+    "section": "7.4",
+    "quote": "- a module namespace;",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/record_fields_and_top_level_behavior"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/local_annotation_then_assignment"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/constant_rebinding"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/constant_local_rebinding"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Pure construction/rebinding controls and specific mutation syntax bans are tested. The whole observational-mutation guarantee also depends on trusted host inputs and external implementations and is not a theorem established by these fixtures."
+  },
+  {
+    "section": "7.4",
+    "quote": "- a class namespace;",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/record_fields_and_top_level_behavior"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/local_annotation_then_assignment"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/attribute_assignment"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/record_class_constant"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Pure construction/rebinding controls and specific mutation syntax bans are tested. The whole observational-mutation guarantee also depends on trusted host inputs and external implementations and is not a theorem established by these fixtures."
+  },
+  {
+    "section": "7.4",
+    "quote": "- a closure cell;",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/record_fields_and_top_level_behavior"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/local_annotation_then_assignment"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/nonlocal"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/nested_function"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Pure construction/rebinding controls and specific mutation syntax bans are tested. The whole observational-mutation guarantee also depends on trusted host inputs and external implementations and is not a theorem established by these fixtures."
+  },
+  {
+    "section": "7.4",
+    "quote": "- a host reference;",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/record_fields_and_top_level_behavior"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/local_annotation_then_assignment"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityCategoryAndCallRejections/host_reference_field"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Pure construction/rebinding controls and specific mutation syntax bans are tested. The whole observational-mutation guarantee also depends on trusted host inputs and external implementations and is not a theorem established by these fixtures."
+  },
+  {
+    "section": "7.4",
+    "quote": "- an external resource;",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/record_fields_and_top_level_behavior"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/local_annotation_then_assignment"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreUnmanifestedAmbientOperations"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Pure construction/rebinding controls and specific mutation syntax bans are tested. The whole observational-mutation guarantee also depends on trusted host inputs and external implementations and is not a theorem established by these fixtures."
+  },
+  {
+    "section": "7.4",
+    "quote": "- process-wide state; or",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/record_fields_and_top_level_behavior"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/local_annotation_then_assignment"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreUnmanifestedAmbientOperations"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Pure construction/rebinding controls and specific mutation syntax bans are tested. The whole observational-mutation guarantee also depends on trusted host inputs and external implementations and is not a theorem established by these fixtures."
+  },
+  {
+    "section": "7.4",
+    "quote": "- state observable by another PurePy function.",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/record_fields_and_top_level_behavior"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/local_annotation_then_assignment"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/attribute_assignment"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/subscription_assignment"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/global"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/nonlocal"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Pure construction/rebinding controls and specific mutation syntax bans are tested. The whole observational-mutation guarantee also depends on trusted host inputs and external implementations and is not a theorem established by these fixtures."
+  },
+  {
+    "section": "8.4",
+    "quote": "Ephemeral intrinsic values cannot be returned, stored, or passed to external functions.",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/range_forms"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/range_stored"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/range_forwarded"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Direct-loop range consumption is tested against local storage and call forwarding. No source type admits range returns; explicit return-expression coverage remains incomplete."
+  },
+  {
+    "section": "8.5",
+    "quote": "A value whose type or category cannot be established is an **Unknown Value** and MUST be rejected at its first attempted use.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/local_annotation_then_assignment"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/unknown_local_first_use"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/unassigned_annotated_local"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreSuppressionDoesNotAuthorizeUnknownCalls"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Unknown identifiers, unassigned locals, and unknown calls reject at their use; ordinary known local values remain accepted."
+  },
+  {
+    "section": "8.6",
+    "quote": "Capability values and host references MUST NOT be:",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityForwarding/repeated_forwarding"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityCategoryRestrictions"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Direct forwarding of both original authority categories passes. The negative table independently checks capability and host-reference rejection for each listed operation; no host implementation behavior is executed or trusted as evidence."
+  },
+  {
+    "section": "8.6",
+    "quote": "- returned from a verified function;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityForwarding/repeated_forwarding"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityCategoryRestrictions"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Direct forwarding of both original authority categories passes. The negative table independently checks capability and host-reference rejection for each listed operation; no host implementation behavior is executed or trusted as evidence. Targeted dynamically generated subtests: Read_returned, Connection_returned."
+  },
+  {
+    "section": "8.6",
+    "quote": "- stored in a tuple or `@value` record;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityForwarding/repeated_forwarding"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityCategoryRestrictions"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Direct forwarding of both original authority categories passes. The negative table independently checks capability and host-reference rejection for each listed operation; no host implementation behavior is executed or trusted as evidence. Targeted dynamically generated subtests: Read_tuple, Read_record_field, Connection_tuple, Connection_record_field."
+  },
+  {
+    "section": "8.6",
+    "quote": "- assigned to a module constant;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityForwarding/repeated_forwarding"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityCategoryRestrictions"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Direct forwarding of both original authority categories passes. The negative table independently checks capability and host-reference rejection for each listed operation; no host implementation behavior is executed or trusted as evidence. Targeted dynamically generated subtests: Read_module_constant, Connection_module_constant."
+  },
+  {
+    "section": "8.6",
+    "quote": "- compared;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityForwarding/repeated_forwarding"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityCategoryRestrictions"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Direct forwarding of both original authority categories passes. The negative table independently checks capability and host-reference rejection for each listed operation; no host implementation behavior is executed or trusted as evidence. Targeted dynamically generated subtests: Read_compared, Connection_compared."
+  },
+  {
+    "section": "8.6",
+    "quote": "- formatted;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityForwarding/repeated_forwarding"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityCategoryRestrictions"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Direct forwarding of both original authority categories passes. The negative table independently checks capability and host-reference rejection for each listed operation; no host implementation behavior is executed or trusted as evidence. Targeted dynamically generated subtests: Read_formatted, Connection_formatted."
+  },
+  {
+    "section": "8.6",
+    "quote": "- hashed;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityForwarding/repeated_forwarding"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityCategoryRestrictions"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Direct forwarding of both original authority categories passes. The negative table independently checks capability and host-reference rejection for each listed operation; no host implementation behavior is executed or trusted as evidence. Targeted dynamically generated subtests: Read_hashed, Connection_hashed."
+  },
+  {
+    "section": "8.6",
+    "quote": "- indexed;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityForwarding/repeated_forwarding"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityCategoryRestrictions"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Direct forwarding of both original authority categories passes. The negative table independently checks capability and host-reference rejection for each listed operation; no host implementation behavior is executed or trusted as evidence. Targeted dynamically generated subtests: Read_indexed, Connection_indexed."
+  },
+  {
+    "section": "8.6",
+    "quote": "- inspected through attributes;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityForwarding/repeated_forwarding"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityCategoryRestrictions"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Direct forwarding of both original authority categories passes. The negative table independently checks capability and host-reference rejection for each listed operation; no host implementation behavior is executed or trusted as evidence. Targeted dynamically generated subtests: Read_attribute, Connection_attribute."
+  },
+  {
+    "section": "8.6",
+    "quote": "- converted to a Pure Value;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityForwarding/repeated_forwarding"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityCategoryRestrictions"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Direct forwarding of both original authority categories passes. The negative table independently checks capability and host-reference rejection for each listed operation; no host implementation behavior is executed or trusted as evidence. Targeted dynamically generated subtests: Read_converted, Connection_converted."
+  },
+  {
+    "section": "8.6",
+    "quote": "- passed to a pure function;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityForwarding/repeated_forwarding"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityCategoryRestrictions"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Direct forwarding of both original authority categories passes. The negative table independently checks capability and host-reference rejection for each listed operation; no host implementation behavior is executed or trusted as evidence. Targeted dynamically generated subtests: Read_passed_to_pure, Connection_passed_to_pure."
+  },
+  {
+    "section": "8.6",
+    "quote": "- passed to an unknown function; or",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityForwarding/repeated_forwarding"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityCategoryRestrictions"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Direct forwarding of both original authority categories passes. The negative table independently checks capability and host-reference rejection for each listed operation; no host implementation behavior is executed or trusted as evidence. Targeted dynamically generated subtests: Read_passed_to_unknown, Connection_passed_to_unknown."
+  },
+  {
+    "section": "8.6",
+    "quote": "- aliased through local assignment.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityForwarding/repeated_forwarding"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityCategoryRestrictions"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Direct forwarding of both original authority categories passes. The negative table independently checks capability and host-reference rejection for each listed operation; no host implementation behavior is executed or trusted as evidence. Targeted dynamically generated subtests: Read_aliased, Connection_aliased."
+  },
+  {
+    "section": "9.1",
+    "quote": "Every function parameter and return value MUST have an explicit type annotation.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/annotated_primitives"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/missing_parameter_annotation"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/missing_return_annotation"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Explicit primitive annotations are accepted; independently missing parameter and return annotations are rejected."
+  },
+  {
+    "section": "9.1",
+    "quote": "Every `@value` field MUST have an explicit type annotation.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/record_fields_and_top_level_behavior"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRecordBodies/missing_field_annotation"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Annotated record fields are accepted; a bare class-body field name cannot substitute for an annotation."
+  },
+  {
+    "section": "9.1",
+    "quote": "Module constants MUST have an explicit `Final[T]` annotation.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/missing_final_annotation"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/final_without_initializer"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Final constants with constant initializers are accepted; plain annotations and missing initializers reject."
+  },
+  {
+    "section": "9.3",
+    "quote": "PurePy 0.1 rejects:",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/annotated_primitives"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedTypes"
+      }
+    ],
+    "fixtures": [],
+    "notes": "The table rejects named dynamic/mutable/iterator/coroutine/union/fixed-tuple annotations. Unsupported names alone do not exhaust every possible spelling or recursive alias form."
+  },
+  {
+    "section": "9.4",
+    "quote": "PurePy 0.1 uses exact nominal type matching, except for the explicit optional form `T | None` and the ordinary relation that a value of type `T` may be used where `T | None` is expected.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/optional_argument_and_return"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/record_nominal_type_mismatch"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/exact_argument_type"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Distinct structurally identical records and bool/int arguments do not subtype; the optional exception has positive controls."
+  },
+  {
+    "section": "9.5",
+    "quote": "Every later assignment to the same name MUST have the same exact type.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/local_annotation_then_assignment"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/returning_branch_same_local_type"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/local_annotation_changes_type"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/returning_branch_changes_local_type"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/loop_changes_local_type"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Includes regression for declared types lost after a returning branch. Flow joins now preserve declaration types independently of continuing-path assignment/refinement facts."
+  },
+  {
+    "section": "9.5",
+    "quote": "A local MUST be definitely assigned on every path before use.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/both_branches_assign"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/loop_keeps_preassigned_local"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/unassigned_annotated_local"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/assignment_before_local_definition"
+      },
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityFlowRejections"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Tests cover both-branch assignment, annotated-but-unassigned locals, use before local definition, empty loops, and continue paths; conservative loop narrowing remains an implementation choice."
+  },
+  {
+    "section": "9.5",
+    "quote": "Branch joins MUST agree on the exact type of every live local.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/both_branches_assign"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityFlowRejections/branch_type_conflict"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/returning_branch_changes_local_type"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Same-type branch assignments pass; conflicting declared types fail, including a declaration confined to a returning branch."
+  },
+  {
+    "section": "10.2",
+    "quote": "It MUST NOT contain:",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/record_fields_and_top_level_behavior"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRecordBodies"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/record_non_field_statement"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/record_extra_decorator"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/record_inheritance"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/record_class_options"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/record_nested_class"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Valid data-only records provide the positive control; the rejected record-body form is named directly by the cited case."
+  },
+  {
+    "section": "10.2",
+    "quote": "- methods;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/record_fields_and_top_level_behavior"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/record_method"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Valid data-only records provide the positive control; the rejected record-body form is named directly by the cited case."
+  },
+  {
+    "section": "10.2",
+    "quote": "- properties;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/record_fields_and_top_level_behavior"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRecordBodies/property"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Valid data-only records provide the positive control; the rejected record-body form is named directly by the cited case."
+  },
+  {
+    "section": "10.2",
+    "quote": "- constructors;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/record_fields_and_top_level_behavior"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRecordBodies/constructor"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Valid data-only records provide the positive control; the rejected record-body form is named directly by the cited case."
+  },
+  {
+    "section": "10.2",
+    "quote": "- static or class methods;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/record_fields_and_top_level_behavior"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRecordBodies/static_method"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRecordBodies/class_method"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Valid data-only records provide the positive control; the rejected record-body form is named directly by the cited case."
+  },
+  {
+    "section": "10.2",
+    "quote": "- class constants;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/record_fields_and_top_level_behavior"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/record_class_constant"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Valid data-only records provide the positive control; the rejected record-body form is named directly by the cited case."
+  },
+  {
+    "section": "10.2",
+    "quote": "- computed fields;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/record_fields_and_top_level_behavior"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRecordBodies/computed_field"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Valid data-only records provide the positive control; the rejected record-body form is named directly by the cited case."
+  },
+  {
+    "section": "10.2",
+    "quote": "- descriptors;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/record_fields_and_top_level_behavior"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRecordBodies/descriptor_value"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Valid data-only records provide the positive control; the rejected record-body form is named directly by the cited case."
+  },
+  {
+    "section": "10.2",
+    "quote": "- nested classes;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/record_fields_and_top_level_behavior"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/record_nested_class"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Valid data-only records provide the positive control; the rejected record-body form is named directly by the cited case."
+  },
+  {
+    "section": "10.2",
+    "quote": "- decorators other than the exact `@value` decorator;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/record_fields_and_top_level_behavior"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/record_extra_decorator"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/record_missing_decorator"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Valid data-only records provide the positive control; the rejected record-body form is named directly by the cited case."
+  },
+  {
+    "section": "10.2",
+    "quote": "- inheritance;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/record_fields_and_top_level_behavior"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/record_inheritance"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Valid data-only records provide the positive control; the rejected record-body form is named directly by the cited case."
+  },
+  {
+    "section": "10.2",
+    "quote": "- metaclass declarations; or",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/record_fields_and_top_level_behavior"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/record_class_options"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Valid data-only records provide the positive control; the rejected record-body form is named directly by the cited case."
+  },
+  {
+    "section": "10.2",
+    "quote": "- executable statements.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/record_fields_and_top_level_behavior"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/record_non_field_statement"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Valid data-only records provide the positive control; the rejected record-body form is named directly by the cited case."
+  },
+  {
+    "section": "10.3",
+    "quote": "Every field type MUST be a Pure Value type.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/record_fields_and_top_level_behavior"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityCategoryRestrictions"
+      }
+    ],
+    "fixtures": [
+      "capability_field"
+    ],
+    "notes": "Deep tuple, optional, and nested-record Pure Value fields pass; fields of both capability and host-reference types reject explicitly. Targeted dynamically generated subtests: Read_record_field, Connection_record_field."
+  },
+  {
+    "section": "10.4",
+    "quote": "Arguments MUST exactly match the declared fields. Positional arguments in field order and explicit keyword arguments are permitted. Argument unpacking is prohibited.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/record_fields_and_top_level_behavior"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/record_missing_argument"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/record_wrong_field_type"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/record_unknown_keyword"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/record_duplicate_argument"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/record_argument_unpacking"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Positional field order and explicit keyword construction pass; missing, wrong-type, unknown, duplicate, and unpacked arguments reject."
+  },
+  {
+    "section": "10.6",
+    "quote": "All behavior over records MUST be expressed as top-level functions:",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/record_fields_and_top_level_behavior"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/record_method"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRecordBodies"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Top-level functions can construct new immutable records from field reads; record-local behaviors and descriptors reject."
+  },
+  {
+    "section": "11.1",
+    "quote": "Nested functions and lambdas are prohibited.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/direct_recursive_call"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/nested_function"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/lambda"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Only top-level direct-call behavior remains accepted."
+  },
+  {
+    "section": "11.2",
+    "quote": "A function signature MUST have:",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/annotated_primitives"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/default_parameter"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/positional_only"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/keyword_only"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/variadic_positional"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/variadic_keyword"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/generic_function"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/function_decorator"
+      }
+    ],
+    "fixtures": [],
+    "notes": "The fixed annotated signature is the positive control. Rejections cover defaults, positional/keyword markers, variadics, type parameters, and decorators; mandatory annotation cases are mapped separately."
+  },
+  {
+    "section": "11.2",
+    "quote": "- a fixed ordered parameter list;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/annotated_primitives"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/default_parameter"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/positional_only"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/keyword_only"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/variadic_positional"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/variadic_keyword"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/generic_function"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/function_decorator"
+      }
+    ],
+    "fixtures": [],
+    "notes": "The fixed annotated signature is the positive control. Rejections cover defaults, positional/keyword markers, variadics, type parameters, and decorators; mandatory annotation cases are mapped separately."
+  },
+  {
+    "section": "11.2",
+    "quote": "- an annotation on every parameter;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/annotated_primitives"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/missing_parameter_annotation"
+      }
+    ],
+    "fixtures": [],
+    "notes": "The fixed annotated signature is the positive control. Rejections cover defaults, positional/keyword markers, variadics, type parameters, and decorators; mandatory annotation cases are mapped separately."
+  },
+  {
+    "section": "11.2",
+    "quote": "- an explicit return annotation; and",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/annotated_primitives"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/missing_return_annotation"
+      }
+    ],
+    "fixtures": [],
+    "notes": "The fixed annotated signature is the positive control. Rejections cover defaults, positional/keyword markers, variadics, type parameters, and decorators; mandatory annotation cases are mapped separately."
+  },
+  {
+    "section": "11.2",
+    "quote": "- no default values.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/annotated_primitives"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/default_parameter"
+      }
+    ],
+    "fixtures": [],
+    "notes": "The fixed annotated signature is the positive control. Rejections cover defaults, positional/keyword markers, variadics, type parameters, and decorators; mandatory annotation cases are mapped separately."
+  },
+  {
+    "section": "11.3",
+    "quote": "Capability and host-reference parameters MUST retain their original names and MUST NOT be rebound.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityAuthorityForwardingAccepted"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityCategoryAndCallRejections/capability_rebinding"
+      },
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityCategoryAndCallRejections/capability_alias"
+      },
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityCategoryAndCallRejections/host_reference_alias"
+      },
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityCategoryRestrictions"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Original parameter names forward directly; rebinding and aliases of both capability and host-reference parameters reject. Targeted dynamically generated subtests: Connection_rebound."
+  },
+  {
+    "section": "11.4",
+    "quote": "Every verified function MUST return a Pure Value type or `None`.",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/annotated_primitives"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/none_returns_and_fallthrough"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityCategoryAndCallRejections/authority_return"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/range_stored"
+      },
+      {
+        "path": "internal/check/spec_boundary_test.go",
+        "test": "TestBoundaryAuthorityCategoryRestrictions"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Pure Value/None returns and source-level returns of both authority categories have direct tests. Ephemeral/function/module/class/coroutine return bans are partly enforced by rejecting their source expressions or annotations; this is not a complete return-expression matrix. Targeted dynamically generated subtests: Read_returned, Connection_returned."
+  },
+  {
+    "section": "11.6",
+    "quote": "A call expression MUST name its target directly through a statically resolved imported or local symbol.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/direct_recursive_call"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreDirectProjectImports"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/dynamic_call_target"
+      },
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityCategoryAndCallRejections/function_as_data"
+      },
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityCategoryAndCallRejections/method_dispatch"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Direct same-module/imported calls pass. Call-through-local, conditional target selection, and instance method calls reject."
+  },
+  {
+    "section": "12.1",
+    "quote": "No other module-level statement is permitted.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/script_bootstrap"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/conditional_import"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Accepted static declarations are contrasted with executable bootstrap and conditional-import statements."
+  },
+  {
+    "section": "12.2",
+    "quote": "The verifier resolves imports without executing them.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/app/cli_test.go",
+        "test": "TestVerificationNeverExecutesProjectOrHost"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/app/cli_test.go",
+        "test": "TestVerificationNeverExecutesProjectOrHost"
+      }
+    ],
+    "fixtures": [],
+    "notes": "A sentinel host module remains unexecuted when its manifest-backed import is accepted; executable project source also rejects without execution."
+  },
+  {
+    "section": "12.5",
+    "quote": "The initializer MUST be a constant expression consisting only of:",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/constant_ordinary_call"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/constant_intrinsic_call"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/constant_later_reference"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/constant_computed_expression"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Accepted source exercises primitive/tuple/earlier/imported/record constant forms. Ordinary calls, computed initializers, and use-before-initialization references are rejected by explicit cases."
+  },
+  {
+    "section": "12.5",
+    "quote": "- primitive literals;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/constant_ordinary_call"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/constant_intrinsic_call"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/constant_later_reference"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/constant_computed_expression"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Accepted source exercises primitive/tuple/earlier/imported/record constant forms. Ordinary calls, computed initializers, and use-before-initialization references are rejected by explicit cases."
+  },
+  {
+    "section": "12.5",
+    "quote": "- tuple displays of constant expressions;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/heterogeneous_tuple"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/constant_ordinary_call"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Accepted source exercises primitive/tuple/earlier/imported/record constant forms. Ordinary calls, computed initializers, and use-before-initialization references are rejected by explicit cases."
+  },
+  {
+    "section": "12.5",
+    "quote": "- references to earlier constants in the same module;",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/constant_later_reference"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Accepted source exercises primitive/tuple/earlier/imported/record constant forms. Ordinary calls, computed initializers, and use-before-initialization references are rejected by explicit cases."
+  },
+  {
+    "section": "12.5",
+    "quote": "- references to imported verified constants; and",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreDirectProjectImports"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityInitializationOrder/constant_before_import"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Accepted source exercises primitive/tuple/earlier/imported/record constant forms. Ordinary calls, computed initializers, and use-before-initialization references are rejected by explicit cases."
+  },
+  {
+    "section": "12.5",
+    "quote": "- direct construction of a `@value` record from constant expressions.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityInitializationOrder/record_before_definition"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/constant_ordinary_call"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Accepted source exercises primitive/tuple/earlier/imported/record constant forms. Ordinary calls, computed initializers, and use-before-initialization references are rejected by explicit cases."
+  },
+  {
+    "section": "12.5",
+    "quote": "No ordinary function call is permitted during module initialization.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/constant_ordinary_call"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/constant_intrinsic_call"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Record constant construction passes while ordinary project/intrinsic initializer calls reject."
+  },
+  {
+    "section": "12.6",
+    "quote": "Module rebinding, caches, registries, counters, and mutable containers are prohibited.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/module_docstring_and_constant_forms"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/constant_rebinding"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/constant_local_rebinding"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/list_display"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/dictionary_display"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Static immutable constants pass; module-name writes and mutable displays reject. Dedicated registry/cache examples are represented by the same forbidden syntax."
+  },
+  {
+    "section": "13.2",
+    "quote": "Augmented assignment such as `+=` is prohibited because Python may dispatch to in-place mutation.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/local_annotation_then_assignment"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/augmented_assignment"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Explicit same-type local rebinding passes; += rejects."
+  },
+  {
+    "section": "13.3",
+    "quote": "Conditions MUST have exact type `bool`.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/both_branches_assign"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/narrowing_conditional"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/truthy_string_if"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/truthy_tuple_conditional"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/truthy_integer_while"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Exact boolean conditions pass; primitive/tuple truthiness rejects in if, conditional expression, and while contexts."
+  },
+  {
+    "section": "13.4",
+    "quote": "`for ... else` is prohibited.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/range_forms"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/for_else"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Ordinary approved for loops pass while loop else clauses reject."
+  },
+  {
+    "section": "13.5",
+    "quote": "A `while` condition MUST have exact type `bool`.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/range_forms"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/truthy_integer_while"
+      }
+    ],
+    "fixtures": [
+      "while_loop"
+    ],
+    "notes": "The while_loop fixture supplies the bool-loop positive control; an integer while condition is rejected."
+  },
+  {
+    "section": "13.5",
+    "quote": "`while ... else` is prohibited.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/none_returns_and_fallthrough"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/while_else"
+      }
+    ],
+    "fixtures": [
+      "while_loop"
+    ],
+    "notes": "While loop rejection has a dedicated control; positive bool while behavior is also covered by the while_loop fixture."
+  },
+  {
+    "section": "13.6",
+    "quote": "Every reachable return expression MUST match the exact declared return type.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/none_returns_and_fallthrough"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/optional_argument_and_return"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/exact_return_type"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/non_none_fallthrough"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/wrong_none_return"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Returns preserve exact primitive types and the explicitly allowed T-to-optional relation. Non-None fallthrough and wrong return values reject."
+  },
+  {
+    "section": "13.6",
+    "quote": "Falling off the end is permitted only for a function declared to return `None`.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/none_returns_and_fallthrough"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/non_none_fallthrough"
+      }
+    ],
+    "fixtures": [],
+    "notes": "None fallthrough is accepted; a possible int fallthrough rejects."
+  },
+  {
+    "section": "13.7",
+    "quote": "Discarding a non-`None` result is prohibited.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/direct_none_statements"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/discard_non_none_call"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/discard_non_none_await"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Both sync and awaited non-None results must be consumed; None calls can be expression statements."
+  },
+  {
+    "section": "14.2",
+    "quote": "Heterogeneous tuples are prohibited. Use a `@value` record instead.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/tuple_nested_context"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/record_fields_and_top_level_behavior"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/heterogeneous_tuple"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Homogeneous nested tuples and records pass; int/bool heterogeneous tuple rejects."
+  },
+  {
+    "section": "14.2",
+    "quote": "The empty tuple has no standalone inferred element type. It is permitted only when an explicit contextual type supplies `tuple[T, ...]`, for example `items: tuple[int, ...] = ()`.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/tuple_nested_context"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/empty_tuple_no_context"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Return/call/nested tuple context supplies the exact element type; contextless assignment rejects."
+  },
+  {
+    "section": "14.3",
+    "quote": "List, dictionary, set, and mutable-container displays are prohibited.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/tuple_nested_context"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/list_display"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/dictionary_display"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/set_display"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Immutable tuple displays pass; mutable display forms reject."
+  },
+  {
+    "section": "14.5",
+    "quote": "`and`, `or`, and `not` operate only on exact `bool` operands and produce `bool`.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/sequences_and_membership"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/value_returning_and"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/value_returning_or"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/non_bool_not"
+      }
+    ],
+    "fixtures": [],
+    "notes": "All three boolean operators reject non-bool operands; bool-producing expressions compose successfully."
+  },
+  {
+    "section": "14.6",
+    "quote": "Identity operators `is` and `is not` are permitted only with `None`.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/narrowing_reversed_none"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/narrowing_not_guard"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/identity_exposes_object_identity"
+      }
+    ],
+    "fixtures": [],
+    "notes": "None identity guards pass; identity comparison of strings rejects."
+  },
+  {
+    "section": "14.8",
+    "quote": "Indices must be `int`. Slice bounds must be `int | None`. Extended slicing and user-defined `__getitem__` dispatch are prohibited.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/optional_slice_bounds"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/bool_is_not_integer_index"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/slice_bound_float"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/extended_slice"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Optional int slice bounds pass; bool indices, float bounds, and explicit stride slicing reject. Sealed base-type rejection is also covered by intrinsic and authority cases."
+  },
+  {
+    "section": "14.9",
+    "quote": "No other instance attribute access is permitted in project code.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/record_fields_and_top_level_behavior"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/unknown_instance_field"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/record_field_missing"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Declared record field reads pass; nonrecord attributes and undeclared record fields reject."
+  },
+  {
+    "section": "14.10",
+    "quote": "Argument unpacking with `*` or `**` is prohibited.",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/record_fields_and_top_level_behavior"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/record_argument_unpacking"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Positional and keyword binding pass; star arguments reject. Double-star coverage is provided by frontend unsupported-syntax fixtures, not claimed exhaustive here."
+  },
+  {
+    "section": "14.12",
+    "quote": "Dynamic format specifications, locale-sensitive formatting, arbitrary `__format__`, `repr`, and object formatting are prohibited.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/primitive_formatting"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/format_dynamic_spec"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/format_locale"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/format_repr"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/format_raw_bytes"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Primitive formatting passes; dynamic format spec, locale format, repr conversion, and unconverted bytes reject. Arbitrary object-format dispatch is also excluded by exact inserted-expression types."
+  },
+  {
+    "section": "14.13",
+    "quote": "List, dictionary, set, and generator comprehensions are prohibited in PurePy 0.1.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/loop_keeps_preassigned_local"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/list_comprehension"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/dictionary_comprehension"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/set_comprehension"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/generator_comprehension"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Explicit approved loops pass; all four comprehension families reject."
+  },
+  {
+    "section": "15.3",
+    "quote": "For example, `len(value)` is accepted only when `value` is exactly `str`, `bytes`, or `tuple[T, ...]`.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/primitive_intrinsics"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/iterable_element_types"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/intrinsic_no_protocol_dispatch"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Tuple/string len calls pass while a record operand rejects; bytes len is also covered by the existing intrinsic fixture."
+  },
+  {
+    "section": "15.4",
+    "quote": "The verifier MUST version and test the intrinsic table. Adding an intrinsic is a language change.",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/primitive_intrinsics"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/float_sum_explicit_start"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/intrinsic_no_protocol_dispatch"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/float_sum_requires_start"
+      }
+    ],
+    "fixtures": [
+      "intrinsics"
+    ],
+    "notes": "The intrinsic implementation is closed and coupled to verifier version/cache identity. Existing and added tables test individual signatures, but an independent explicit intrinsic-table version and exhaustive operand/result differential table are not yet release-frozen."
+  },
+  {
+    "section": "16.1",
+    "quote": "Every call target MUST resolve to exactly one callable declaration.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/direct_recursive_call"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreDirectProjectImports"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/primitive_intrinsics"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/duplicate_callable"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/unknown_import"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/dynamic_call_target"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Unique direct declarations resolve; duplicate top-level callables, unknown imported symbols, and computed targets reject."
+  },
+  {
+    "section": "16.3",
+    "quote": "Every argument MUST match the exact declared parameter type and category.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/optional_argument_and_return"
+      },
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityAuthorityForwardingAccepted"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/exact_argument_type"
+      },
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityCategoryAndCallRejections/wrong_exact_capability"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Explicit optional widening and exact direct capability/reference forwarding pass; bool/int mismatch and nominally different authority fail."
+  },
+  {
+    "section": "16.4",
+    "quote": "Capability and host-reference values may only appear as direct call arguments.",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityAuthorityForwardingAccepted"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityCategoryAndCallRejections"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Original parameters forward directly; aliases, tuples, comparisons, and formatting reject. Section 8.6 lists each category exclusion."
+  },
+  {
+    "section": "16.5",
+    "quote": "A verifier MUST reject any attempt by a pure function to call an effectful function, even if dead-code analysis would suggest that the call is unreachable.",
+    "status": "tested",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreAccepted/direct_recursive_call"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityCategoryAndCallRejections/unreachable_authority"
+      }
+    ],
+    "fixtures": [],
+    "notes": "The checker visits calls even after return. A pure caller cannot manufacture the required capability/reference arguments for the unreachable external call."
+  },
+  {
+    "section": "16.7",
+    "quote": "The verifier MUST NOT resolve call targets through runtime registries, dependency-injection containers, decorators, route tables, import hooks, module `__getattr__`, or monkey-patched names.",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreDirectProjectImports"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreRejected/dynamic_call_target"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/function_decorator"
+      },
+      {
+        "path": "internal/check/spec_core_test.go",
+        "test": "TestSpecCoreProhibitedSyntax/attribute_assignment"
+      },
+      {
+        "path": "internal/check/security_test.go",
+        "test": "TestSecurityCategoryAndCallRejections/method_dispatch"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Direct resolution plus rejected computed targets, decorators, and mutation cover representative ambient resolution mechanisms. No dedicated runtime registry/import-hook differential matrix is claimed."
+  }
+]
