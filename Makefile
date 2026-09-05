@@ -8,9 +8,13 @@ FUZZ_PARALLEL ?= 2
 FUZZ_TIMEOUT ?= 2m
 FUZZ_MINIMIZE_TIME ?= 5s
 FUZZ_MEMORY ?= 512MiB
+BENCHMARK_ARGS ?=
+BENCHMARK_BASELINE ?= benchmarks/baseline.json
+BENCHMARK_CANDIDATE ?= build/benchmark-candidate.json
+BENCHMARK_COMPARE_ARGS ?=
 FUZZ_FLAGS = -run '^$$' -fuzztime "$(FUZZ_TIME)" -parallel "$(FUZZ_PARALLEL)" -timeout "$(FUZZ_TIMEOUT)" -fuzzminimizetime "$(FUZZ_MINIMIZE_TIME)"
 
-.PHONY: setup build test race fuzz-test python-test service-test syntax-test differential-test unicode-test unicode-generate coverage-test example serve loadtest benchmark package clean
+.PHONY: setup build test race fuzz-test python-test service-test syntax-test differential-test unicode-test unicode-generate coverage-test example serve loadtest benchmark benchmark-test benchmark-compare package clean
 setup:
 	UV_PROJECT_ENVIRONMENT="$(VENV)" $(UV) sync --locked --project python --python $(PYTHON_VERSION)
 build:
@@ -52,7 +56,11 @@ serve: setup
 loadtest: setup build
 	cd examples/reference_service && PYTHONPATH=src $(PYTHON) -m loadtest.load --verifier "$(CURDIR)/bin/purepy"
 benchmark: setup build
-	$(PYTHON) tools/benchmark.py --verifier "$(CURDIR)/bin/purepy"
+	$(PYTHON) tools/benchmark.py --verifier "$(CURDIR)/bin/purepy" $(BENCHMARK_ARGS)
+benchmark-test: setup
+	$(PYTHON) -m unittest discover -s tools/tests -p 'test_benchmark*.py' -v
+benchmark-compare: setup
+	$(PYTHON) tools/benchmark_compare.py --baseline "$(BENCHMARK_BASELINE)" --candidate "$(BENCHMARK_CANDIDATE)" $(BENCHMARK_COMPARE_ARGS)
 package: setup build
 	$(PYTHON) tools/package_binary.py
 	SOURCE_DATE_EPOCH=315532800 $(UV) build python --out-dir dist

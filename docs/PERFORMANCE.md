@@ -1,109 +1,221 @@
 # Verifier performance measurements
 
-The development verifier has a reproducible corpus generator and process benchmark
-in [tools/benchmark.py](../tools/benchmark.py). It invokes the built Go binary and
-never imports or executes the analyzed Python programs. All generated projects,
-reference-service copies, declaration edits, and cache deletion occur in a temporary
-directory. The repository's application sources and caches are left intact.
+The schema-2 [benchmark harness](../tools/benchmark.py) measures fresh verifier
+processes on generated or copied temporary projects. It records repeated size and
+worker matrices, separate pipeline and worker timings, per-process CPU and peak
+resident memory, and original/edited input identities. It never imports or executes
+analyzed Python or host implementations. Source edits and cache deletion are
+confined to its temporary directory.
 
-From the repository root:
+## Run and reproduce
 
 ```sh
 make setup build
-.venv/bin/python tools/benchmark.py --verifier bin/purepy --output /tmp/purepy-benchmark.json
-.venv/bin/python tools/benchmark.py --verifier bin/purepy --corpus wide --modules 1000 --functions 10 --repeat 3 --jobs 4 --output /tmp/purepy-wide-1000.json
+make benchmark-test
+make benchmark BENCHMARK_ARGS='--corpora wide,deep,invalid,manifest --sizes 100,1000,3000 --workers 1,4 --repeat 3 --hardware "Apple M4" --output /tmp/purepy-benchmark.json'
+make benchmark-compare BENCHMARK_CANDIDATE=/tmp/purepy-benchmark.json
 ```
 
-The harness requires macOS or Linux for child-process CPU and resident-memory
-measurements. It detects the CPU model where available; `--hardware` supplies an
-explicit machine label. `--corpus` selects `tiny`, `deep`, `wide`, `invalid`, or
-`reference`, with `all` as the default. The default generated workload has 100
-leaf modules and 10 functions per leaf; `--modules`, `--functions`, `--repeat`,
-and `--jobs` control its size and run count. Each verifier process has a configurable
-`--timeout` in seconds.
+The last command requires the same hardware metadata, toolchain/build settings,
+Go runtime environment, input matrix, repetitions, and measurement method as the
+checked-in baseline. For a
+change on a different machine, measure both binaries there with identical harness
+arguments and use `BENCHMARK_BASELINE=/tmp/base.json` and
+`BENCHMARK_CANDIDATE=/tmp/head.json`. Baseline replacement is an explicit reviewed
+change; running the comparison does not update it.
 
-The deep corpus contains a linear import chain. The wide corpus has one entry
-module that imports and calls every leaf. The invalid corpus contains one unresolved
-call per leaf. The tiny corpus has one leaf plus its package and entry module.
-The reference corpus copies only its configuration, source, and manifests; host
-implementations are absent from the temporary project.
+`--sizes`, `--workers`, and `--corpora` take comma-separated lists. The legacy
+`--modules`, `--jobs`, and `--corpus` options select single values. `--functions`
+sets functions per generated leaf, `--repeat` sets repetitions, and `--timeout`
+bounds each child invocation. Defaults remain 100 leaves, 10 functions per leaf,
+three repetitions, and up to four workers. `tiny` and `reference` have fixed sizes
+and are not duplicated for each requested size. `--hardware` adds a label but
+does not replace automatically collected machine metadata. If CPU-model detection
+is unavailable, an explicit machine label is required. Use the actual machine's
+label when adapting the command above. The committed baseline retains the sandbox's
+generic `arm` processor field with a separately verified `Apple M4` label; collection
+outside that sandbox can report different metadata and requires a fresh base/head
+pair. Reports record `GOGC`, `GOMEMLIMIT`, `GOMAXPROCS`, and `GODEBUG`, including
+whether each is unset, and comparisons require them to match.
 
-Every corpus run checks byte-for-byte JSON equality across one and the selected
-worker count, uncached and cached analysis, and cold and warm analysis. It then
-changes one return annotation, checks that the report changes, and compares that
-cached result with a fresh uncached check. The declaration change intentionally
-produces errors. Cache-hit counts must be zero for the initial population, all
-files for the unchanged run, and all but one file after the edit. A mismatch fails
-the harness instead of being included as a performance result.
+Corpora exercise distinct costs:
 
-Each repetition removes only that temporary project's cache, measures a check that
-populates it, measures an unchanged warm check, and then measures the single-module
-edit. These are fresh verifier processes with captured JSON output. Cold means an
-empty PurePy cache; it does not mean flushed filesystem caches or a cold CPU.
-The separate uncached worker comparison disables cache reads and writes. Its
-one-versus-many timing is one observation per corpus, not a scaling benchmark.
+| Corpus | Workload |
+| --- | --- |
+| `tiny` | One generated leaf, package initializer, and entrypoint. |
+| `deep` | A linear import/call chain with additional small functions per leaf. |
+| `wide` | An entry module that imports and calls every leaf. |
+| `invalid` | Unknown calls and incompatible arithmetic in every generated function, including structured diagnostic types and parameter declaration paths. |
+| `manifest` | Import-safe external modules with one declarative external signature per generated function. Source callers exercise linking and signature checking. |
+| `reference` | Configuration, source, and manifests copied from the reference service; host implementations are absent. |
 
-The report contains all samples and median/minimum/maximum wall times, child CPU
-time and mean CPU utilization, CLI stage timings, cache bytes, and the largest
-completed child-process resident-memory peak observed over the whole harness.
-CPU utilization uses one logical CPU as 100%. The memory metric includes version
-and hardware-query subprocesses and is not a per-stage allocation measurement.
-Version-only invocations give a separate process-startup baseline.
+Every repetition measures uncached verification, empty-cache population, an
+unchanged warm check, and one source declaration edit. The manifest corpus also
+measures a manifest return-type edit. Original reports must be byte-identical
+across repetitions, cache modes, and workers. Edited reports must change their
+rejection diagnostics and match fresh uncached checking across workers. Initial
+population must have zero hits, a warm run all hits, and a source edit all but one
+hit. A manifest edit invalidates every parse summary because manifest bytes enter
+the image key. A failed correctness check aborts the harness instead of producing
+a successful performance result.
 
-`--timings` currently separates configuration, discovery, manifests, linking, and
-function checking. Reading, hashing, parsing, lowering, and cache reads/writes share
-one `read_hash_parse_lower_cache` interval. The harness reports that combined stage
-as provided. `unattributed_wall_ms` is total process wall time minus the recorded
-stages; it includes startup, JSON rendering/output, and uninstrumented bookkeeping.
-It must not be interpreted as an isolated rendering or startup measurement. Separate
-parse/lower/cache/render intervals remain a measurement task from the implementation
-plan.
+## Timing and memory contract
 
-Measurements on 2026-09-05 used an Apple M4, 16 GiB RAM, 10 logical CPUs,
-macOS 26.5.2 arm64, and the uv-managed Python 3.14.7 harness. The verifier identified
-itself as `purepy 0.1.0-dev`, targeting language 0.1 and Python syntax 3.14. The
-measured binary SHA-256 was
-`850e93668bd414cd6e53f6cb3afb91ad71a31cb7d4aea8316bd0341c827c43c8`.
-The following are medians of three repetitions with four verifier workers:
+`purepy check --timings` emits `timings_schema 2`, seconds with nine decimal places,
+and `cache_hits` to stderr after output completes. Verification JSON remains
+schema 1 and contains no timing values. All timing categories appear, including
+zeros when a stage is skipped or parsing is avoided by a cache hit.
 
-| Corpus | Source files | Functions | Empty cache, ms | Warm, ms | One changed declaration, ms |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| Tiny | 3 | 11 | 4.635 | 4.358 | 4.630 |
-| Deep, 100 leaves | 102 | 1,001 | 32.511 | 21.569 | 21.780 |
-| Wide, 100 leaves | 102 | 1,001 | 31.941 | 21.871 | 21.554 |
-| Invalid, 100 leaves | 102 | 1,001 | 31.812 | 21.515 | 20.975 |
-| Reference service | 8 | 13 | 7.922 | 6.668 | 6.474 |
-| Wide, 1,000 leaves | 1,002 | 10,001 | 265.897 | 167.803 | 168.565 |
+| Wall interval | Included work |
+| --- | --- |
+| `wall_configuration` | Configuration loading and path validation. |
+| `wall_discovery` | Source enumeration and module discovery. |
+| `wall_manifests` | Manifest loading, validation, and source-location projection. |
+| `wall_image_inputs` | Serial configuration/manifest input reads, serialization, and hashing for cache identity. |
+| `wall_frontend` | Elapsed parallel read/hash/cache/parse/lower phase, including worker scheduling. |
+| `wall_link` | Project linking, signatures, constants, cycles, and entrypoint diagnostics. |
+| `wall_check` | Function checking and collecting worker results. |
+| `wall_report` | Report assembly, merging, and sorting, including early error reports. |
+| `wall_render` | Post-check report selection, encoding/text formatting, and output-writer time. |
 
-All equality checks and cache-hit assertions passed. The invalid corpus reported
-100 baseline diagnostics. The large wide corpus had 673,113 source bytes and
-26,268,815 cache bytes; its benchmark observed a maximum child resident footprint
-of 212,615,168 bytes (202.8 MiB). The five smaller corpora together observed a
-32,833,536-byte peak (31.3 MiB). The first three version-only process measurements
-were 11.160, 3.921, and 3.674 ms.
+These wall intervals do not overlap. `work_read`, `work_hash`, `work_cache_read`,
+`work_parse`, `work_lower`, and `work_cache_write` instead sum elapsed durations
+inside frontend workers. They are neither CPU time nor additional wall stages;
+adding them to the wall intervals would double-count parallel work. Parser timing
+includes source validation, native parser setup, syntax/trivia checks, and native
+resource cleanup. Lowering covers detached IR construction, name normalization,
+and diagnostic ordering. Ordinary verification and parsing avoid timing clock
+reads unless instrumentation is enabled.
 
-For the 1,002-file wide corpus, the reported median stages were:
+The harness stores these as `stage_ms` and `worker_ms`. Its unassigned wall interval
+is total child elapsed time minus only the wall stages. It includes process
+startup, the timing footer, process exit, and observation overhead; it is not a
+separate parsing or rendering measurement. Child completion is observed with a
+1 ms polling interval, so very small timing differences are not meaningful.
+Version-only invocations provide separate startup samples.
 
-| Stage | Empty cache, ms | Warm, ms | One changed declaration, ms |
+CPU and peak RSS come from `wait4` for the exact child PID. Output goes to temporary
+files to avoid pipe-buffer deadlocks; timeouts kill and reap that child. Each
+sample therefore has its own resident-memory peak, unaffected by the largest
+previous child. RSS is a peak, not cumulative allocation, and covers native parser
+memory as well as Go. Parent and sibling memory are excluded. Tests check both a
+large preceding child and a large live parent allocation on the current platform.
+
+An empty PurePy cache does not mean flushed filesystem caches or a cold CPU. Warm
+runs still decode and validate cached syntax, relink declarations, and recheck all
+functions. Worker counts bound verifier concurrency; Go runtime and garbage
+collection may use additional CPUs.
+
+## Recorded baseline and measured changes
+
+The checked-in [measurement artifacts](../benchmarks/README.md) retain raw samples,
+medians, complete input and binary hashes, hardware, and Go build settings.
+The current baseline table is generated from those artifacts below.
+
+Measured on the hardware documented in `benchmarks/README.md`: three repetitions
+per phase, 10 functions per leaf, and both one and four workers. The main matrix
+contains 306 recorded process samples across 24 corpus/size/worker combinations;
+additional uncached controls verify edited reports. Each size includes two
+extra source files for the package initializer and entry module.
+
+The following medians use four workers. Times are milliseconds; RSS is MiB.
+
+| Corpus | Leaves | Uncached | Populate cache | Warm | Source edit | Warm peak RSS |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| wide | 100 | 24.79 | 32.31 | 21.46 | 20.97 | 28.61 |
+| wide | 1,000 | 186.51 | 260.34 | 155.12 | 149.00 | 167.45 |
+| wide | 3,000 | 565.03 | 795.61 | 471.11 | 460.38 | 492.39 |
+| deep | 100 | 23.64 | 32.44 | 20.78 | 20.80 | 27.80 |
+| deep | 1,000 | 181.09 | 257.47 | 149.02 | 150.48 | 160.02 |
+| deep | 3,000 | 544.67 | 773.80 | 467.68 | 454.56 | 497.30 |
+| invalid | 100 | 44.90 | 57.53 | 41.55 | 41.31 | 55.23 |
+| invalid | 1,000 | 387.63 | 509.20 | 365.49 | 344.28 | 435.12 |
+| invalid | 3,000 | 1,195.48 | 1,559.06 | 1,136.82 | 1,109.67 | 1,199.91 |
+| manifest | 100 | 35.36 | 44.38 | 32.41 | 32.14 | 37.27 |
+| manifest | 1,000 | 303.75 | 381.36 | 261.85 | 262.73 | 254.08 |
+| manifest | 3,000 | 928.30 | 1,156.76 | 806.40 | 800.92 | 718.77 |
+
+At 3,000 leaves, increasing from one to four workers reduced warm wall time
+from 1,190 to 471 ms for wide, 1,156 to 468 ms for deep, 2,640 to 1,137 ms
+for invalid, and 1,681 to 806 ms for manifest. From 1,000 to 3,000 leaves,
+four-worker warm times grew by 3.04–3.14 times for roughly triple the input.
+This is finite evidence of the measured scaling curve.
+
+All warm samples recorded zero parsing and lowering. Cached JSON decoding
+and validation remain substantial: the 3,000-leaf wide frontend took a median
+284 ms of its 471 ms total. The invalid corpus emits 60,000 diagnostics at that
+size; rendering took 341 ms and its warm peak reached about 1.17 GiB. This is
+a remaining memory cost, not a completed memory target. A manifest declaration
+edit at 3,000 leaves took a median 1,201 ms and invalidated all summaries.
+
+The separate small baseline records four-worker warm medians of 4.48 ms for
+tiny and 7.06 ms for the copied reference service. Startup and observation
+overhead dominate these small values.
+
+CPU and allocation profiles identified temporary token slices in cache
+validation and repeated growth/copying of aggregate function results.
+`strings.FieldsSeq` removes the token slices, and exact aggregate capacities
+remove repeated result copying. The repeated 1,000-module in-process warm
+benchmark measured these medians:
+
+| Metric | Before | After | Reduction |
 | --- | ---: | ---: | ---: |
-| Configuration | 0.106 | 0.109 | 0.103 |
-| Discovery | 3.706 | 3.934 | 3.761 |
-| Manifest loading | 0.000 | 0.001 | 0.000 |
-| Read/hash/parse/lower/cache | 193.490 | 94.215 | 94.406 |
-| Link | 10.295 | 10.526 | 9.501 |
-| Function check | 17.350 | 17.842 | 18.094 |
+| Allocated bytes/check | 200,002,475 | 163,308,493 | 18.35% |
+| Allocations/check | 1,522,798 | 1,301,768 | 14.51% |
+| Wall time/check | 119.42 ms | 111.01 ms | 7.05% |
 
-The single uncached worker comparison for that corpus took 454.931 ms with one
-worker and 197.903 ms with four workers. Corresponding process CPU time was
-610.962 and 730.221 ms, about 134% and 369% of one logical CPU. Go runtime work,
-including garbage collection, can use multiple CPUs even when verifier work is
-configured with one worker. Warm runs still read and decode cached syntax and
-repeat project linking and function checking; they are not a cached final verdict.
+The separate fresh-process before/after pair passed all 12 scalar regression
+checks. Warm peak RSS fell from 183.56 to 168.77 MiB, while warm wall time
+was 159.69 versus 163.96 ms. Those process timings do not show a consistent
+latency improvement; the strongest measured result is reduced allocation.
 
-These observations establish that the harness runs and that cache/worker results
-agree on the measured corpora. They do not establish the release's scaling,
-memory-growth, regression-budget, or cross-platform performance gates. There are
-only two generated workload sizes, one machine, and three repetitions per cached
-phase. No comparison with other Python tools or service frameworks was made.
-The separate [reference-service load sample](../examples/reference_service/loadtest/sample.json)
-measures application execution and is not part of these verifier measurements.
+## Regression checks and CI
+
+[The comparator](../tools/benchmark_compare.py) requires complete matching matrices,
+original and edited input hashes, hardware, build and runtime metadata, successful equality
+flags, consistent report hashes across workers, expected cache counts, and raw
+samples agreeing with their reported medians. An incompatible or malformed report
+cannot pass. `--allow-incompatible` only produces exploratory results and still
+exits nonzero.
+
+Defaults allow each wall-time median up to `baseline * 1.5 + 25 ms`, CPU up to
+`baseline * 1.5 + 50 ms`, and peak RSS up to `baseline * 1.5 + 16 MiB`. Adjacent-size
+growth is compared with the larger of linear total-input growth and the previous
+measured curve, allowing 25% growth noise plus the metric's absolute floor. A growth
+failure also requires the larger case to regress, so improving a small case alone
+does not cause a failure. Total input includes manifests, which are substantial in
+the manifest corpus. These are deliberately tolerant regression budgets, not
+universal acceptable latency or memory limits.
+
+CI measures base and head on the same runner using the current harness: deep,
+wide, invalid, and manifest corpora at 20 and 80 leaves, workers 1 and 2, and three
+repetitions. A separate job isolates this from the verifier test process. Both
+reports and comparison results are retained as artifacts. The first commit with
+this measurement contract records an explicit bootstrap notice when the base has
+only schema 1; later compatible bases must pass the comparison. Unknown base
+schemas fail instead of silently skipping. The committed Mac baseline is not used
+as an absolute threshold on Linux CI.
+
+## CPU and allocation profiles
+
+```sh
+go test ./internal/app -run '^$' -bench '^BenchmarkCheckWarm/modules_1000$' \
+  -benchtime=20x -count=3 -benchmem \
+  -cpuprofile=/tmp/purepy.cpu -memprofile=/tmp/purepy.heap -o /tmp/purepy.test
+go tool pprof -top /tmp/purepy.test /tmp/purepy.cpu
+go tool pprof -top -alloc_space /tmp/purepy.test /tmp/purepy.heap
+```
+
+The benchmark fixes four verifier workers and checks warm hits and function counts
+on every iteration. It measures the in-process pipeline, excluding process startup,
+JSON output, and initial cache creation from benchmark counters. Process-wide CPU
+and heap profiles also include fixture setup, initial parsing, and cache population.
+Use their hot paths to explain allocation costs; do not equate their total sampled
+bytes with one warm run. The checked-in profile summaries retain that distinction.
+
+Measurements span one machine and a finite set of generated workloads. They do not
+establish all graph shapes, cross-platform scaling, independent soundness, or the
+runtime service's sustained-load release budget. The separate
+[service load sample](../examples/reference_service/loadtest/sample.json) concerns
+application execution. Dedicated-runner budgets and representative runtime load
+remain release work.

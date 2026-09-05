@@ -1,0 +1,20 @@
+File: purepy-profile-after.test
+Type: cpu
+Time: 2026-09-05 17:33:26 IST
+Duration: 9.13s, Total samples = 32.77s (358.89%)
+Showing nodes accounting for 30.57s, 93.29% of 32.77s total
+Dropped 365 nodes (cum <= 0.16s)
+Showing top 12 nodes out of 117
+      flat  flat%   sum%        cum   cum%
+     9.46s 28.87% 28.87%      9.46s 28.87%  runtime.pthread_cond_signal
+     7.73s 23.59% 52.46%      7.73s 23.59%  runtime.madvise
+     6.62s 20.20% 72.66%      6.62s 20.20%  syscall.syscall
+     2.15s  6.56% 79.22%      2.15s  6.56%  runtime.usleep
+     1.44s  4.39% 83.61%      1.44s  4.39%  runtime.pthread_cond_wait
+     0.90s  2.75% 86.36%      0.90s  2.75%  runtime.pthread_kill
+     0.75s  2.29% 88.65%      0.78s  2.38%  runtime.findObject
+     0.38s  1.16% 89.81%      0.48s  1.46%  runtime.greyobject
+     0.36s  1.10% 90.91%      2.09s  6.38%  runtime.scanobject
+     0.29s  0.88% 91.79%      3.25s  9.92%  runtime.gcDrain
+     0.28s  0.85% 92.65%      0.29s  0.88%  runtime.(*mspan).heapBitsSmallForAddr
+     0.21s  0.64% 93.29%      0.29s  0.88%  runtime.cgocall

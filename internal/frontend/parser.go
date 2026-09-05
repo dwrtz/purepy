@@ -10,6 +10,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	"github.com/dwrtz/purepy/internal/diag"
@@ -33,6 +34,31 @@ type adapter struct {
 // Parse produces a normalized Module and all syntax/lowering diagnostics. A
 // nonempty diagnostic list must prevent verification, even if a partial IR exists.
 func Parse(path string, source []byte) (*model.Node, []diag.Diagnostic) {
+	return parse(path, source, nil)
+}
+
+// ParseTimings separates parser work from normalization into detached IR. These
+// are elapsed durations in the calling worker, not CPU time. Parse includes
+// source validation, parser setup, syntax checks, and native tree/parser cleanup.
+// Lower includes IR construction, name normalization, and diagnostic ordering.
+type ParseTimings struct {
+	Parse time.Duration
+	Lower time.Duration
+}
+
+// ParseTimed produces exactly the same result as Parse and measures its work.
+// Ordinary Parse calls do not read the clock.
+func ParseTimed(path string, source []byte) (*model.Node, []diag.Diagnostic, ParseTimings) {
+	var timings ParseTimings
+	start := time.Now()
+	tree, ds := parse(path, source, &timings)
+	// parse's lowering defer runs before its native-resource cleanup defers,
+	// so cleanup is included in Parse and the two intervals cannot overlap.
+	timings.Parse = time.Since(start) - timings.Lower
+	return tree, ds, timings
+}
+
+func parse(path string, source []byte, timings *ParseTimings) (*model.Node, []diag.Diagnostic) {
 	a := &adapter{path: path, source: source, lines: []int{0}}
 	for i, b := range source {
 		if b == '\n' {
@@ -78,6 +104,10 @@ func Parse(path string, source []byte) (*model.Node, []diag.Diagnostic) {
 	a.trivia(root)
 	if len(a.diagnostics) != 0 {
 		return nil, a.diagnostics
+	}
+	if timings != nil {
+		start := time.Now()
+		defer func() { timings.Lower = time.Since(start) }()
 	}
 	module := a.node("Module", root)
 	module.Lists["body"] = a.body(root)

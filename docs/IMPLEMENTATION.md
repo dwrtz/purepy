@@ -110,14 +110,23 @@ a returning branch, missing import-safety module provenance in trust reports,
 incomplete configuration and manifest error locations, diagnostic tie ordering,
 and missing specification/syntax version metadata.
 
+The performance harness records repeated repository-size and worker matrices,
+per-process CPU/peak RSS, disjoint pipeline timings, and summed frontend-worker
+durations. It checks original and edited report equivalence before recording any
+sample, including full cache invalidation after manifest edits. Profile-guided
+changes removed repeated fixed-token allocations in cache validation and repeated
+copies while aggregating function results. The [performance guide](PERFORMANCE.md)
+records the measurements and the tolerant same-run base/head CI gate.
+
 ## Release gates and trust limits
 
 This is an experimental implementation, not a declaration that every PurePy 0.1
 release gate in the plan has been completed. Schemas are versioned but have not
 been declared frozen for public release. A broader independent soundness audit,
 long-running fuzz campaigns, exhaustive CPython 3.14 differential coverage,
-large-repository performance targets, and public binary/support-package publication
-remain release work. The packaging workflow prepares artifacts when explicitly run;
+dedicated-runner performance targets, sustained representative service loads, and
+public binary/support-package publication remain release work. The packaging
+workflow prepares artifacts when explicitly run;
 no release is published by the implementation task.
 
 External implementations and their manifests remain trusted. The verifier does not

@@ -18,7 +18,7 @@ jobs:
       - run: go vet ./...
       - run: make fuzz-test
       - run: go build -trimpath -o bin/purepy ./cmd/purepy
-      - run: make python-test service-test syntax-test differential-test unicode-test coverage-test
+      - run: make python-test service-test syntax-test differential-test unicode-test coverage-test benchmark-test
       - run: bin/purepy check examples/reference_service --no-cache
       - name: Preserve failing fuzz inputs and differential cases
         if: failure()
@@ -29,4 +29,77 @@ jobs:
             internal/**/testdata/fuzz/**
             build/differential-failures.json
           if-no-files-found: ignore
+          retention-days: 14
+  performance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: astral-sh/setup-uv@v6
+      - run: make setup build
+      - name: Measure head with report equivalence checks
+        run: |
+          mkdir -p build
+          .venv/bin/python tools/benchmark.py --verifier bin/purepy \
+            --corpora wide,deep,invalid,manifest --sizes 20,80 --workers 1,2 --repeat 3 \
+            --output build/benchmark-head.json
+      - name: Identify a compatible base
+        id: base
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [[ -z "$BASE_REF" || "$BASE_REF" == 0000000000000000000000000000000000000000 ]]; then
+            BASE_REF=$(git rev-parse --verify HEAD^ 2>/dev/null || true)
+          fi
+          if [[ -z "$BASE_REF" ]]; then
+            echo '::notice::Performance bootstrap: this initial commit has no base to compare.'
+            echo 'No base commit exists; head measurements were recorded, but no regression gate ran.' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          [[ "$BASE_REF" =~ ^[0-9a-f]{40}$ ]]
+          git cat-file -e "$BASE_REF^{commit}"
+          if ! git cat-file -e "$BASE_REF:tools/benchmark.py" 2>/dev/null; then
+            echo '::notice::Performance bootstrap: the base predates the benchmark harness.'
+            echo 'Base predates the harness; head measurements were recorded, but no regression gate ran.' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          git show "$BASE_REF:tools/benchmark.py" > "$RUNNER_TEMP/purepy-base-benchmark.py"
+          if ! grep -Eq '^BENCHMARK_SCHEMA *= *2$' "$RUNNER_TEMP/purepy-base-benchmark.py"; then
+            if grep -Eq '"schema": *1,' "$RUNNER_TEMP/purepy-base-benchmark.py"; then
+              echo '::notice::Performance bootstrap: schema-1 base lacks the timing/resource contract.'
+              echo 'Base uses benchmark schema 1; head measurements were recorded, but no regression gate ran. Subsequent schema-2 bases are compared on the same runner.' >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            echo '::error::The base has an unrecognized benchmark schema; refusing to skip the regression gate.'
+            exit 1
+          fi
+          echo "ref=$BASE_REF" >> "$GITHUB_OUTPUT"
+      - name: Build and measure base on the same runner
+        if: steps.base.outputs.ref != ''
+        env:
+          BASE_REF: ${{ steps.base.outputs.ref }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/purepy-benchmark-base"
+          git archive "$BASE_REF" | tar -x -C "$RUNNER_TEMP/purepy-benchmark-base"
+          (cd "$RUNNER_TEMP/purepy-benchmark-base" && go build -trimpath -buildvcs=false -o "$GITHUB_WORKSPACE/build/purepy-base" ./cmd/purepy)
+          .venv/bin/python tools/benchmark.py --verifier build/purepy-base \
+            --corpora wide,deep,invalid,manifest --sizes 20,80 --workers 1,2 --repeat 3 \
+            --output build/benchmark-base.json
+      - name: Compare matching matrices with noise allowances
+        if: steps.base.outputs.ref != ''
+        run: |
+          .venv/bin/python tools/benchmark_compare.py --baseline build/benchmark-base.json \
+            --candidate build/benchmark-head.json --output build/benchmark-comparison.json
+      - name: Preserve measurements and regression results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-measurements
+          path: build/benchmark-*.json
+          if-no-files-found: warn
           retention-days: 14

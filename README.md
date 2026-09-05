@@ -78,6 +78,7 @@ make syntax-test
 make differential-test
 make unicode-test
 make coverage-test
+make benchmark-test
 make loadtest
 make serve
 ```
@@ -102,9 +103,13 @@ Go tables and requires no Python interpreter.
 cache summaries and fallback, parsing, and manifest type syntax. See the
 [fuzzing guide](docs/FUZZING.md) for longer campaigns and regression replay.
 
-`make benchmark` measures cold, warm, edited, and parallel verification on generated
-corpora; `make package` prepares local binary/checksum and Python distribution
-artifacts in `dist`. Neither target publishes a release.
+`make benchmark` measures repeated cold, warm, edited, and uncached verification,
+with separate pipeline/worker timings and per-process memory. Pass
+`BENCHMARK_ARGS='--sizes 100,1000 --workers 1,4 --corpora wide,invalid,manifest'`
+for a scaling matrix. `make benchmark-compare` checks matching measurements against
+tolerant regression budgets; see the [performance guide](docs/PERFORMANCE.md).
+`make package` prepares local binary/checksum and Python distribution artifacts in
+`dist`. Neither target publishes a release.
 
 ## Design and status
 

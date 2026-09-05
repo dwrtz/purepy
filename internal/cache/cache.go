@@ -132,7 +132,7 @@ var nodeShapes = map[string]nodeShape{
 }
 
 func wordIn(words, word string) bool {
-	for _, candidate := range strings.Fields(words) {
+	for candidate := range strings.FieldsSeq(words) {
 		if word == candidate {
 			return true
 		}
@@ -265,7 +265,7 @@ func validNode(n *model.Node, depth int, root model.Span, role nodeRole, remaini
 			}
 		}
 	}
-	for _, key := range strings.Fields(shape.required) {
+	for key := range strings.FieldsSeq(shape.required) {
 		if n.Get(key) == nil {
 			return false
 		}

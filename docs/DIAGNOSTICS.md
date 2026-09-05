@@ -144,7 +144,10 @@ project modules use their file path as the module sort key. Text reports include
 the relevant symbol, type roles in lexical order, notes and related declaration
 locations. Cache hits, worker scheduling and stage timings
 do not change the JSON report. Timing output
-is requested with `--timings` and goes to stderr.
+is requested with `--timings` and goes to stderr. Its separate `timings_schema 2`
+footer distinguishes pipeline wall intervals from elapsed durations summed across
+workers, including report rendering. See the [performance guide](PERFORMANCE.md)
+for the measurement contract; the verification JSON schema is unchanged.
 
 The `check` command exits with `0` for successful verification, `1` for rejected
 source or linked semantics, and `2` for command/configuration/manifest-loading

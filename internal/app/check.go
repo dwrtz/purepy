@@ -31,6 +31,7 @@ type Options struct {
 	Path, Config string
 	Jobs         int
 	NoCache      bool
+	Timings      bool
 }
 type Report struct {
 	Schema        int                `json:"schema"`
@@ -59,8 +60,27 @@ type FunctionReport struct {
 
 func Check(opts Options) *Report {
 	r := &Report{Schema: JSONSchema, Version: Version, Specification: SpecificationVersion, Language: LanguageVersion, PythonSyntax: PythonSyntaxVersion, Diagnostics: []diag.Diagnostic{}, Functions: []FunctionReport{}, Calls: []model.CallEdge{}, Facts: []model.Fact{}, Timings: map[string]float64{}}
-	mark := time.Now()
-	stamp := func(stage string) { r.Timings[stage] = time.Since(mark).Seconds(); mark = time.Now() }
+	// Wall stages partition the pipeline, including early failure paths. Work
+	// measurements below are worker elapsed sums and can overlap one another.
+	var stage string
+	var mark time.Time
+	begin := func(next string) {
+		if !opts.Timings {
+			return
+		}
+		now := time.Now()
+		if stage != "" {
+			r.Timings[stage] += now.Sub(mark).Seconds()
+		}
+		stage, mark = next, now
+	}
+	if opts.Timings {
+		for _, name := range timingStages {
+			r.Timings[name] = 0
+		}
+	}
+	begin("wall_configuration")
+	defer func() { begin("") }()
 	path := opts.Path
 	if opts.Config != "" {
 		path = opts.Config
@@ -69,7 +89,7 @@ func Check(opts Options) *Report {
 		path = "."
 	}
 	cfg, err := config.Load(path)
-	stamp("configuration")
+	begin("wall_report")
 	if err != nil {
 		var located *config.Error
 		if errors.As(err, &located) {
@@ -82,8 +102,9 @@ func Check(opts Options) *Report {
 		return r
 	}
 	r.Config = cfg
+	begin("wall_discovery")
 	files, err := discovery.Discover(cfg.SourceRoot)
-	stamp("discovery")
+	begin("wall_report")
 	if err != nil {
 		d := diag.New("PP101", err.Error(), cfg.FieldSpans["source_root"])
 		d.WithSymbol("tool.purepy.source_root")
@@ -95,8 +116,9 @@ func Check(opts Options) *Report {
 	for _, f := range files {
 		moduleNames[f.Path] = f.Module
 	}
+	begin("wall_manifests")
 	ext, err := manifest.Load(cfg.Manifests)
-	stamp("manifests")
+	begin("wall_report")
 	if err != nil {
 		var located *manifest.Error
 		if errors.As(err, &located) {
@@ -108,6 +130,7 @@ func Check(opts Options) *Report {
 		}
 		return r
 	}
+	begin("wall_image_inputs")
 	semantic, _ := json.Marshal(struct {
 		Config   *config.Config
 		External *manifest.Set
@@ -118,6 +141,7 @@ func Check(opts Options) *Report {
 	for _, path := range cfg.Manifests {
 		data, e := os.ReadFile(path)
 		if e != nil {
+			begin("wall_report")
 			r.failure("PP601", e.Error(), path)
 			return r
 		}
@@ -125,11 +149,13 @@ func Check(opts Options) *Report {
 	}
 	configBytes, e := os.ReadFile(cfg.Path)
 	if e != nil {
+		begin("wall_report")
 		r.failure("PP001", e.Error(), cfg.Path)
 		return r
 	}
 	imageParts = append(imageParts, cache.Digest(configBytes))
 	imageKey := cache.Key(imageParts...)
+	begin("wall_frontend")
 	type parsed struct {
 		tree *model.Node
 		ds   []diag.Diagnostic
@@ -146,40 +172,78 @@ func Check(opts Options) *Report {
 	work := make(chan int)
 	var wg sync.WaitGroup
 	dir := filepath.Join(cfg.ProjectRoot, ".purepy-cache")
+	var workerTimings [][len(workStages)]time.Duration
+	if opts.Timings {
+		workerTimings = make([][len(workStages)]time.Duration, jobs)
+	}
 	for i := 0; i < jobs; i++ {
 		wg.Add(1)
-		go func() {
+		go func(worker int) {
 			defer wg.Done()
+			var workStart time.Time
+			startWork := func() {
+				if opts.Timings {
+					workStart = time.Now()
+				}
+			}
+			endWork := func(index int) {
+				if opts.Timings {
+					workerTimings[worker][index] += time.Since(workStart)
+				}
+			}
 			for i := range work {
 				f := files[i]
+				startWork()
 				data, err := os.ReadFile(f.Path)
+				endWork(0)
 				if err != nil {
 					d := diag.New("PP101", err.Error(), model.Span{File: f.Path, Line: 1, Column: 1})
 					d.WithSymbol(f.Module).WithRelated(cfg.FieldSpans["source_root"])
 					parsedFiles[i].ds = []diag.Diagnostic{d}
 					continue
 				}
+				startWork()
 				key := cache.Key(imageKey, f.Module, f.Path, cache.Digest(data))
+				endWork(1)
 				if !opts.NoCache {
-					if s, ok := cache.Read(dir, key); ok {
+					startWork()
+					s, ok := cache.Read(dir, key)
+					endWork(2)
+					if ok {
 						parsedFiles[i] = parsed{tree: s.Tree, ds: s.Diagnostics, hit: true}
 						continue
 					}
 				}
-				tree, ds := frontend.Parse(f.Path, data)
+				var tree *model.Node
+				var ds []diag.Diagnostic
+				if opts.Timings {
+					var measured frontend.ParseTimings
+					tree, ds, measured = frontend.ParseTimed(f.Path, data)
+					workerTimings[worker][3] += measured.Parse
+					workerTimings[worker][4] += measured.Lower
+				} else {
+					tree, ds = frontend.Parse(f.Path, data)
+				}
 				parsedFiles[i] = parsed{tree: tree, ds: ds}
 				if !opts.NoCache {
+					startWork()
 					_ = cache.Write(dir, key, cache.Summary{Tree: tree, Diagnostics: ds})
+					endWork(5)
 				}
 			}
-		}()
+		}(i)
 	}
 	for i := range files {
 		work <- i
 	}
 	close(work)
 	wg.Wait()
-	stamp("read_hash_parse_lower_cache")
+	begin("wall_report")
+	for _, worker := range workerTimings {
+		for i, elapsed := range worker {
+			r.Timings[workStages[i]] += elapsed.Seconds()
+		}
+	}
 	modules := make([]*check.Module, 0, len(files))
 	for i, f := range files {
 		item := parsedFiles[i]
@@ -193,6 +257,7 @@ func Check(opts Options) *Report {
 		diag.SortModules(r.Diagnostics, moduleNames)
 		return r
 	}
+	begin("wall_link")
 	p := check.Link(modules, ext, cfg.Entrypoints)
 	for i := range p.Diagnostics {
 		d := &p.Diagnostics[i]
@@ -209,16 +274,16 @@ func Check(opts Options) *Report {
 		}
 	}
 	r.Program = p
-	stamp("link")
+	begin("wall_check")
 	checkJobs := opts.Jobs
 	if checkJobs < 1 {
 		checkJobs = runtime.GOMAXPROCS(0)
 	}
 	result := p.CheckFunctions(checkJobs)
+	begin("wall_report")
 	r.Diagnostics = append(r.Diagnostics, result.Diagnostics...)
 	r.Calls = result.Calls
 	r.Facts = result.Facts
-	stamp("check")
 	for _, f := range p.Functions {
 		if f.Origin == "project" {
 			r.Functions = append(r.Functions, FunctionReport{Name: f.Name, Kind: f.Kind, Classification: f.Classification(), Parameters: f.Parameters, Returns: f.Returns})
@@ -229,6 +294,19 @@ func Check(opts Options) *Report {
 	r.OK = len(r.Diagnostics) == 0
 	return r
 }
+
+const TimingsSchema = 2
+
+var workStages = [...]string{"work_read", "work_hash", "work_cache_read", "work_parse", "work_lower", "work_cache_write"}
+
+// All categories are emitted, including zero durations for skipped stages.
+// wall_render is filled by Run after report construction and output complete.
+var timingStages = [...]string{
+	"wall_configuration", "wall_discovery", "wall_manifests", "wall_image_inputs",
+	"wall_frontend", "wall_link", "wall_check", "wall_report", "wall_render",
+	"work_read", "work_hash", "work_cache_read", "work_parse", "work_lower", "work_cache_write",
+}
+
 func (r *Report) failure(code, message, file string) {
 	r.Diagnostics = append(r.Diagnostics, diag.New(code, message, model.Span{File: file, Line: 1, Column: 1}))
 }

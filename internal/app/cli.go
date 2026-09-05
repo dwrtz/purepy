@@ -10,6 +10,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/dwrtz/purepy/internal/cache"
 	"github.com/dwrtz/purepy/internal/config"
@@ -114,17 +115,23 @@ func Run(args []string, out, errOut io.Writer) (status int) {
 	if command == "check" && len(pos) == 1 {
 		opts.Path = pos[0]
 	}
+	opts.Timings = timings
 	r := Check(opts)
 	if timings {
-		keys := make([]string, 0, len(r.Timings))
-		for k := range r.Timings {
-			keys = append(keys, k)
-		}
-		sort.Strings(keys)
-		for _, k := range keys {
-			fmt.Fprintf(errOut, "%s %.6fs\n", k, r.Timings[k])
-		}
-		fmt.Fprintf(errOut, "cache_hits %d/%d\n", r.CacheHits, r.Files)
+		start := time.Now()
+		defer func() {
+			r.Timings["wall_render"] = time.Since(start).Seconds()
+			fmt.Fprintf(errOut, "timings_schema %d\n", TimingsSchema)
+			keys := make([]string, 0, len(r.Timings))
+			for k := range r.Timings {
+				keys = append(keys, k)
+			}
+			sort.Strings(keys)
+			for _, k := range keys {
+				fmt.Fprintf(errOut, "%s %.9fs\n", k, r.Timings[k])
+			}
+			fmt.Fprintf(errOut, "cache_hits %d/%d\n", r.CacheHits, r.Files)
+		}()
 	}
 	encode := func(v any) int {
 		enc := json.NewEncoder(out)

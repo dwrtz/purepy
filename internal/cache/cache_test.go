@@ -118,6 +118,23 @@ func TestCacheRejectsSemanticTypeContext(t *testing.T) {
 	}
 }
 
+func TestCachedValidationAllocationBudget(t *testing.T) {
+	// The common arithmetic-function summary is visited on every warm check.
+	// Structural validation should not allocate a slice for every fixed shape,
+	// attribute, or operator table lookup as the number of syntax nodes grows.
+	source := strings.Repeat("def operation(value: int) -> int:\n    return value + 1\n", 100)
+	tree, ds := frontend.Parse("app.py", []byte(source))
+	if len(ds) != 0 {
+		t.Fatal(ds)
+	}
+	summary := Summary{Tree: tree, Diagnostics: ds}
+	valid := true
+	allocations := testing.AllocsPerRun(20, func() { valid = validSummary(summary) && valid })
+	if !valid || allocations != 0 {
+		t.Fatalf("cached shape validation: valid=%v allocations=%g, want valid with no per-node allocations", valid, allocations)
+	}
+}
+
 func TestConcurrentAtomicWrites(t *testing.T) {
 	dir := t.TempDir()
 	key := Key("concurrent")

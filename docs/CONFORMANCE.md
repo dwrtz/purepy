@@ -89,8 +89,8 @@ a percentage of semantic correctness.
 - [S32.4-018499f6](#s324-018499f6) (partial): The suite has positive and negative cases across required feature families; an exhaustive enumeration of statement/operator/type combinations remains open. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; nominal/optional combinations and arbitrary compositions remain outside this finite matrix.
 - [S32.4-f5622679](#s324-f5622679) (partial): Fixtures span the supported statement/expression families, but all operator/type combinations and Python literal spellings are not yet exhaustive. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; nominal/optional combinations and arbitrary compositions remain outside this finite matrix.
 - [S32.4-0449ecd2](#s324-0449ecd2) (partial): The suite has positive and negative cases across required feature families; an exhaustive enumeration of statement/operator/type combinations remains open. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; nominal/optional combinations and arbitrary compositions remain outside this finite matrix.
-- [S32.5-a0c47895](#s325-a0c47895) (release): The reference service demonstrates the required behavior and has a documented sample load run. Release still needs agreed performance budgets and representative load evidence.
-- [S32.5-66e0ae7d](#s325-66e0ae7d) (release): docs/PERFORMANCE.md and loadtest/sample.json record the harness and a local sample; acceptable release-scale verifier/runtime budgets and sustained representative measurements are not established.
+- [S32.5-a0c47895](#s325-a0c47895) (release): The reference service demonstrates the required behavior and has a documented sample load run. The verifier now has repeated size/worker matrices, exact per-process CPU/RSS, separate wall/worker timings, profile-guided allocation improvements, and tolerant same-run base/head CI checks (docs/PERFORMANCE.md and benchmarks/baseline.json). Dedicated-runner acceptance budgets and sustained representative runtime-service load evidence remain release work.
+- [S32.5-66e0ae7d](#s325-66e0ae7d) (release): The reference service demonstrates the required behavior and has a documented sample load run. The verifier now has repeated size/worker matrices, exact per-process CPU/RSS, separate wall/worker timings, profile-guided allocation improvements, and tolerant same-run base/head CI checks (docs/PERFORMANCE.md and benchmarks/baseline.json). Dedicated-runner acceptance budgets and sustained representative runtime-service load evidence remain release work.
 
 ## Rule evidence
 
@@ -2448,7 +2448,7 @@ Section 29.4; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#
 
 Positive: [TestCLICacheCleanRejectsSymlink](../internal/app/cli_test.go#L250).
 
-Negative: [TestCleanOwnsOnlyRegularArtifacts](../internal/cache/cache_test.go#L151); [TestSymlinkAndInvalidKeySafety](../internal/cache/cache_test.go#L194).
+Negative: [TestCleanOwnsOnlyRegularArtifacts](../internal/cache/cache_test.go#L168); [TestSymlinkAndInvalidKeySafety](../internal/cache/cache_test.go#L211).
 
 Cleanup removes owned cache artifacts while preserving unrelated files, directories, and symlink targets.
 
@@ -2828,7 +2828,7 @@ Positive: [TestReferenceServiceConforms](../internal/app/conformance_test.go#L77
 
 Negative: [test_update_rolls_back_if_event_insert_fails](../examples/reference_service/tests/test_service.py#L108).
 
-The reference service demonstrates the required behavior and has a documented sample load run. Release still needs agreed performance budgets and representative load evidence.
+The reference service demonstrates the required behavior and has a documented sample load run. The verifier now has repeated size/worker matrices, exact per-process CPU/RSS, separate wall/worker timings, profile-guided allocation improvements, and tolerant same-run base/head CI checks (docs/PERFORMANCE.md and benchmarks/baseline.json). Dedicated-runner acceptance budgets and sustained representative runtime-service load evidence remain release work.
 
 ### S32.5-930e9a0d
 
@@ -2954,4 +2954,4 @@ List obligation introduced by S32.5-a0c47895.
 
 Positive: [test_reads_overlap_across_host_invocations](../examples/reference_service/tests/test_service.py#L90).
 
-docs/PERFORMANCE.md and loadtest/sample.json record the harness and a local sample; acceptable release-scale verifier/runtime budgets and sustained representative measurements are not established.
+The reference service demonstrates the required behavior and has a documented sample load run. The verifier now has repeated size/worker matrices, exact per-process CPU/RSS, separate wall/worker timings, profile-guided allocation improvements, and tolerant same-run base/head CI checks (docs/PERFORMANCE.md and benchmarks/baseline.json). Dedicated-runner acceptance budgets and sustained representative runtime-service load evidence remain release work.

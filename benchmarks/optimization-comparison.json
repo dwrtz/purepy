@@ -1,0 +1,19 @@
+{
+  "baseline_binary_sha256": "257e6e793535ace056c242ecfefa3dbae4274729dbbc94bd7d47d39f93f220b8",
+  "budgets": {
+    "growth_relative": 0.25,
+    "peak_rss_bytes": 16777216.0,
+    "process_cpu_ms": 50.0,
+    "relative": 0.5,
+    "wall_ms": 25.0
+  },
+  "candidate_binary_sha256": "6926e1d29ca653b2cab29b5c5f7f04a80625f53609853c934221201a97be4341",
+  "comparable": true,
+  "failures": [],
+  "growth_checks": 0,
+  "incompatibilities": [],
+  "measurements_checked": 12,
+  "passed": true,
+  "schema": 1,
+  "status": "passed"
+}

@@ -1,0 +1,9 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/dwrtz/purepy/internal/app
+cpu: Apple M4
+BenchmarkCheckWarm/modules_1000-10         	      20	 110361785 ns/op	163312163 B/op	 1301785 allocs/op
+BenchmarkCheckWarm/modules_1000-10         	      20	 111005850 ns/op	163308493 B/op	 1301768 allocs/op
+BenchmarkCheckWarm/modules_1000-10         	      20	 112271219 ns/op	163300096 B/op	 1301727 allocs/op
+PASS
+ok  	github.com/dwrtz/purepy/internal/app	9.883s

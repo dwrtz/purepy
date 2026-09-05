@@ -5,6 +5,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/dwrtz/purepy/internal/diag"
 	"github.com/dwrtz/purepy/internal/model"
 )
 
@@ -51,7 +52,20 @@ func (p *Program) CheckFunctions(jobs int) Result {
 	}
 	close(work)
 	wg.Wait()
-	out := Result{Diagnostics: p.Diagnostics, Calls: []model.CallEdge{}, Facts: []model.Fact{}}
+	// Workers have completed, so their exact output sizes are known. Reserve
+	// once instead of repeatedly copying the growing whole-project fact slice.
+	diagnostics, calls, facts := len(p.Diagnostics), 0, 0
+	for _, r := range results {
+		diagnostics += len(r.Diagnostics)
+		calls += len(r.Calls)
+		facts += len(r.Facts)
+	}
+	out := Result{
+		Diagnostics: make([]diag.Diagnostic, 0, diagnostics),
+		Calls:       make([]model.CallEdge, 0, calls),
+		Facts:       make([]model.Fact, 0, facts),
+	}
+	out.Diagnostics = append(out.Diagnostics, p.Diagnostics...)
 	for _, r := range results {
 		out.Diagnostics = append(out.Diagnostics, r.Diagnostics...)
 		out.Calls = append(out.Calls, r.Calls...)

@@ -1,0 +1,19 @@
+File: purepy-profile-after.test
+Type: alloc_space
+Time: 2026-09-05 17:33:35 IST
+Showing nodes accounting for 9546.54MB, 86.80% of 10998.08MB total
+Dropped 154 nodes (cum <= 54.99MB)
+Showing top 12 nodes out of 67
+      flat  flat%   sum%        cum   cum%
+ 1928.51MB 17.53% 17.53%  1928.51MB 17.53%  reflect.mapassign_faststr0
+ 1539.01MB 13.99% 31.53%  1539.01MB 13.99%  encoding/json.(*RawMessage).UnmarshalJSON
+ 1514.73MB 13.77% 45.30%  1541.24MB 14.01%  os.readFileContents
+  882.08MB  8.02% 53.32%   882.08MB  8.02%  reflect.New
+  754.10MB  6.86% 60.18%   834.12MB  7.58%  encoding/json.(*decodeState).literalStore
+  741.85MB  6.75% 66.92%   741.85MB  6.75%  github.com/dwrtz/purepy/internal/check.(*checker).fact
+  496.37MB  4.51% 71.44%   496.37MB  4.51%  github.com/dwrtz/purepy/internal/check.(*Program).CheckFunctions
+  480.60MB  4.37% 75.81%   532.41MB  4.84%  github.com/dwrtz/purepy/internal/check.(*Program).index
+  362.02MB  3.29% 79.10%   362.02MB  3.29%  reflect.makemap
+  300.85MB  2.74% 81.83%  1637.95MB 14.89%  github.com/dwrtz/purepy/internal/app.Check
+  293.88MB  2.67% 84.51%   386.72MB  3.52%  encoding/json.Marshal
+  252.54MB  2.30% 86.80%   994.39MB  9.04%  github.com/dwrtz/purepy/internal/check.(*checker).function
