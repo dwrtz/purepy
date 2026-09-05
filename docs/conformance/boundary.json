@@ -371,6 +371,18 @@
       {
         "path": "internal/manifest/manifest_test.go",
         "test": "TestLoadManifest"
+      },
+      {
+        "path": "internal/manifest/fuzz_test.go",
+        "test": "TestManifestLoadFuzzSeeds"
+      },
+      {
+        "path": "internal/manifest/container_shape_test.go",
+        "test": "TestManifestArrayShapeAllowsExplicitEmptyArrays"
+      },
+      {
+        "path": "internal/manifest/key_case_test.go",
+        "test": "TestManifestQuotedCanonicalKeysRemainValid"
       }
     ],
     "negative": [
@@ -393,10 +405,30 @@
       {
         "path": "internal/manifest/spec_boundary_test.go",
         "test": "TestBoundaryRequiredFunctionFields/unknown_type_field"
+      },
+      {
+        "path": "internal/manifest/fuzz_test.go",
+        "test": "TestManifestLoadFuzzSeeds"
+      },
+      {
+        "path": "internal/manifest/container_shape_test.go",
+        "test": "TestRejectSingletonDeclarationContainers"
+      },
+      {
+        "path": "internal/manifest/container_shape_test.go",
+        "test": "TestRejectSingletonParameterContainers"
+      },
+      {
+        "path": "internal/manifest/key_case_test.go",
+        "test": "TestManifestKeysAreCaseSensitive"
+      },
+      {
+        "path": "internal/manifest/key_case_test.go",
+        "test": "TestManifestCaseAliasesAcrossTOMLForms"
       }
     ],
     "fixtures": [],
-    "notes": "Schema 1 rejects unknown keys at root, module, type, function, and parameter levels. Inputs are declarative TOML; no executable adapter/plugin field is accepted."
+    "notes": "Schema 1 rejects unknown keys at root, module, type, function, and parameter levels. Inputs are declarative TOML; no executable adapter/plugin field is accepted. Full-loader fuzz controls now check exact declarations, configured merge order, conflict rejection, deterministic diagnostics and source-token locations across arbitrary TOML and independently generated valid/invalid pairs. Explicit array-shape guards reject decoder-coerced singleton declaration and parameter tables, matching the published manifest schema. Exact decoded key validation rejects case-folded field aliases, including aliases which otherwise overwrite canonical declarations; quoted/escaped canonical keys remain accepted."
   },
   {
     "section": "22.9",
@@ -410,6 +442,10 @@
       {
         "path": "internal/app/spec_boundary_test.go",
         "test": "TestBoundaryManifestOrderAndConflict"
+      },
+      {
+        "path": "internal/manifest/fuzz_test.go",
+        "test": "TestManifestLoadFuzzSeeds"
       }
     ],
     "negative": [
@@ -420,10 +456,14 @@
       {
         "path": "internal/app/spec_boundary_test.go",
         "test": "TestBoundaryManifestOrderAndConflict"
+      },
+      {
+        "path": "internal/manifest/fuzz_test.go",
+        "test": "TestManifestLoadFuzzSeeds"
       }
     ],
     "fixtures": [],
-    "notes": "Both configured orders load cross-file declarations deterministically, preserve list order and each declaration source, and reject collisions instead of order-dependent overrides."
+    "notes": "Both configured orders load cross-file declarations deterministically, preserve list order and each declaration source, and reject collisions instead of order-dependent overrides. Full-loader fuzz controls now check exact declarations, configured merge order, conflict rejection, deterministic diagnostics and source-token locations across arbitrary TOML and independently generated valid/invalid pairs."
   },
   {
     "section": "22.9",
@@ -441,6 +481,10 @@
       {
         "path": "internal/app/module_namespace_test.go",
         "test": "TestManifestModuleAncestors"
+      },
+      {
+        "path": "internal/manifest/fuzz_test.go",
+        "test": "TestManifestLoadFuzzSeeds"
       }
     ],
     "negative": [
@@ -455,10 +499,14 @@
       {
         "path": "internal/app/module_namespace_test.go",
         "test": "TestManifestModuleAncestors"
+      },
+      {
+        "path": "internal/manifest/fuzz_test.go",
+        "test": "TestManifestLoadFuzzSeeds"
       }
     ],
     "fixtures": [],
-    "notes": "Nonconflicting declarations may span manifests in either configured order. Identical duplicates and cross-kind names are errors; the rejected later declaration retains both provenance paths. Module ancestor conflicts reject even when parent modules are implicit in a manifest; distinct textual prefixes remain valid. Diagnostics and verdicts agree across cache states and worker counts."
+    "notes": "Nonconflicting declarations may span manifests in either configured order. Identical duplicates and cross-kind names are errors; the rejected later declaration retains both provenance paths. Module ancestor conflicts reject even when parent modules are implicit in a manifest; distinct textual prefixes remain valid. Diagnostics and verdicts agree across cache states and worker counts. Full-loader fuzz controls now check exact declarations, configured merge order, conflict rejection, deterministic diagnostics and source-token locations across arbitrary TOML and independently generated valid/invalid pairs."
   },
   {
     "section": "22.10",
@@ -507,6 +555,10 @@
       {
         "path": "internal/config/config_test.go",
         "test": "TestLoadAllowsExplicitEmptyLists"
+      },
+      {
+        "path": "internal/config/case_sensitive_test.go",
+        "test": "TestLoadAcceptsQuotedCanonicalConfigKeys"
       }
     ],
     "negative": [
@@ -517,10 +569,14 @@
       {
         "path": "internal/config/spec_boundary_test.go",
         "test": "TestBoundaryRequiredVersions"
+      },
+      {
+        "path": "internal/config/case_sensitive_test.go",
+        "test": "TestLoadRejectsCaseInsensitiveConfigAliases"
       }
     ],
     "fixtures": [],
-    "notes": "Configuration tests cover all five required fields, explicit empty lists, supported versions, one contained source root, manifest order, invalid values, and missing fields."
+    "notes": "Configuration tests cover all five required fields, explicit empty lists, supported versions, one contained source root, manifest order, invalid values, and missing fields. Exact decoded configuration keys now reject case-folded table/setting aliases and prevent language or source-root values from being overwritten under differently cased keys; errors identify the offending key."
   },
   {
     "section": "25.2",

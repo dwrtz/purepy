@@ -102,8 +102,15 @@ for offline regeneration. Building and running the verifier uses the checked-in
 Go tables and requires no Python interpreter.
 
 `make fuzz-test` runs short bounded campaigns over checker semantics, source,
-cache summaries and fallback, parsing, and manifest type syntax. See the
-[fuzzing guide](docs/FUZZING.md) for longer campaigns and regression replay.
+cache summaries and fallback, parsing, manifest type syntax, and complete
+manifest loading. `make robustness-campaign` records longer campaigns with
+per-target logs, source identity, budgets, and outcomes. See the
+[fuzzing guide](docs/FUZZING.md) for campaign controls and regression replay.
+
+`make loadtest LOADTEST_ARGS='--duration 300 --sse-connections 4'` sustains mixed
+reads and writes while draining SSE streams and checking every update. The
+[load-test guide](examples/reference_service/loadtest/README.md) explains bounded
+statistics, memory accounting, and measurement limits.
 
 `make benchmark` measures repeated cold, warm, edited, and uncached verification,
 with separate pipeline/worker timings and per-process memory. Pass

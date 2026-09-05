@@ -55,14 +55,18 @@ PYTHONPATH=src ../../.venv/bin/python -m host.main --port 8080 --database ./demo
 PYTHONPATH=src ../../.venv/bin/python -m loadtest.load --requests 100 --connections 20 --sse-connections 2 --verifier ../../bin/purepy
 ```
 
-The harness starts and cleans up a localhost listener, measures request throughput,
-latency, CPU, memory, overlapping database reads, and SSE delivery. Its default
-10 ms simulated database latency makes overlap visible. Numbers include Python
-tracing overhead and are for viability, not framework comparisons. The optional
+The harness starts and cleans up a localhost listener and runs mixed reads and
+writes with continuous SSE readers. Use `--duration 300` for a five-minute run;
+the default remains 100 requests. It measures request throughput, latency, CPU,
+memory, overlapping database reads, and correlated SSE delivery, then checks the
+final database state and resource cleanup. Its default 10 ms simulated database
+latency makes overlapping reads visible. Numbers cover the combined local client,
+server, SQLite, and tracing process. See the [load-test guide](loadtest/README.md)
+for bounded statistics and memory-growth interpretation. The optional
 `--verifier` records cold and warm checks after stopping the server, keeping
 analysis and server timings independent. Omit it to run the workload alone.
 
-[A recorded sample](loadtest/sample.json) on Apple M4 with 16 GiB RAM, macOS
+[A historical schema-1 sample](loadtest/sample.json) on Apple M4 with 16 GiB RAM, macOS
 26.5.2, and uv-managed Python 3.14.7 handled 100 requests at 20-way concurrency
 with 20 overlapping reads, roughly 1293 requests/s, and 17.5 ms p95 latency.
 Two SSE streams received all six expected deliveries within 51.3 ms of their

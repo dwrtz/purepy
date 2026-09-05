@@ -12,9 +12,11 @@ BENCHMARK_ARGS ?=
 BENCHMARK_BASELINE ?= benchmarks/baseline.json
 BENCHMARK_CANDIDATE ?= build/benchmark-candidate.json
 BENCHMARK_COMPARE_ARGS ?=
+ROBUSTNESS_ARGS ?=
+LOADTEST_ARGS ?=
 FUZZ_FLAGS = -run '^$$' -fuzztime "$(FUZZ_TIME)" -parallel "$(FUZZ_PARALLEL)" -timeout "$(FUZZ_TIMEOUT)" -fuzzminimizetime "$(FUZZ_MINIMIZE_TIME)"
 
-.PHONY: setup build test race fuzz-test python-test service-test syntax-test differential-test unicode-test unicode-generate coverage-test example serve loadtest benchmark benchmark-test benchmark-compare package clean
+.PHONY: setup build test race fuzz-test robustness-test robustness-campaign python-test service-test syntax-test differential-test unicode-test unicode-generate coverage-test example serve loadtest benchmark benchmark-test benchmark-compare package clean
 setup:
 	UV_PROJECT_ENVIRONMENT="$(VENV)" $(UV) sync --locked --project python --python $(PYTHON_VERSION)
 build:
@@ -31,6 +33,11 @@ fuzz-test:
 	GOMEMLIMIT=$(FUZZ_MEMORY) go test ./internal/app $(FUZZ_FLAGS) -fuzz '^FuzzCacheFallback$$'
 	GOMEMLIMIT=$(FUZZ_MEMORY) go test ./internal/frontend $(FUZZ_FLAGS) -fuzz '^FuzzParseNeverPanics$$'
 	GOMEMLIMIT=$(FUZZ_MEMORY) go test ./internal/manifest $(FUZZ_FLAGS) -fuzz '^FuzzTypeSyntax$$'
+	GOMEMLIMIT=$(FUZZ_MEMORY) go test ./internal/manifest $(FUZZ_FLAGS) -fuzz '^FuzzManifestLoad$$'
+robustness-test: setup
+	$(PYTHON) -m unittest discover -s tools/tests -p 'test_robustness_campaign.py' -v
+robustness-campaign: setup
+	$(PYTHON) tools/robustness_campaign.py $(ROBUSTNESS_ARGS)
 python-test: setup
 	$(PYTHON) -m unittest discover -s python/tests -v
 service-test: setup
@@ -58,7 +65,7 @@ example:
 serve: setup
 	cd examples/reference_service && PYTHONPATH=src $(PYTHON) -m host.main
 loadtest: setup build
-	cd examples/reference_service && PYTHONPATH=src $(PYTHON) -m loadtest.load --verifier "$(CURDIR)/bin/purepy"
+	cd examples/reference_service && PYTHONPATH=src $(PYTHON) -m loadtest.load --verifier "$(CURDIR)/bin/purepy" $(LOADTEST_ARGS)
 benchmark: setup build
 	$(PYTHON) tools/benchmark.py --verifier "$(CURDIR)/bin/purepy" $(BENCHMARK_ARGS)
 benchmark-test: setup

@@ -1,0 +1,93 @@
+{
+  "schema": 1,
+  "kind": "go_fuzz_campaign",
+  "status": "passed",
+  "started_at": "2026-09-05T15:45:12+00:00",
+  "base_commit": "e46acc19b3040a2f38770eb0e8153d5feb9a2b82",
+  "git_status": "M .github/workflows/ci.yml\n M Makefile\n M README.md\n M docs/CONFORMANCE.md\n M docs/FUZZING.md\n M docs/IMPLEMENTATION.md\n M docs/MANIFESTS.md\n M docs/conformance/boundary.json\n M docs/conformance/tooling.json\n M examples/reference_service/README.md\n M examples/reference_service/loadtest/load.py\n M internal/config/config.go\n M internal/manifest/manifest.go\n M internal/manifest/source.go\n?? examples/reference_service/loadtest/README.md\n?? examples/reference_service/tests/test_loadtest.py\n?? internal/config/case_sensitive_test.go\n?? internal/config/keys.go\n?? internal/manifest/container_shape_test.go\n?? internal/manifest/fuzz_test.go\n?? internal/manifest/key_case_test.go\n?? internal/manifest/testdata/\n?? tools/robustness_campaign.py\n?? tools/tests/test_robustness_campaign.py",
+  "source_before": {
+    "sha256": "53ca9b091f90df8299fdc95207817d2d8f3438cec6674715fc47bc8ca73a6aa3",
+    "file_count": 83,
+    "scope": "go.mod, go.sum and all files beneath cmd, internal, tools/semantic_probe (including embedded data and testdata)"
+  },
+  "go_version": "go version go1.24.5 darwin/arm64",
+  "go_environment": {
+    "CC": "cc",
+    "CGO_ENABLED": "1",
+    "GOARCH": "arm64",
+    "GOEXPERIMENT": "",
+    "GOFLAGS": "",
+    "GOOS": "darwin"
+  },
+  "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "logical_cpus": 10,
+  "physical_memory_bytes": 17179869184,
+  "budgets": {
+    "mutation_seconds": 600,
+    "go_timeout_seconds": 720,
+    "parent_timeout_seconds": 750,
+    "minimize_seconds": 30,
+    "workers_per_target": 1,
+    "concurrent_targets": 1,
+    "go_memory_soft_target": "512MiB"
+  },
+  "environment": {
+    "GOCACHE": "/tmp/purepy-review-go-cache",
+    "GOMAXPROCS": "2",
+    "GOMEMLIMIT": "512MiB",
+    "GOGC": null,
+    "GODEBUG": null
+  },
+  "selected_targets": [
+    "FuzzManifestLoad"
+  ],
+  "results": [
+    {
+      "target": "FuzzManifestLoad",
+      "package": "./internal/manifest",
+      "command": [
+        "go",
+        "test",
+        "./internal/manifest",
+        "-run",
+        "^$",
+        "-fuzz",
+        "^FuzzManifestLoad$",
+        "-fuzztime=600s",
+        "-parallel=1",
+        "-timeout=720s",
+        "-fuzzminimizetime=30s"
+      ],
+      "log": "FuzzManifestLoad.log",
+      "log_sha256": "842fecf20ddf25d32b7c4eeae9fd1badad547658671ad8446dbb0663ff8e0be7",
+      "started_at": "2026-09-05T15:45:12+00:00",
+      "finished_at": "2026-09-05T15:55:14+00:00",
+      "wall_seconds": 602.273,
+      "exit_code": 0,
+      "process_failure": null,
+      "executions": 1122330,
+      "reported_elapsed": "10m1s",
+      "new_interesting": 570,
+      "total_interesting": 660,
+      "failing_inputs": [],
+      "baseline_completed": true,
+      "mutation_workers": 1,
+      "status": "passed",
+      "errors": []
+    }
+  ],
+  "limits": [
+    "Finite local mutation evidence, not exhaustive conformance or a soundness proof.",
+    "GOMEMLIMIT is a soft Go GC target; C parser allocations are not covered.",
+    "Concurrent targets contend for this machine; execution counts are not performance benchmarks."
+  ],
+  "source_after": {
+    "sha256": "53ca9b091f90df8299fdc95207817d2d8f3438cec6674715fc47bc8ca73a6aa3",
+    "file_count": 83,
+    "scope": "go.mod, go.sum and all files beneath cmd, internal, tools/semantic_probe (including embedded data and testdata)"
+  },
+  "source_unchanged": true,
+  "finished_at": "2026-09-05T15:55:14+00:00",
+  "interrupted": false
+}

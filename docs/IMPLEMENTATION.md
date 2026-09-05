@@ -124,6 +124,26 @@ cannot be verified plain modules: a trusted child does not turn a project `.py`
 file into a package. Unicode identifier validation uses pinned Python 3.14 data
 across discovery, configuration, and manifests; see the [Unicode guide](UNICODE.md).
 
+Complete-manifest fuzzing now exercises TOML loading, source indexing, declaration
+validation, and ordered multi-file merging with independent generated verdicts.
+Its seed controls exposed the decoder coercing singleton TOML tables into array
+fields; the loader now rejects those shapes as required by manifest schema 1.
+An extended mutation run also exposed case-insensitive decoder field matching.
+Manifests and project configuration now validate exact decoded key spelling,
+preventing aliases from bypassing unknown-field checks or overwriting settings.
+The recorded campaign runner preserves source hashes, exact commands, execution
+counts and logs, and fails incomplete or interrupted runs.
+
+The reference load harness now supports sustained mixed reads/writes and
+continuous SSE readers. It checks response/event identities and final database
+state, limits its statistics and pending-event memory, samples CPU and memory,
+and verifies cleanup. SQLite retains an event row per write, so its page growth
+is recorded separately from traced Python allocation trends.
+The [2026-09-05 validation report](validation/2026-09-05/README.md) records eight
+successful ten-minute fuzz runs, a 64-seed whole-function campaign, the discovered
+and fixed schema gaps, and a five-minute mixed service workload with complete
+SSE delivery and cleanup.
+
 The performance harness records repeated repository-size and worker matrices,
 per-process CPU/peak RSS, disjoint pipeline timings, and summed frontend-worker
 durations. It checks original and edited report equivalence before recording any
@@ -137,8 +157,9 @@ records the measurements and the tolerant same-run base/head CI gate.
 This is an experimental implementation, not a declaration that every PurePy 0.1
 release gate in the plan has been completed. Schemas are versioned but have not
 been declared frozen for public release. A broader independent soundness audit,
-long-running fuzz campaigns, exhaustive CPython 3.14 differential coverage,
-dedicated-runner performance targets, sustained representative service loads, and
+broader campaigns beyond the recorded local runs, exhaustive CPython 3.14
+differential coverage, dedicated-runner performance targets, representative
+deployment workloads, and
 public binary/support-package publication remain release work. The packaging
 workflow prepares artifacts when explicitly run;
 no release is published by the implementation task.

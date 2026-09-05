@@ -1,0 +1,1304 @@
+{
+  "schema": 1,
+  "kind": "whole_function_seed_campaign",
+  "started_at": "2026-09-05T15:24:15.347679+00:00",
+  "python_version": "3.14.7",
+  "base_commit": "e46acc19b3040a2f38770eb0e8153d5feb9a2b82",
+  "helper_sha256": "c4a31c1f6ce0825738f6ea3ca9f118326e9eeba1b01698da3500f08df85eaa5f",
+  "harness_sources": {
+    "tools/differential_functions.py": "418d259d3d6e9a0235cc7f365860243f1a5e1dad26faf3c88425759684355695",
+    "tools/differential_semantics.py": "6aa324cef6c21cab9ad2ef4a350055faf168241a5beed573aa2afe94ca92e6d8",
+    "tools/function_cases.py": "518e1490a8724de18783570ae9eab18999bf616cdeb094d3ec92582945695fb0",
+    "tools/function_runtime.py": "79b9e458db430239731833ead40e449a3476cbc1827e106d126a679651fcc89f"
+  },
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63
+  ],
+  "samples": 256,
+  "results": [
+    {
+      "seed": 0,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "0",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-00.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2255,
+      "wall_seconds": 2.081,
+      "log": "seed-00.log",
+      "log_sha256": "926b7a21d7c3d315a02dcf9e65a076fdda003df33d8732dfa1fdf91542377c50"
+    },
+    {
+      "seed": 1,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "1",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-01.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2306,
+      "wall_seconds": 0.904,
+      "log": "seed-01.log",
+      "log_sha256": "912be4c68fde3b09131dbcff979bc67955f259a9f2442e2bdf0c26c511ea8f17"
+    },
+    {
+      "seed": 2,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "2",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-02.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2248,
+      "wall_seconds": 0.898,
+      "log": "seed-02.log",
+      "log_sha256": "888d05c1f4c24e3bc4951d3f7ae30a89614276c10f6a7719874591f19dacbb94"
+    },
+    {
+      "seed": 3,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "3",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-03.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2223,
+      "wall_seconds": 0.808,
+      "log": "seed-03.log",
+      "log_sha256": "b3ea85d804ecddf2bf661d3e92edcc75cf223ab64bd90d0e3d372861bd7a4bc5"
+    },
+    {
+      "seed": 4,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "4",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-04.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2296,
+      "wall_seconds": 0.842,
+      "log": "seed-04.log",
+      "log_sha256": "79143ee269486f6a7dc87fa3dcea6711ca4c9428f9fbda738df8cd9cf85241bf"
+    },
+    {
+      "seed": 5,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "5",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-05.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2239,
+      "wall_seconds": 0.81,
+      "log": "seed-05.log",
+      "log_sha256": "b4d788513c33b30840e785c88e0f3a76c75cef68ab89dd7e794a963056604ac5"
+    },
+    {
+      "seed": 6,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "6",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-06.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2343,
+      "wall_seconds": 0.809,
+      "log": "seed-06.log",
+      "log_sha256": "92c60e6e258498afcb7461f5a415d2598c2b25f3171a198f8991aa48d4a3ddb6"
+    },
+    {
+      "seed": 7,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "7",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-07.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2275,
+      "wall_seconds": 0.805,
+      "log": "seed-07.log",
+      "log_sha256": "4c6405a3db49aba32aac6c999f3aeff01c66a5d1bf774884ff6f9a3d2afae814"
+    },
+    {
+      "seed": 8,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "8",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-08.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2259,
+      "wall_seconds": 0.811,
+      "log": "seed-08.log",
+      "log_sha256": "de9646f2f5a87a3b0a787ed368c7d30c45d44200ada96272e5698e9bf75376d1"
+    },
+    {
+      "seed": 9,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "9",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-09.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2267,
+      "wall_seconds": 0.821,
+      "log": "seed-09.log",
+      "log_sha256": "a84f8de02323acd7519c5ec1191e67ff414a2a84b1baf461978676da1e59ed83"
+    },
+    {
+      "seed": 10,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "10",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-10.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2181,
+      "wall_seconds": 0.844,
+      "log": "seed-10.log",
+      "log_sha256": "73160563e962420bad5cf0aac3ec888cfff4b029155fb2ea685ba1e1b3fb5cc4"
+    },
+    {
+      "seed": 11,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "11",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-11.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2255,
+      "wall_seconds": 1.015,
+      "log": "seed-11.log",
+      "log_sha256": "a245aa266e31db40ade955655d752689b5d3e686c0624e22b52b68bdd69019e3"
+    },
+    {
+      "seed": 12,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "12",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-12.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2247,
+      "wall_seconds": 0.821,
+      "log": "seed-12.log",
+      "log_sha256": "fcdd6226313c31ba57df5b25a13969a11d2e7976577cafeeee940b115a610f81"
+    },
+    {
+      "seed": 13,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "13",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-13.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2308,
+      "wall_seconds": 0.892,
+      "log": "seed-13.log",
+      "log_sha256": "6aa74528e49f645c6b487048c088875f11bdff607cb24e093133cd3822d4599d"
+    },
+    {
+      "seed": 14,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "14",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-14.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2200,
+      "wall_seconds": 0.804,
+      "log": "seed-14.log",
+      "log_sha256": "a33bdb10713c3e0e83a7b958e685ccd37c7a7cbdb0c2aed75f4cd99e35c157ba"
+    },
+    {
+      "seed": 15,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "15",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-15.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2230,
+      "wall_seconds": 0.833,
+      "log": "seed-15.log",
+      "log_sha256": "6795bb4c0421fab2629eb6ecebf4a5f22c38a9a46b8e1c08809bede5293e01d8"
+    },
+    {
+      "seed": 16,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "16",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-16.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2261,
+      "wall_seconds": 0.992,
+      "log": "seed-16.log",
+      "log_sha256": "590bf07d9cf8d76906b35f5769c2c0693f74bf6c2a567b501dd56a370fa1be11"
+    },
+    {
+      "seed": 17,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "17",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-17.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2217,
+      "wall_seconds": 0.866,
+      "log": "seed-17.log",
+      "log_sha256": "56ab90d590af226078df84077fd211c0c72c1da2e7579634e2ea0d37a26bdf69"
+    },
+    {
+      "seed": 18,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "18",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-18.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2317,
+      "wall_seconds": 0.841,
+      "log": "seed-18.log",
+      "log_sha256": "ccaec58c3a22e56369799c9157c01dd2aaf0af18eaa7be8ba044966a0c3f2a00"
+    },
+    {
+      "seed": 19,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "19",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-19.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2243,
+      "wall_seconds": 0.844,
+      "log": "seed-19.log",
+      "log_sha256": "185e17ada521a5a7bc01f14de744a02db2aad13e6f9d11c7e91296bb8399b352"
+    },
+    {
+      "seed": 20,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "20",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-20.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2279,
+      "wall_seconds": 0.862,
+      "log": "seed-20.log",
+      "log_sha256": "fedc41c6b039fc739d0df04a56f6485db36121ae7e124be7b25bc3fd4b305d6a"
+    },
+    {
+      "seed": 21,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "21",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-21.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2238,
+      "wall_seconds": 0.863,
+      "log": "seed-21.log",
+      "log_sha256": "5ed4803facb9fb010768acb3633f4c4cacf1a15f5082531504f08014a89756c5"
+    },
+    {
+      "seed": 22,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "22",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-22.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2266,
+      "wall_seconds": 0.81,
+      "log": "seed-22.log",
+      "log_sha256": "13c2b28ec5f71ffe85b8e4dcfb4560973d884441e8b3e367c537bfda285082d0"
+    },
+    {
+      "seed": 23,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "23",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-23.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2251,
+      "wall_seconds": 0.825,
+      "log": "seed-23.log",
+      "log_sha256": "68959ba14641108252365f3521102cfbb108ef78650db0c2e145371b2db016a7"
+    },
+    {
+      "seed": 24,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "24",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-24.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2311,
+      "wall_seconds": 0.794,
+      "log": "seed-24.log",
+      "log_sha256": "22541664e9e71e10c15b649ff55ea50a91fa37c8bfdb90abbf23fb3bf9673bb9"
+    },
+    {
+      "seed": 25,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "25",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-25.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2279,
+      "wall_seconds": 0.904,
+      "log": "seed-25.log",
+      "log_sha256": "855ec9f8d8dea2278cfc72797755b63aaa804a90e7f764825c6659254365bf3e"
+    },
+    {
+      "seed": 26,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "26",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-26.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2290,
+      "wall_seconds": 0.82,
+      "log": "seed-26.log",
+      "log_sha256": "c887b134e21c8f8258ca851c663590f29496b471cdc18d8919cc15220063aa9d"
+    },
+    {
+      "seed": 27,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "27",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-27.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2278,
+      "wall_seconds": 0.795,
+      "log": "seed-27.log",
+      "log_sha256": "05ac4cc318619794475ece2e0c5e2e87f266f07df1d0fcf2a10fc5fad4361adc"
+    },
+    {
+      "seed": 28,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "28",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-28.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2263,
+      "wall_seconds": 0.799,
+      "log": "seed-28.log",
+      "log_sha256": "949f82c81d4df384a54b19ca5abeb150fe54f8231dcd502897cfada505cde4e0"
+    },
+    {
+      "seed": 29,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "29",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-29.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2353,
+      "wall_seconds": 0.812,
+      "log": "seed-29.log",
+      "log_sha256": "ea817d054d392769d2fe1a0e60842baf15a681ef6037769e62cb3cfe939ec3c1"
+    },
+    {
+      "seed": 30,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "30",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-30.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2265,
+      "wall_seconds": 0.828,
+      "log": "seed-30.log",
+      "log_sha256": "492c415ee8552dbf96c2997fd55c672b69ecbdddab97a87d3be8f5c5508baecc"
+    },
+    {
+      "seed": 31,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "31",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-31.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2225,
+      "wall_seconds": 0.856,
+      "log": "seed-31.log",
+      "log_sha256": "8c77f896b908b0bc76196fea34a0ef9bed04e8d1d652125c4568433aad2b8f17"
+    },
+    {
+      "seed": 32,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "32",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-32.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2239,
+      "wall_seconds": 0.801,
+      "log": "seed-32.log",
+      "log_sha256": "cb7375b9b1a10cba0c0144f40e0f5e16a861fe69f5cec9e8c970843c7a4c18f1"
+    },
+    {
+      "seed": 33,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "33",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-33.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2226,
+      "wall_seconds": 0.831,
+      "log": "seed-33.log",
+      "log_sha256": "80cdf06e6a0d9f82d1a79ef8f156afd67c2c6642374c3e0956daf1c72c8d0bb2"
+    },
+    {
+      "seed": 34,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "34",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-34.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2317,
+      "wall_seconds": 0.815,
+      "log": "seed-34.log",
+      "log_sha256": "004dfa4007f4319db6a9bf3fea97270efae7e84720563e06a1f060037b47cca4"
+    },
+    {
+      "seed": 35,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "35",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-35.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2255,
+      "wall_seconds": 0.835,
+      "log": "seed-35.log",
+      "log_sha256": "1a04a4fbb5bfe96488c68ac439744658dea46ac8ac2c4bbe05adc575f9bb7486"
+    },
+    {
+      "seed": 36,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "36",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-36.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2264,
+      "wall_seconds": 0.84,
+      "log": "seed-36.log",
+      "log_sha256": "528e664960eee4a0e527cd1d91ea3d1a6c1099e1ec643a364af6c17f179fd34c"
+    },
+    {
+      "seed": 37,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "37",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-37.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2270,
+      "wall_seconds": 0.792,
+      "log": "seed-37.log",
+      "log_sha256": "a2b628af4c38a4e40d40b833875210fe4672eb7135a224a9b9d951412a04208e"
+    },
+    {
+      "seed": 38,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "38",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-38.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2230,
+      "wall_seconds": 0.856,
+      "log": "seed-38.log",
+      "log_sha256": "a2f13d37be48a803a8c5642ca49bc7bf4286d0ac24056a3d811f9433565be0a8"
+    },
+    {
+      "seed": 39,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "39",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-39.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2259,
+      "wall_seconds": 0.825,
+      "log": "seed-39.log",
+      "log_sha256": "11267291024f9b1666f36487cbbeee9c29741a04e2fc47f89d342ac2cb1548d0"
+    },
+    {
+      "seed": 40,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "40",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-40.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2187,
+      "wall_seconds": 0.817,
+      "log": "seed-40.log",
+      "log_sha256": "d59d5ee09ca0cb6826d0adb236a94a1ed51e8606e4582e5fd0502bdb7104a453"
+    },
+    {
+      "seed": 41,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "41",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-41.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2230,
+      "wall_seconds": 0.829,
+      "log": "seed-41.log",
+      "log_sha256": "5edbc02f20cfd2f744798c7ac925a70fb77f5ddcb8628d9258c49c16e7d9a716"
+    },
+    {
+      "seed": 42,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "42",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-42.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2249,
+      "wall_seconds": 0.847,
+      "log": "seed-42.log",
+      "log_sha256": "1f8f2fc56addf1304f2bd2a50f819452b872c93fee23824e24c15b1b3fcee655"
+    },
+    {
+      "seed": 43,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "43",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-43.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2282,
+      "wall_seconds": 0.808,
+      "log": "seed-43.log",
+      "log_sha256": "6db454765926b7f5725e28161edd4de7f371905a78021c58e28215df07bb6939"
+    },
+    {
+      "seed": 44,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "44",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-44.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2297,
+      "wall_seconds": 0.819,
+      "log": "seed-44.log",
+      "log_sha256": "d217ce1cbef6ebcd142f5f3ba47ac8778b7f67239f13afc0e17cd9a5f5cfdd6e"
+    },
+    {
+      "seed": 45,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "45",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-45.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2323,
+      "wall_seconds": 0.862,
+      "log": "seed-45.log",
+      "log_sha256": "e520a5e13d9311382f5160a38188796c2e641357f7ed22e5570477bc2bba7feb"
+    },
+    {
+      "seed": 46,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "46",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-46.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2217,
+      "wall_seconds": 0.816,
+      "log": "seed-46.log",
+      "log_sha256": "1fc21d2a48bdc0d3de849284c8d1a70f77da36eaea53a3f6135b19da86c8b604"
+    },
+    {
+      "seed": 47,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "47",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-47.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2238,
+      "wall_seconds": 0.92,
+      "log": "seed-47.log",
+      "log_sha256": "9902c0c25dc2ce523eed0c8f9f33f3bc22ec8df29a886413337b275da7643345"
+    },
+    {
+      "seed": 48,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "48",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-48.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2297,
+      "wall_seconds": 0.832,
+      "log": "seed-48.log",
+      "log_sha256": "a2172e7452e78fced9ee7f0b8ed6dfdf5087773054aede3aafa8a8f6b4276e6c"
+    },
+    {
+      "seed": 49,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "49",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-49.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2301,
+      "wall_seconds": 0.876,
+      "log": "seed-49.log",
+      "log_sha256": "894819669511a72cf4fbb944cc03f97e5c0e6efb3c10c8337a6c09428dfabc4d"
+    },
+    {
+      "seed": 50,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "50",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-50.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2188,
+      "wall_seconds": 0.823,
+      "log": "seed-50.log",
+      "log_sha256": "38d467c3af8fb7a759e09654e745e1abfe4582579eaf1af8382023fecdb12d0a"
+    },
+    {
+      "seed": 51,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "51",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-51.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2242,
+      "wall_seconds": 0.794,
+      "log": "seed-51.log",
+      "log_sha256": "9f792ecd44303b16eea50007a53c41a888bfeed5d46241ddf842aa11896fcf4b"
+    },
+    {
+      "seed": 52,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "52",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-52.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2214,
+      "wall_seconds": 0.875,
+      "log": "seed-52.log",
+      "log_sha256": "ca1dae258d810f6fccb7388926bea4a8c10a6088dbf1a98691cd0cfa7e031f5f"
+    },
+    {
+      "seed": 53,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "53",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-53.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2264,
+      "wall_seconds": 0.815,
+      "log": "seed-53.log",
+      "log_sha256": "ed275889f7aabcd9db617368334fb054aa1fb7f1846432c1339771c3616214b1"
+    },
+    {
+      "seed": 54,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "54",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-54.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2211,
+      "wall_seconds": 0.841,
+      "log": "seed-54.log",
+      "log_sha256": "18b83a777f4256ae0af78d0c922ed40992050dbef278f1614d4efc6d57c18eb0"
+    },
+    {
+      "seed": 55,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "55",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-55.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2274,
+      "wall_seconds": 0.876,
+      "log": "seed-55.log",
+      "log_sha256": "e4212f553186d7fb5ad1a2a9da2737a6da648427a5b8bb41ef70d5bc4e83aa10"
+    },
+    {
+      "seed": 56,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "56",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-56.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2279,
+      "wall_seconds": 0.871,
+      "log": "seed-56.log",
+      "log_sha256": "c88076ebfa373eef995064b055d87e5d570186acc1124bcf97d3d5c672b595ba"
+    },
+    {
+      "seed": 57,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "57",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-57.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2305,
+      "wall_seconds": 0.879,
+      "log": "seed-57.log",
+      "log_sha256": "cf2363db0755e0fbfe977321ed9ad1aba3418a334b242a78fd28e7017651d454"
+    },
+    {
+      "seed": 58,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "58",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-58.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2205,
+      "wall_seconds": 0.946,
+      "log": "seed-58.log",
+      "log_sha256": "a9da7fd99e10a286d62734ea506e750059f2b50d49a3813ff29fc319a0bfa001"
+    },
+    {
+      "seed": 59,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "59",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-59.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2259,
+      "wall_seconds": 0.873,
+      "log": "seed-59.log",
+      "log_sha256": "eb2f12d1566b87b445b856ba467d4bb0dd250047a01e4bf2689f083d080e173e"
+    },
+    {
+      "seed": 60,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "60",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-60.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2249,
+      "wall_seconds": 0.859,
+      "log": "seed-60.log",
+      "log_sha256": "1ef9db66aa3417fc38ba14e30f2b6abb98aa1abafe2ecafd00efb4834838a29b"
+    },
+    {
+      "seed": 61,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "61",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-61.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2251,
+      "wall_seconds": 0.938,
+      "log": "seed-61.log",
+      "log_sha256": "0476cd6452dc09b0f89ae16fe07e54c0fecf2ca9c4ecb294e41ff01cddbd77bf"
+    },
+    {
+      "seed": 62,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "62",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-62.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2294,
+      "wall_seconds": 0.846,
+      "log": "seed-62.log",
+      "log_sha256": "26f20080ed16af83eb615df8d00ed24635138a50e3836f227359ea04f94cb752"
+    },
+    {
+      "seed": 63,
+      "command": [
+        "/Users/djwurtz/proj/purepy/.venv/bin/python",
+        "tools/differential_functions.py",
+        "--seed",
+        "63",
+        "--samples",
+        "256",
+        "--failures",
+        "/Users/djwurtz/proj/purepy/build/robustness-differential-2026-09-05/failures-63.json"
+      ],
+      "exit_code": 0,
+      "functions": 297,
+      "invocations": 2226,
+      "wall_seconds": 0.89,
+      "log": "seed-63.log",
+      "log_sha256": "85e612bdf9407061f7212672db93bbb1b07d1022f1ed7a89c050af24d31cf509"
+    }
+  ],
+  "status": "passed",
+  "finished_at": "2026-09-05T15:25:10.861674+00:00",
+  "total_function_trials": 19008,
+  "total_invocation_trials": 144610,
+  "distinct_sources": 240
+}

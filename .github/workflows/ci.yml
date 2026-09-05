@@ -18,7 +18,7 @@ jobs:
       - run: go vet ./...
       - run: make fuzz-test
       - run: go build -trimpath -o bin/purepy ./cmd/purepy
-      - run: make python-test service-test syntax-test differential-test unicode-test coverage-test benchmark-test
+      - run: make python-test service-test syntax-test differential-test unicode-test coverage-test benchmark-test robustness-test
       - run: bin/purepy check examples/reference_service --no-cache
       - name: Preserve failing fuzz inputs and differential cases
         if: failure()
@@ -29,6 +29,7 @@ jobs:
             internal/**/testdata/fuzz/**
             build/differential-failures.json
             build/function-differential-failures.json
+            build/robustness-campaign/**
           if-no-files-found: ignore
           retention-days: 14
   performance:

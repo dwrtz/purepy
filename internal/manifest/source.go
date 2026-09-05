@@ -2,6 +2,7 @@ package manifest
 
 import (
 	"errors"
+	"fmt"
 	"sort"
 	"strings"
 	"unicode/utf8"
@@ -42,6 +43,7 @@ func sourceSpan(path string, data []byte, start, end int) model.Span {
 type sourceValue struct {
 	span    model.Span
 	keySpan model.Span
+	array   bool
 	fields  map[string]*sourceValue
 	items   []*sourceValue
 }
@@ -58,6 +60,13 @@ func (v *sourceValue) item(index int) *sourceValue {
 		return v.items[index]
 	}
 	return &sourceValue{span: v.span}
+}
+
+func containerSpan(value *sourceValue) model.Span {
+	if value.keySpan.File != "" {
+		return value.keySpan
+	}
+	return value.span
 }
 
 type sourcePoint struct {
@@ -117,26 +126,33 @@ func declarationSources(path string, data []byte) *sourceValue {
 	spanAt := index.span
 	root := &sourceValue{span: spanAt(0, 0), fields: map[string]*sourceValue{}}
 	section := root
-	keysOf := func(node *unstable.Node) []string {
-		var keys []string
+	type sourceKey struct {
+		name string
+		span model.Span
+	}
+	keysOf := func(node *unstable.Node) []sourceKey {
+		var keys []sourceKey
 		it := node.Key()
 		for it.Next() {
-			keys = append(keys, string(it.Node().Data))
+			key := it.Node()
+			keys = append(keys, sourceKey{string(key.Data), spanAt(int(key.Raw.Offset), int(key.Raw.Offset+key.Raw.Length))})
 		}
 		return keys
 	}
-	// The TOML decoder has already validated every key and container shape.
+	// The TOML decoder has validated syntax and value types. Exact schema keys
+	// and array shapes are checked using this projection because the decoder
+	// also accepts case-folded field names and singleton tables for slices.
 	// Intermediate table-array nodes refer to their most recent declaration.
-	locate := func(start *sourceValue, keys []string) *sourceValue {
+	locate := func(start *sourceValue, keys []sourceKey) *sourceValue {
 		current := start
 		for _, key := range keys {
 			if current.fields == nil {
 				current.fields = map[string]*sourceValue{}
 			}
-			next := current.fields[key]
+			next := current.fields[key.name]
 			if next == nil {
-				next = &sourceValue{span: current.span, fields: map[string]*sourceValue{}}
-				current.fields[key] = next
+				next = &sourceValue{span: current.span, keySpan: key.span, fields: map[string]*sourceValue{}}
+				current.fields[key.name] = next
 			}
 			if len(next.items) > 0 {
 				next = next.items[len(next.items)-1]
@@ -150,6 +166,7 @@ func declarationSources(path string, data []byte) *sourceValue {
 		value := &sourceValue{span: spanAt(int(node.Raw.Offset), int(node.Raw.Offset+node.Raw.Length))}
 		switch node.Kind {
 		case unstable.Array:
+			value.array = true
 			it := node.Children()
 			for it.Next() {
 				value.items = append(value.items, valueOf(it.Node()))
@@ -164,7 +181,10 @@ func declarationSources(path string, data []byte) *sourceValue {
 				if parent.fields == nil {
 					parent.fields = map[string]*sourceValue{}
 				}
-				parent.fields[keys[len(keys)-1]] = valueOf(entry.Value())
+				field := valueOf(entry.Value())
+				key := keys[len(keys)-1]
+				field.keySpan = key.span
+				parent.fields[key.name] = field
 			}
 		}
 		return value
@@ -181,11 +201,9 @@ func declarationSources(path string, data []byte) *sourceValue {
 				parent.fields = map[string]*sourceValue{}
 			}
 			value := valueOf(node.Value())
-			it := node.Key()
-			it.Next()
-			key := it.Node()
-			value.keySpan = spanAt(int(key.Raw.Offset), int(key.Raw.Offset+key.Raw.Length))
-			parent.fields[keys[len(keys)-1]] = value
+			key := keys[len(keys)-1]
+			value.keySpan = key.span
+			parent.fields[key.name] = value
 		case unstable.Table:
 			section = locate(root, keysOf(node))
 		case unstable.ArrayTable:
@@ -195,19 +213,58 @@ func declarationSources(path string, data []byte) *sourceValue {
 			if parent.fields == nil {
 				parent.fields = map[string]*sourceValue{}
 			}
-			array := parent.fields[key]
+			array := parent.fields[key.name]
 			if array == nil {
-				array = &sourceValue{span: parent.span}
-				parent.fields[key] = array
+				array = &sourceValue{span: parent.span, keySpan: key.span, array: true}
+				parent.fields[key.name] = array
 			}
-			it := node.Key()
-			it.Next()
-			first := it.Node()
-			section = &sourceValue{span: spanAt(int(first.Raw.Offset), int(first.Raw.Offset+first.Raw.Length)), fields: map[string]*sourceValue{}}
+			section = &sourceValue{span: keys[0].span, fields: map[string]*sourceValue{}}
 			array.items = append(array.items, section)
 		}
 	}
 	return root
+}
+
+// validateSourceKeys closes the typed decoder's case-insensitive field lookup.
+// It uses decoded TOML key names, so quoted/escaped canonical keys remain valid,
+// and selects the first offending key by source offset rather than map order.
+func validateSourceKeys(root *sourceValue) error {
+	fields := map[string]map[string]string{
+		"root":       {"schema": "", "module": "module", "type": "type", "function": "function"},
+		"module":     {"name": "", "import_safe": ""},
+		"type":       {"name": "", "category": "", "labels": "", "immutable": ""},
+		"function":   {"name": "", "kind": "", "trust": "", "returns": "", "parameters": "parameters"},
+		"parameters": {"name": "", "type": ""},
+	}
+	var first *Error
+	var visit func(*sourceValue, string, string)
+	visit = func(value *sourceValue, scope, prefix string) {
+		for key, field := range value.fields {
+			path := key
+			if prefix != "" {
+				path = prefix + "." + key
+			}
+			childScope, allowed := fields[scope][key]
+			if !allowed {
+				span := containerSpan(field)
+				if first == nil || span.Start < first.Span.Start {
+					first = &Error{Err: fmt.Errorf("manifest %s: unknown fields: %s (line %d, column %d); keys are case-sensitive", span.File, path, span.Line, span.Column), Span: span}
+				}
+				continue
+			}
+			if childScope != "" {
+				visit(field, childScope, path)
+				for _, item := range field.items {
+					visit(item, childScope, path)
+				}
+			}
+		}
+	}
+	visit(root, "root", "")
+	if first != nil {
+		return first
+	}
+	return nil
 }
 
 func decodingSpan(path string, data []byte, err error) model.Span {

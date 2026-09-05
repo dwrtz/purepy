@@ -23,6 +23,7 @@ These fuzz tests do not invoke Python or execute analyzed project or host code.
 | `FuzzCacheFallback` | Corrupt real cache artifacts trigger reparsing and preserve the complete no-cache JSON report across worker counts, for accepted and rejected programs. |
 | `FuzzParseNeverPanics` | Bounded source parsing does not panic and diagnostic byte ranges stay within the input. |
 | `FuzzTypeSyntax` | Bounded manifest type strings do not panic the closed annotation parser. |
+| `FuzzManifestLoad` | Complete TOML file loading, source projection, declaration validation and ordered merging are deterministic and preserve valid locations; generated valid/invalid pairs require independent verdicts and exact declaration contents. |
 
 The semantic generator uses known valid shapes and targeted invalid variations,
 so acceptance is checked independently of the implementation's verdict. The
@@ -46,6 +47,13 @@ at 64 bytes, raw cache artifacts at 32 KiB, fallback controls at 8 KiB, parser
 source at 16 KiB, and manifest type strings at 4 KiB. Cache validation limits
 trees to depth 1,024 and 100,000 nodes; focused tests exercise both boundaries.
 The manifest type parser also limits type nesting to 64.
+Full-manifest fuzzing uses at most two files with 16 KiB combined arbitrary TOML,
+or at most 64 control bytes generating a valid manifest image and one of 15
+targeted invalid variations. Generated inputs are limited to 8 KiB, eight
+parameters, and type depth four. It checks inline arrays and table arrays,
+cross-file references and conflicts, quoted/Unicode keys, declaration categories,
+parameter syntax, and exact source-token locations. Loading remains separate from
+the linker's nominal type resolution and host capability authorization.
 
 Fuzz workers get a `GOMEMLIMIT=512MiB` Go memory target; this is a
 soft garbage-collection budget, not an operating-system memory cap, and does not
@@ -101,3 +109,48 @@ seeds; use the failed step's log to identify the new input.
 
 Passing short campaigns supplies bounded regression evidence. It does not finish
 the plan's long-running fuzz, independent soundness, or release performance gates.
+
+## Recorded campaigns
+
+`make robustness-campaign` runs all eight targets for ten minutes each and writes
+commands, budgets, toolchain/runtime metadata, source fingerprints, ordered
+results, and complete target logs to `build/robustness-campaign/`. Its default is
+one target and one mutation worker at a time. A practical concurrent run is:
+
+```sh
+GOCACHE=/tmp/purepy-campaign-cache GOMAXPROCS=2 make robustness-campaign \
+  ROBUSTNESS_ARGS='--concurrent-targets 4 --parallel 1 --output build/robustness-campaign'
+```
+
+Four concurrent targets still receive ten minutes each, approximately twenty
+minutes of wall time plus compilation, baseline replay, and any minimization.
+They compete for CPU and memory; execution counts are coverage observations, not
+throughput benchmarks. `GOMEMLIMIT=512MiB` applies to each Go process, including
+separate fuzz worker processes, and is neither a combined memory cap nor a limit
+on C allocations.
+
+The runner requires a completed baseline, the requested mutation-worker startup,
+positive execution counts, the requested reported duration (allowing one second
+for rounding), and successful Go completion. Seed-only runs, timeouts, crashes,
+missing evidence, source changes, or interrupted campaigns fail. SIGINT/SIGTERM
+stop active process groups and preserve partial reports; targets not yet started
+remain failed rather than becoming successful skips. A Go timeout defaults to
+twelve minutes per target, plus a thirty-second parent watchdog allowance.
+
+Use repeated `--target NAME` arguments for a selected rerun, with a new output
+directory. Existing evidence is never overwritten. Source identity includes all
+files beneath `cmd`, `internal`, and `tools/semantic_probe`, including embedded
+Unicode data and regression seeds, plus `go.mod` and `go.sum`. The recorded base
+commit and dirty status distinguish work in progress from a committed checkout.
+The report is updated after each target, and each result records its raw log's
+SHA-256. Go's failing corpus files remain in their package for replay; retain
+them as permanent regressions after triage.
+
+`make robustness-test` checks the runner's failure handling and evidence rules
+without launching a long campaign. Local campaign results and their limits belong
+in a dated validation report; one successful campaign does not establish an
+exhaustive security or soundness claim.
+
+The [2026-09-05 report](validation/2026-09-05/README.md) preserves the initial
+manifest failure, its fix and full rerun, all target logs, and the associated
+whole-function and service-load results.

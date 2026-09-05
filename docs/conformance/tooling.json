@@ -961,6 +961,10 @@
       {
         "path": "tools/tests/test_differential_semantics.py",
         "test": "DifferentialTests.test_live_primitive_and_near_miss_cases"
+      },
+      {
+        "path": "internal/manifest/fuzz_test.go",
+        "test": "TestManifestLoadFuzzSeeds"
       }
     ],
     "negative": [
@@ -971,10 +975,14 @@
       {
         "path": "tools/tests/test_differential_semantics.py",
         "test": "DifferentialTests.test_live_primitive_and_near_miss_cases"
+      },
+      {
+        "path": "internal/manifest/fuzz_test.go",
+        "test": "TestManifestLoadFuzzSeeds"
       }
     ],
     "fixtures": [],
-    "notes": "The suite has positive and negative cases across required feature families; an exhaustive enumeration of statement/operator/type combinations remains open. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; nominal/optional combinations and arbitrary compositions remain outside this finite matrix."
+    "notes": "Full manifest loading, strict container shapes, source indexing and ordered merging have accepted/rejected seed controls plus a bounded mutation target. Generated near misses require specific rejection reasons; arbitrary inputs require deterministic outcomes and valid locations. This does not prove every TOML composition or linked host contract."
   },
   {
     "section": "32.4",
@@ -1205,11 +1213,24 @@
       {
         "path": "examples/reference_service/tests/test_service.py",
         "test": "test_reads_overlap_across_host_invocations"
+      },
+      {
+        "path": "examples/reference_service/tests/test_loadtest.py",
+        "test": "LoadIntegrationTests.test_sustained_mixed_requests_drain_sse_concurrently"
       }
     ],
-    "negative": [],
+    "negative": [
+      {
+        "path": "examples/reference_service/tests/test_loadtest.py",
+        "test": "LoadIntegrationTests.test_request_failure_is_reported_after_full_cleanup"
+      },
+      {
+        "path": "examples/reference_service/tests/test_loadtest.py",
+        "test": "EventTests.test_keepalives_and_stale_events_cannot_satisfy_update_delivery"
+      }
+    ],
     "fixtures": [],
-    "notes": "The reference service demonstrates the required behavior and has a documented sample load run. The verifier now has repeated size/worker matrices, exact per-process CPU/RSS, separate wall/worker timings, profile-guided allocation improvements, and tolerant same-run base/head CI checks (docs/PERFORMANCE.md and benchmarks/baseline.json). Dedicated-runner acceptance budgets and sustained representative runtime-service load evidence remain release work."
+    "notes": "The reference service demonstrates the required behavior and has a documented sample load run. The verifier now has repeated size/worker matrices, exact per-process CPU/RSS, separate wall/worker timings, profile-guided allocation improvements, and tolerant same-run base/head CI checks (docs/PERFORMANCE.md and benchmarks/baseline.json). The dated 2026-09-05 report adds a five-minute mixed runtime workload with complete SSE/ledger/cleanup checks. Dedicated-runner acceptance budgets and broader deployment workloads remain release work. The duration-based runtime harness now checks mixed read/write traffic with continuous exact SSE correlation, final ledger and cleanup checks, bounded statistics, and memory accounting for retained SQLite event rows. Finite local measurements do not establish dedicated-runner acceptance budgets."
   },
   {
     "section": "29.1",

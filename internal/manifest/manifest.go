@@ -127,8 +127,19 @@ func Load(paths []string) (result *Set, loadErr error) {
 			return nil, &Error{Err: fmt.Errorf("manifest %s: %w", path, tomlFailure(err)), Span: decodingSpan(path, data, err)}
 		}
 		sources := declarationSources(path, data)
+		if err := validateSourceKeys(sources); err != nil {
+			return nil, err
+		}
 		if doc.Schema != SchemaVersion {
 			return nil, &Error{Err: fmt.Errorf("manifest %s: unsupported schema %d; expected %d", path, doc.Schema, SchemaVersion), Span: sources.field("schema").keySpan}
+		}
+		// The TOML decoder accepts a singleton table for a Go slice of structs.
+		// The published manifest schema requires arrays, including empty arrays;
+		// verify the original container shape before using indexed declarations.
+		for _, kind := range []string{"module", "type", "function"} {
+			if value := sources.fields[kind]; value != nil && !value.array {
+				return nil, invalid(containerSpan(value), kind, kind+" must be an array of tables")
+			}
 		}
 		// Check all declaration kinds together in source order so a conflict
 		// always identifies the first definition and its first redefinition.
@@ -209,6 +220,9 @@ func Load(paths []string) (result *Set, loadErr error) {
 		for index, f := range doc.Functions {
 			source := sources.field("function").item(index)
 			span := source.field("name").span
+			if value := source.fields["parameters"]; value != nil && !value.array {
+				return nil, invalid(containerSpan(value), f.Name, "parameters must be an array of tables", span)
+			}
 			if !qualified(f.Name) {
 				return nil, invalid(span, f.Name, "function name must be a canonical fully qualified name")
 			}

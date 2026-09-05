@@ -77,6 +77,10 @@ in another configured manifest. Declarations are merged in configured file
 order. Duplicate names are errors, including identical declarations and names
 shared by different declaration kinds. No manifest overrides another. Unknown
 fields, duplicate TOML keys and unsupported schema versions are errors.
+Schema keys are case-sensitive, including quoted or escaped spellings after
+TOML decoding: `name` is valid and `nAme` is an unknown field. The same rule
+applies to configuration keys, so `Language` cannot override `language` and
+`Source_Root` cannot override `source_root`.
 
 The machine-readable [schema](../manifests/schema/v1.json) describes the decoded
 TOML structure using JSON Schema 2020-12. The verifier additionally checks
@@ -84,6 +88,13 @@ identifier spelling, module membership, lexical type syntax, cross-file
 duplicates and linked category rules. Trust reports retain the source manifest
 path for every declaration. A manifest is a trust assertion about host code,
 not proof of that code's behavior.
+
+Declaration containers and function parameters must be arrays in the decoded
+TOML. Both `[[module]]` and `module = [{...}]` express an array; `[module]` and
+`module.name = ...` express a singleton table and are rejected. The loader checks
+this shape explicitly because the TOML decoder can otherwise coerce singleton
+tables into Go slices. Empty declaration arrays and `parameters = []` remain
+valid, and shape errors identify the offending container key.
 
 `purepy capabilities` reports direct and reachable trusted functions, nominal
 types, and module import-safety contracts. JSON exposes module contracts through

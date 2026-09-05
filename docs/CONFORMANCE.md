@@ -88,9 +88,9 @@ a percentage of semantic correctness.
 - [S32.1-d4cb00a5](#s321-d4cb00a5) (partial): The audit maps mandatory rules and feature families. Named Unicode escapes now cover pinned character names and aliases, raw/bytes behavior, malformed names, exact lexical ranges, and cache equivalence. Finite fixtures still do not exhaust the closed Python subset.
 - [S32.4-018499f6](#s324-018499f6) (partial): The suite has positive and negative cases across required feature families; an exhaustive enumeration of statement/operator/type combinations remains open. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; the whole-function gate adds bounded optional/tuple flow compositions with exact returns and independently specified invocation outcomes. Nominal values and arbitrary compositions remain outside these finite matrices.
 - [S32.4-f5622679](#s324-f5622679) (partial): Fixtures span the supported statement/expression families, but all operator/type combinations and Python literal spellings are not yet exhaustive. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; the whole-function gate adds bounded optional/tuple flow compositions with exact returns and independently specified invocation outcomes. Nominal values and arbitrary compositions remain outside these finite matrices. Shared CPython syntax cases and frontend regressions distinguish valid logical-line joins and aligned clauses from malformed header newlines and clause indentation.
-- [S32.4-0449ecd2](#s324-0449ecd2) (partial): The suite has positive and negative cases across required feature families; an exhaustive enumeration of statement/operator/type combinations remains open. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; nominal/optional combinations and arbitrary compositions remain outside this finite matrix.
+- [S32.4-0449ecd2](#s324-0449ecd2) (partial): Full manifest loading, strict container shapes, source indexing and ordered merging have accepted/rejected seed controls plus a bounded mutation target. Generated near misses require specific rejection reasons; arbitrary inputs require deterministic outcomes and valid locations. This does not prove every TOML composition or linked host contract.
 - [S32.5-a0c47895](#s325-a0c47895) (release): The reference service demonstrates the required behavior and has a documented sample load run. The verifier now has repeated size/worker matrices, exact per-process CPU/RSS, separate wall/worker timings, profile-guided allocation improvements, and tolerant same-run base/head CI checks (docs/PERFORMANCE.md and benchmarks/baseline.json). Dedicated-runner acceptance budgets and sustained representative runtime-service load evidence remain release work.
-- [S32.5-66e0ae7d](#s325-66e0ae7d) (release): The reference service demonstrates the required behavior and has a documented sample load run. The verifier now has repeated size/worker matrices, exact per-process CPU/RSS, separate wall/worker timings, profile-guided allocation improvements, and tolerant same-run base/head CI checks (docs/PERFORMANCE.md and benchmarks/baseline.json). Dedicated-runner acceptance budgets and sustained representative runtime-service load evidence remain release work.
+- [S32.5-66e0ae7d](#s325-66e0ae7d) (release): The reference service demonstrates the required behavior and has a documented sample load run. The verifier now has repeated size/worker matrices, exact per-process CPU/RSS, separate wall/worker timings, profile-guided allocation improvements, and tolerant same-run base/head CI checks (docs/PERFORMANCE.md and benchmarks/baseline.json). The dated 2026-09-05 report adds a five-minute mixed runtime workload with complete SSE/ledger/cleanup checks. Dedicated-runner acceptance budgets and broader deployment workloads remain release work. The duration-based runtime harness now checks mixed read/write traffic with continuous exact SSE correlation, final ledger and cleanup checks, bounded statistics, and memory accounting for retained SQLite event rows. Finite local measurements do not establish dedicated-runner acceptance budgets.
 
 ## Rule evidence
 
@@ -2072,11 +2072,11 @@ Section 22.8; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1625)
 
 > Manifests are declarative data. Unknown fields MUST be rejected unless the schema version explicitly permits them.
 
-Positive: [TestLoadManifest](../internal/manifest/manifest_test.go#L50).
+Positive: [TestLoadManifest](../internal/manifest/manifest_test.go#L50); [TestManifestLoadFuzzSeeds](../internal/manifest/fuzz_test.go#L82); [TestManifestArrayShapeAllowsExplicitEmptyArrays](../internal/manifest/container_shape_test.go#L92); [TestManifestQuotedCanonicalKeysRemainValid](../internal/manifest/key_case_test.go#L69).
 
-Negative: [TestRejectInvalidManifest/unknown root](../internal/manifest/manifest_test.go#L68); [TestRejectInvalidManifest/unknown function field](../internal/manifest/manifest_test.go#L68); [TestRejectInvalidManifest/unknown parameter field](../internal/manifest/manifest_test.go#L68); [TestBoundaryRequiredFunctionFields/unknown_module_field](../internal/manifest/spec_boundary_test.go#L11); [TestBoundaryRequiredFunctionFields/unknown_type_field](../internal/manifest/spec_boundary_test.go#L11).
+Negative: [TestRejectInvalidManifest/unknown root](../internal/manifest/manifest_test.go#L68); [TestRejectInvalidManifest/unknown function field](../internal/manifest/manifest_test.go#L68); [TestRejectInvalidManifest/unknown parameter field](../internal/manifest/manifest_test.go#L68); [TestBoundaryRequiredFunctionFields/unknown_module_field](../internal/manifest/spec_boundary_test.go#L11); [TestBoundaryRequiredFunctionFields/unknown_type_field](../internal/manifest/spec_boundary_test.go#L11); [TestManifestLoadFuzzSeeds](../internal/manifest/fuzz_test.go#L82); [TestRejectSingletonDeclarationContainers](../internal/manifest/container_shape_test.go#L9); [TestRejectSingletonParameterContainers](../internal/manifest/container_shape_test.go#L55); [TestManifestKeysAreCaseSensitive](../internal/manifest/key_case_test.go#L9); [TestManifestCaseAliasesAcrossTOMLForms](../internal/manifest/key_case_test.go#L49).
 
-Schema 1 rejects unknown keys at root, module, type, function, and parameter levels. Inputs are declarative TOML; no executable adapter/plugin field is accepted.
+Schema 1 rejects unknown keys at root, module, type, function, and parameter levels. Inputs are declarative TOML; no executable adapter/plugin field is accepted. Full-loader fuzz controls now check exact declarations, configured merge order, conflict rejection, deterministic diagnostics and source-token locations across arbitrary TOML and independently generated valid/invalid pairs. Explicit array-shape guards reject decoder-coerced singleton declaration and parameter tables, matching the published manifest schema. Exact decoded key validation rejects case-folded field aliases, including aliases which otherwise overwrite canonical declarations; quoted/escaped canonical keys remain accepted.
 
 ### S22.9-5c54941b
 
@@ -2084,11 +2084,11 @@ Section 22.9; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1629)
 
 > The verifier MUST use a deterministic manifest search order defined by configuration.
 
-Positive: [TestLoadResolvesPathsAndPreservesOrder](../internal/config/config_test.go#L37); [TestBoundaryManifestOrderAndConflict](../internal/app/spec_boundary_test.go#L212).
+Positive: [TestLoadResolvesPathsAndPreservesOrder](../internal/config/config_test.go#L37); [TestBoundaryManifestOrderAndConflict](../internal/app/spec_boundary_test.go#L212); [TestManifestLoadFuzzSeeds](../internal/manifest/fuzz_test.go#L82).
 
-Negative: [TestDuplicateDeclarationsNeverOverride](../internal/manifest/manifest_test.go#L108); [TestBoundaryManifestOrderAndConflict](../internal/app/spec_boundary_test.go#L212).
+Negative: [TestDuplicateDeclarationsNeverOverride](../internal/manifest/manifest_test.go#L108); [TestBoundaryManifestOrderAndConflict](../internal/app/spec_boundary_test.go#L212); [TestManifestLoadFuzzSeeds](../internal/manifest/fuzz_test.go#L82).
 
-Both configured orders load cross-file declarations deterministically, preserve list order and each declaration source, and reject collisions instead of order-dependent overrides.
+Both configured orders load cross-file declarations deterministically, preserve list order and each declaration source, and reject collisions instead of order-dependent overrides. Full-loader fuzz controls now check exact declarations, configured merge order, conflict rejection, deterministic diagnostics and source-token locations across arbitrary TOML and independently generated valid/invalid pairs.
 
 ### S22.9-0602e4d6
 
@@ -2096,11 +2096,11 @@ Section 22.9; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1631)
 
 > Conflicting declarations are errors. Later manifests MUST NOT silently override earlier ones.
 
-Positive: [TestBoundaryManifestOrderAndConflict](../internal/app/spec_boundary_test.go#L212); [TestCrossManifestModuleAndConfiguredOrder](../internal/manifest/manifest_test.go#L135); [TestManifestModuleAncestors](../internal/app/module_namespace_test.go#L11).
+Positive: [TestBoundaryManifestOrderAndConflict](../internal/app/spec_boundary_test.go#L212); [TestCrossManifestModuleAndConfiguredOrder](../internal/manifest/manifest_test.go#L135); [TestManifestModuleAncestors](../internal/app/module_namespace_test.go#L11); [TestManifestLoadFuzzSeeds](../internal/manifest/fuzz_test.go#L82).
 
-Negative: [TestDuplicateDeclarationsNeverOverride](../internal/manifest/manifest_test.go#L108); [TestBoundaryManifestConflictLocation](../internal/manifest/spec_boundary_test.go#L65); [TestManifestModuleAncestors](../internal/app/module_namespace_test.go#L11).
+Negative: [TestDuplicateDeclarationsNeverOverride](../internal/manifest/manifest_test.go#L108); [TestBoundaryManifestConflictLocation](../internal/manifest/spec_boundary_test.go#L65); [TestManifestModuleAncestors](../internal/app/module_namespace_test.go#L11); [TestManifestLoadFuzzSeeds](../internal/manifest/fuzz_test.go#L82).
 
-Nonconflicting declarations may span manifests in either configured order. Identical duplicates and cross-kind names are errors; the rejected later declaration retains both provenance paths. Module ancestor conflicts reject even when parent modules are implicit in a manifest; distinct textual prefixes remain valid. Diagnostics and verdicts agree across cache states and worker counts.
+Nonconflicting declarations may span manifests in either configured order. Identical duplicates and cross-kind names are errors; the rejected later declaration retains both provenance paths. Module ancestor conflicts reject even when parent modules are implicit in a manifest; distinct textual prefixes remain valid. Diagnostics and verdicts agree across cache states and worker counts. Full-loader fuzz controls now check exact declarations, configured merge order, conflict rejection, deterministic diagnostics and source-token locations across arbitrary TOML and independently generated valid/invalid pairs.
 
 ### S22.10-2b47ac86
 
@@ -2120,11 +2120,11 @@ Section 25.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1747)
 
 > PurePy 0.1 configuration MUST identify:
 
-Positive: [TestLoadResolvesPathsAndPreservesOrder](../internal/config/config_test.go#L37); [TestLoadAllowsExplicitEmptyLists](../internal/config/config_test.go#L95).
+Positive: [TestLoadResolvesPathsAndPreservesOrder](../internal/config/config_test.go#L37); [TestLoadAllowsExplicitEmptyLists](../internal/config/config_test.go#L95); [TestLoadAcceptsQuotedCanonicalConfigKeys](../internal/config/case_sensitive_test.go#L42).
 
-Negative: [TestLoadRejectsInvalidConfiguration](../internal/config/config_test.go#L65); [TestBoundaryRequiredVersions](../internal/config/spec_boundary_test.go#L8).
+Negative: [TestLoadRejectsInvalidConfiguration](../internal/config/config_test.go#L65); [TestBoundaryRequiredVersions](../internal/config/spec_boundary_test.go#L8); [TestLoadRejectsCaseInsensitiveConfigAliases](../internal/config/case_sensitive_test.go#L10).
 
-Configuration tests cover all five required fields, explicit empty lists, supported versions, one contained source root, manifest order, invalid values, and missing fields.
+Configuration tests cover all five required fields, explicit empty lists, supported versions, one contained source root, manifest order, invalid values, and missing fields. Exact decoded configuration keys now reject case-folded table/setting aliases and prevent language or source-root values from being overwritten under differently cased keys; errors identify the offending key.
 
 ### S25.2-5cd8a8d8
 
@@ -2802,11 +2802,11 @@ Section 32.4; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L2227)
 
 List obligation introduced by S32.4-018499f6.
 
-Positive: [TestConformance](../internal/app/conformance_test.go#L20); [DifferentialTests.test_live_primitive_and_near_miss_cases](../tools/tests/test_differential_semantics.py#L176).
+Positive: [TestConformance](../internal/app/conformance_test.go#L20); [DifferentialTests.test_live_primitive_and_near_miss_cases](../tools/tests/test_differential_semantics.py#L176); [TestManifestLoadFuzzSeeds](../internal/manifest/fuzz_test.go#L82).
 
-Negative: [TestUnsupportedSyntaxIsNeverDropped](../internal/frontend/parser_test.go#L175); [DifferentialTests.test_live_primitive_and_near_miss_cases](../tools/tests/test_differential_semantics.py#L176).
+Negative: [TestUnsupportedSyntaxIsNeverDropped](../internal/frontend/parser_test.go#L175); [DifferentialTests.test_live_primitive_and_near_miss_cases](../tools/tests/test_differential_semantics.py#L176); [TestManifestLoadFuzzSeeds](../internal/manifest/fuzz_test.go#L82).
 
-The suite has positive and negative cases across required feature families; an exhaustive enumeration of statement/operator/type combinations remains open. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; nominal/optional combinations and arbitrary compositions remain outside this finite matrix.
+Full manifest loading, strict container shapes, source indexing and ordered merging have accepted/rejected seed controls plus a bounded mutation target. Generated near misses require specific rejection reasons; arbitrary inputs require deterministic outcomes and valid locations. This does not prove every TOML composition or linked host contract.
 
 ### S32.4-9df511b8
 
@@ -2956,6 +2956,8 @@ Section 32.5; **release**; mandatory. [Specification](PUREPY_SPEC.md#L2242)
 
 List obligation introduced by S32.5-a0c47895.
 
-Positive: [test_reads_overlap_across_host_invocations](../examples/reference_service/tests/test_service.py#L90).
+Positive: [test_reads_overlap_across_host_invocations](../examples/reference_service/tests/test_service.py#L90); [LoadIntegrationTests.test_sustained_mixed_requests_drain_sse_concurrently](../examples/reference_service/tests/test_loadtest.py#L147).
 
-The reference service demonstrates the required behavior and has a documented sample load run. The verifier now has repeated size/worker matrices, exact per-process CPU/RSS, separate wall/worker timings, profile-guided allocation improvements, and tolerant same-run base/head CI checks (docs/PERFORMANCE.md and benchmarks/baseline.json). Dedicated-runner acceptance budgets and sustained representative runtime-service load evidence remain release work.
+Negative: [LoadIntegrationTests.test_request_failure_is_reported_after_full_cleanup](../examples/reference_service/tests/test_loadtest.py#L178); [EventTests.test_keepalives_and_stale_events_cannot_satisfy_update_delivery](../examples/reference_service/tests/test_loadtest.py#L104).
+
+The reference service demonstrates the required behavior and has a documented sample load run. The verifier now has repeated size/worker matrices, exact per-process CPU/RSS, separate wall/worker timings, profile-guided allocation improvements, and tolerant same-run base/head CI checks (docs/PERFORMANCE.md and benchmarks/baseline.json). The dated 2026-09-05 report adds a five-minute mixed runtime workload with complete SSE/ledger/cleanup checks. Dedicated-runner acceptance budgets and broader deployment workloads remain release work. The duration-based runtime harness now checks mixed read/write traffic with continuous exact SSE correlation, final ledger and cleanup checks, bounded statistics, and memory accounting for retained SQLite event rows. Finite local measurements do not establish dedicated-runner acceptance budgets.

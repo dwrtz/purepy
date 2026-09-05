@@ -98,6 +98,10 @@ func Load(path string) (result *Config, failure error) {
 		}
 		return nil, fmt.Errorf("configuration %s: %w", abs, tomlFailure(err))
 	}
+	if err := validateSourceKeys(abs, data); err != nil {
+		at, symbol = err.Span, err.Symbol
+		return nil, err.Err
+	}
 	fields, entries, locations := declarationLocations(abs, data)
 	field := func(name string) {
 		symbol = "tool.purepy." + name

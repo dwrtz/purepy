@@ -217,5 +217,7 @@ Measurements span one machine and a finite set of generated workloads. They do n
 establish all graph shapes, cross-platform scaling, independent soundness, or the
 runtime service's sustained-load release budget. The separate
 [service load sample](../examples/reference_service/loadtest/sample.json) concerns
-application execution. Dedicated-runner budgets and representative runtime load
-remain release work.
+application execution. The [recorded five-minute mixed workload](validation/2026-09-05/README.md)
+adds continuous reads/writes and correlated SSE delivery under concurrent fuzzing
+load, with bounded statistics and explicit SQLite memory accounting. Dedicated
+acceptance budgets and broader deployment workloads remain release work.
