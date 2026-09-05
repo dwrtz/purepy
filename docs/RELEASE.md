@@ -48,6 +48,8 @@ Verifier version, specification, language and syntax identifiers derive from
 `python/pyproject.toml` and must agree with `python/uv.lock`. They intentionally
 need not have the same version. Wheel and sdist metadata must match those
 identifiers; the import remains `purepy` regardless of distribution name.
+The chosen Python distribution is `purepy-lang`; its wheel and source archive
+filenames use the normalized prefix `purepy_lang`.
 
 ## Reproduction and validation
 
@@ -91,12 +93,27 @@ release tag; the Python distribution must belong to the maintainer and configure
 this repository/workflow/environment as a trusted publisher before the job runs.
 The workflow does not create PyPI credentials or assume ownership of a name.
 
-For the project repository at `https://github.com/dwrtz/purepy`, the PyPI trusted
-publisher settings are GitHub owner `dwrtz`, repository `purepy`, workflow
-`publish.yml`, and environment `pypi`. Configure them under the chosen runtime
-distribution on PyPI. The existing PyPI name `purepy` belongs to an unrelated
-project; it must not be used for this project's registry publication. The Python
-import package remains `purepy` when the distribution is renamed.
+Configure the `purepy-lang` PyPI project, or its pending publisher before the
+first upload, with these exact Trusted Publishing settings:
+
+| Setting | Value |
+| --- | --- |
+| PyPI project name | `purepy-lang` |
+| GitHub owner | `dwrtz` |
+| GitHub repository | `purepy` |
+| Workflow filename | `publish.yml` |
+| Environment | `pypi` |
+
+After PyPI publication, install the small Python runtime with:
+
+```sh
+python -m pip install purepy-lang
+```
+
+The Python import remains `from purepy import value`. The native Go verifier is
+distributed through [GitHub releases](https://github.com/dwrtz/purepy/releases).
+PyPI hosts only the Python support runtime; configuring a pending publisher does
+not itself upload a release.
 
 Maintain release identifiers intentionally. A development verifier archive can
 accompany a separately versioned Python runtime, but a final verifier tag must

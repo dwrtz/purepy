@@ -9,6 +9,19 @@ This repository contains the experimental PurePy 0.1 verifier, the `@value` Pyth
 support package, conformance tests, and a working asynchronous reference service.
 The Go module is `github.com/dwrtz/purepy`.
 
+## Install a release
+
+Once a release is available on PyPI, install the small Python runtime with:
+
+```sh
+python -m pip install purepy-lang
+```
+
+The distribution is named `purepy-lang`; Python code still imports
+`from purepy import value`. PyPI contains the `@value` runtime. Download the native
+Go verifier from [GitHub releases](https://github.com/dwrtz/purepy/releases), or
+build it from source below.
+
 ## Build and set up
 
 Prerequisites: Go 1.24 or later, a C compiler for the pinned tree-sitter parser,

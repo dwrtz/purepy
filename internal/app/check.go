@@ -21,7 +21,7 @@ import (
 	"github.com/dwrtz/purepy/internal/model"
 )
 
-const Version = "0.1.0-dev.2"
+const Version = "0.1.0-dev.3"
 const SpecificationVersion = "0.3-draft"
 const LanguageVersion = "0.1"
 const PythonSyntaxVersion = "3.14"

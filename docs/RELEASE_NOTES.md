@@ -6,6 +6,13 @@ This release line implements the PurePy 0.1 language against specification
 version are in `python/pyproject.toml`. Release archives record both identifiers.
 A `-dev` verifier identifier denotes a development candidate, not a final tag.
 
+The Python distribution is named `purepy-lang` and contains the small `@value`
+runtime. After its PyPI publication, install it with
+`python -m pip install purepy-lang`; code still imports `from purepy import value`.
+The native Go verifier is distributed through
+[GitHub releases](https://github.com/dwrtz/purepy/releases). Publisher configuration
+alone does not indicate that a PyPI upload has completed.
+
 The verifier checks Python 3.14 syntax without importing analyzed code. It
 implements exact primitive, homogeneous tuple and optional types, finite nominal
 `@value` records, deterministic module linking, sealed operations, direct known

@@ -3,11 +3,15 @@ requires = ["setuptools==80.9.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "purepy"
+name = "purepy-lang"
 version = "0.1.0"
 description = "The small immutable-record runtime for verified PurePy programs"
 requires-python = ">=3.12"
 classifiers = ["Programming Language :: Python :: 3"]
+
+[project.urls]
+Repository = "https://github.com/dwrtz/purepy"
+Documentation = "https://github.com/dwrtz/purepy/blob/main/docs/LANGUAGE_GUIDE.md"
 
 [tool.setuptools.packages.find]
 where = ["."]
