@@ -21,8 +21,8 @@ a percentage of semantic correctness.
 
 | Mandatory evidence status | Count | Meaning |
 | --- | ---: | --- |
-| tested | 126 | Focused positive and negative regression evidence exists; not a proof. |
-| partial | 51 | Some evidence exists; the notes identify uncovered behavior or a broad guarantee. |
+| tested | 129 | Focused positive and negative regression evidence exists; not a proof. |
+| partial | 48 | Some evidence exists; the notes identify uncovered behavior or a broad guarantee. |
 | trust | 7 | The obligation relies on a runtime/host contract the verifier cannot establish. |
 | release | 2 | A completion or publication gate remains open. |
 | deferred | 1 | An obligation for a later language version, outside the current implementation. |
@@ -84,9 +84,6 @@ a percentage of semantic correctness.
 - [S16.4-4c852054](#s164-4c852054) (partial): Original parameters forward directly; aliases, tuples, comparisons, and formatting reject. Section 8.6 lists each category exclusion.
 - [S16.7-6d8d9b23](#s167-6d8d9b23) (partial): Direct resolution plus rejected computed targets, decorators, and mutation cover representative ambient resolution mechanisms. No dedicated runtime registry/import-hook differential matrix is claimed.
 - [S22.6-56f3c626](#s226-56f3c626) (trust): The verifier validates declared capability categories, exact forwarding, and reports labels. It cannot prove that native/host code discloses every effect or uses the granted authority correctly; effect completeness is explicitly part of the trusted host contract.
-- [S28.1-129494e2](#s281-129494e2) (partial): Primary ranges, codes, severity, messages, and related declaration text have regression coverage. Contextual symbol/type information and declaration paths are not yet exhaustive across every rejection family.
-- [S28.1-7bfbac9d](#s281-7bfbac9d) (partial): Entrypoint symbols and representative exact-type/capability messages are exercised. Some linker and declaration diagnostics still rely on prose instead of complete structured symbol/type context.
-- [S28.1-f8a8135a](#s281-f8a8135a) (partial): Capability errors carry parameter declaration locations, human output renders them, and ties include complete context. Other declaration-dependent errors do not yet all carry related-location chains.
 - [S32.1-31bd3d2e](#s321-31bd3d2e) (partial): The required fixture runner and representative safety/determinism tests run, but experimental status remains: full closed-language compliance and independent soundness evidence are not established.
 - [S32.1-d4cb00a5](#s321-d4cb00a5) (partial): The audit maps mandatory rules and feature families. Named Unicode escapes now cover pinned character names and aliases, raw/bytes behavior, malformed names, exact lexical ranges, and cache equivalence. Finite fixtures still do not exhaust the closed Python subset.
 - [S32.4-018499f6](#s324-018499f6) (partial): The suite has positive and negative cases across required feature families; an exhaustive enumeration of statement/operator/type combinations remains open. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; nominal/optional combinations and arbitrary compositions remain outside this finite matrix.
@@ -2307,15 +2304,15 @@ The static boundary admits database result declarations only as Pure Value types
 
 ### S28.1-129494e2
 
-Section 28.1; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L1909)
+Section 28.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1909)
 
 > A diagnostic MUST include:
 
-Positive: [TestDiagnosticMetadataForVerificationAndConfigurationErrors](../internal/app/spec_diagnostics_test.go#L111).
+Positive: [TestDiagnosticContextBuilders](../internal/diag/context_test.go#L14); [TestDiagnosticDeclarationPathsAcrossCacheAndWorkers](../internal/app/context_diagnostics_test.go#L54).
 
-Negative: [TestDiagnosticMetadataForVerificationAndConfigurationErrors](../internal/app/spec_diagnostics_test.go#L111).
+Negative: [TestDiagnosticDeclarationPathsAcrossCacheAndWorkers](../internal/app/context_diagnostics_test.go#L54); [TestCallDiagnosticParameterContext](../internal/check/call_diagnostics_test.go#L81); [TestCallDiagnosticArgumentOrigin](../internal/check/call_diagnostics_test.go#L94); [TestExpressionDiagnosticTypesAndDeclarations](../internal/check/expression_diagnostics_test.go#L9); [TestLocalDiagnosticDeclarationPaths](../internal/check/expression_diagnostics_test.go#L40); [TestExpressionDiagnosticFieldAndCallOrigins](../internal/check/expression_diagnostics_test.go#L108); [TestDeclarationConflictDiagnosticContext](../internal/check/program_diagnostics_test.go#L40); [TestAnnotationDiagnosticContext](../internal/check/program_diagnostics_test.go#L76); [TestConstantDiagnosticContext](../internal/check/program_diagnostics_test.go#L120); [TestCycleDiagnosticDeclarationPaths](../internal/check/program_diagnostics_test.go#L173); [TestManifestLinkDiagnosticContext](../internal/check/program_diagnostics_test.go#L208); [TestManifestDuplicateDeclarationContext](../internal/manifest/diagnostic_source_test.go#L117); [TestConfigurationDuplicateDeclarationPaths](../internal/config/spec_source_test.go#L92).
 
-Primary ranges, codes, severity, messages, and related declaration text have regression coverage. Contextual symbol/type information and declaration paths are not yet exhaustive across every rejection family.
+Diagnostic metadata, structured known types, qualified symbols, and declaration paths are covered across expressions, flow, calls, imports, signatures, constants, cycles, manifests, and configuration. End-to-end JSON/text reports preserve complete context across cold/warm/disabled caches and worker counts. Syntax-only errors omit unavailable semantic context.
 
 ### S28.1-d84350e4
 
@@ -2377,35 +2374,35 @@ Tests require a nonempty explanation and exercise representative human-readable 
 
 ### S28.1-7bfbac9d
 
-Section 28.1; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L1915)
+Section 28.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1915)
 
 > - relevant symbol and type information; and
 
 List obligation introduced by S28.1-129494e2.
 
-Positive: [TestDiagnosticMetadataForVerificationAndConfigurationErrors](../internal/app/spec_diagnostics_test.go#L111).
+Positive: [TestDiagnosticContextBuilders](../internal/diag/context_test.go#L14); [TestDiagnosticDeclarationPathsAcrossCacheAndWorkers](../internal/app/context_diagnostics_test.go#L54).
 
-Negative: [TestEntrypointRejectionPointsToConfigurationDeclaration](../internal/app/spec_diagnostics_test.go#L51).
+Negative: [TestDiagnosticDeclarationPathsAcrossCacheAndWorkers](../internal/app/context_diagnostics_test.go#L54); [TestCallDiagnosticParameterContext](../internal/check/call_diagnostics_test.go#L81); [TestCallDiagnosticArgumentOrigin](../internal/check/call_diagnostics_test.go#L94); [TestExpressionDiagnosticTypesAndDeclarations](../internal/check/expression_diagnostics_test.go#L9); [TestLocalDiagnosticDeclarationPaths](../internal/check/expression_diagnostics_test.go#L40); [TestExpressionDiagnosticFieldAndCallOrigins](../internal/check/expression_diagnostics_test.go#L108); [TestDeclarationConflictDiagnosticContext](../internal/check/program_diagnostics_test.go#L40); [TestAnnotationDiagnosticContext](../internal/check/program_diagnostics_test.go#L76); [TestConstantDiagnosticContext](../internal/check/program_diagnostics_test.go#L120); [TestCycleDiagnosticDeclarationPaths](../internal/check/program_diagnostics_test.go#L173); [TestManifestLinkDiagnosticContext](../internal/check/program_diagnostics_test.go#L208); [TestManifestDuplicateDeclarationContext](../internal/manifest/diagnostic_source_test.go#L117); [TestConfigurationDuplicateDeclarationPaths](../internal/config/spec_source_test.go#L92).
 
 [Conformance fixtures](../fixtures/conformance/cases.json): `bool_is_not_int`, `wrong_capability`.
 
-Entrypoint symbols and representative exact-type/capability messages are exercised. Some linker and declaration diagnostics still rely on prose instead of complete structured symbol/type context.
+Optional structured type roles preserve expected/actual, operand, declaration, field, and signature types. Errors identify relevant qualified symbols; unknown types are omitted rather than invented. Focused tests assert types and declaration owners across rejection families without extra expression or authority evaluation.
 
 ### S28.1-f8a8135a
 
-Section 28.1; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L1916)
+Section 28.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1916)
 
 > - a deterministic explanation path when another declaration is involved.
 
 List obligation introduced by S28.1-129494e2.
 
-Positive: [TestDiagnosticTextIncludesDeclarationPath](../internal/diag/spec_diagnostics_test.go#L34).
+Positive: [TestDiagnosticContextBuilders](../internal/diag/context_test.go#L14); [TestDiagnosticDeclarationPathsAcrossCacheAndWorkers](../internal/app/context_diagnostics_test.go#L54).
 
-Negative: [TestDiagnosticSortHasCompleteDeterministicTieBreaker](../internal/diag/spec_diagnostics_test.go#L11).
+Negative: [TestDiagnosticDeclarationPathsAcrossCacheAndWorkers](../internal/app/context_diagnostics_test.go#L54); [TestCallDiagnosticParameterContext](../internal/check/call_diagnostics_test.go#L81); [TestCallDiagnosticArgumentOrigin](../internal/check/call_diagnostics_test.go#L94); [TestExpressionDiagnosticTypesAndDeclarations](../internal/check/expression_diagnostics_test.go#L9); [TestLocalDiagnosticDeclarationPaths](../internal/check/expression_diagnostics_test.go#L40); [TestExpressionDiagnosticFieldAndCallOrigins](../internal/check/expression_diagnostics_test.go#L108); [TestDeclarationConflictDiagnosticContext](../internal/check/program_diagnostics_test.go#L40); [TestAnnotationDiagnosticContext](../internal/check/program_diagnostics_test.go#L76); [TestConstantDiagnosticContext](../internal/check/program_diagnostics_test.go#L120); [TestCycleDiagnosticDeclarationPaths](../internal/check/program_diagnostics_test.go#L173); [TestManifestLinkDiagnosticContext](../internal/check/program_diagnostics_test.go#L208); [TestManifestDuplicateDeclarationContext](../internal/manifest/diagnostic_source_test.go#L117); [TestConfigurationDuplicateDeclarationPaths](../internal/config/spec_source_test.go#L92).
 
 [Conformance fixtures](../fixtures/conformance/cases.json): `capability_missing`, `wrong_capability`.
 
-Capability errors carry parameter declaration locations, human output renders them, and ties include complete context. Other declaration-dependent errors do not yet all carry related-location chains.
+Related locations follow relevant imports, declarations, actual argument and field origins, conflicting bindings, and actual import/record cycle edges. Config and manifest duplicates retain exact occurrence ranges. JSON/text integration and complete-context sorting tests check deterministic paths; no nonexistent declaration is invented for unresolved names.
 
 ### S29.1-dd0b87a3
 
@@ -2451,7 +2448,7 @@ Section 29.4; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#
 
 Positive: [TestCLICacheCleanRejectsSymlink](../internal/app/cli_test.go#L250).
 
-Negative: [TestCleanOwnsOnlyRegularArtifacts](../internal/cache/cache_test.go#L119); [TestSymlinkAndInvalidKeySafety](../internal/cache/cache_test.go#L162).
+Negative: [TestCleanOwnsOnlyRegularArtifacts](../internal/cache/cache_test.go#L151); [TestSymlinkAndInvalidKeySafety](../internal/cache/cache_test.go#L194).
 
 Cleanup removes owned cache artifacts while preserving unrelated files, directories, and symlink targets.
 
@@ -2521,9 +2518,9 @@ Section 31.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2171)
 
 > Cache corruption or schema mismatch MUST fall back safely to reanalysis.
 
-Positive: [TestRoundTripAndMalformedArtifactsAreMisses](../internal/cache/cache_test.go#L29); [TestMalformedCacheFallbackMatchesUncachedReport](../internal/app/cache_fuzz_test.go#L27); [TestMalformedCacheSummaryRegression](../internal/cache/fuzz_test.go#L229).
+Positive: [TestRoundTripAndMalformedArtifactsAreMisses](../internal/cache/cache_test.go#L31); [TestMalformedCacheFallbackMatchesUncachedReport](../internal/app/cache_fuzz_test.go#L27); [TestMalformedCacheSummaryRegression](../internal/cache/fuzz_test.go#L229).
 
-Negative: [TestRoundTripAndMalformedArtifactsAreMisses](../internal/cache/cache_test.go#L29); [TestSchemaMismatchReanalyzesRejectedProject](../internal/app/spec_diagnostics_test.go#L79); [TestTruncatedCacheRegeneratesEquivalentReport](../internal/app/cli_test.go#L147); [TestMalformedCacheFallbackMatchesUncachedReport](../internal/app/cache_fuzz_test.go#L27); [TestMalformedCacheSummaryRegression](../internal/cache/fuzz_test.go#L229); [FuzzCacheSummary](../internal/cache/fuzz_test.go#L305); [FuzzCacheArtifact](../internal/cache/fuzz_test.go#L339).
+Negative: [TestRoundTripAndMalformedArtifactsAreMisses](../internal/cache/cache_test.go#L31); [TestSchemaMismatchReanalyzesRejectedProject](../internal/app/spec_diagnostics_test.go#L79); [TestTruncatedCacheRegeneratesEquivalentReport](../internal/app/cli_test.go#L147); [TestMalformedCacheFallbackMatchesUncachedReport](../internal/app/cache_fuzz_test.go#L27); [TestMalformedCacheSummaryRegression](../internal/cache/fuzz_test.go#L229); [FuzzCacheSummary](../internal/cache/fuzz_test.go#L305); [FuzzCacheArtifact](../internal/cache/fuzz_test.go#L339).
 
 Valid artifacts round-trip; truncation, malformed payloads, checksums, and schema mismatch become misses. Integration tests reanalyze both accepted and rejected programs without changing their reports. Correct-checksum structural/role/diagnostic mutations now exercise strict validation, with explicit hit/miss oracles and bounded node/depth tests. Application campaigns compare cold, warm, corrupted, repaired, and uncached reports. Checksums do not authenticate intentional valid semantic rewrites.
 

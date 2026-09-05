@@ -8,6 +8,8 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/dwrtz/purepy/internal/diag"
+	"github.com/dwrtz/purepy/internal/frontend"
 	"github.com/dwrtz/purepy/internal/model"
 )
 
@@ -83,6 +85,36 @@ func TestMalformedSummaryNodesAreMisses(t *testing.T) {
 	}
 	if _, ok := Read(dir, key); ok {
 		t.Fatal("nil statement nodes must be rejected before the checker can dereference them")
+	}
+}
+
+func TestCacheRejectsSemanticTypeContext(t *testing.T) {
+	dir := t.TempDir()
+	key := Key("parser-context")
+	tree, ds := frontend.Parse("app.py", []byte("def f(x: int) -> int:\n    return [x]\n"))
+	if len(ds) == 0 {
+		t.Fatal("fixture must have a parser diagnostic")
+	}
+	summary := Summary{Tree: tree, Diagnostics: ds}
+	if err := Write(dir, key, summary); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := Read(dir, key); !ok {
+		t.Fatal("ordinary parser diagnostics must remain cacheable")
+	}
+	for _, types := range []map[string]model.Type{
+		{"actual": model.Int},
+		{"actual": {Kind: "tuple"}},
+		{"actual": {Kind: "unknown", Name: "forged"}},
+	} {
+		summary.Diagnostics = append([]diag.Diagnostic{}, ds...)
+		summary.Diagnostics[0].Types = types
+		if err := Write(dir, key, summary); err != nil {
+			continue // Rejecting semantic context at write time is also safe.
+		}
+		if _, ok := Read(dir, key); ok {
+			t.Fatalf("semantic type context must be recomputed, not trusted from parser cache: %+v", types)
+		}
 	}
 }
 

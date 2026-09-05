@@ -47,9 +47,11 @@ func Load(path string) (result *Config, failure error) {
 		path = "."
 	}
 	at := model.Span{File: path, Line: 1, Column: 1, EndLine: 1, EndColumn: 1}
+	symbol := ""
+	var related []model.Span
 	defer func() {
 		if failure != nil {
-			failure = &Error{Err: failure, Span: at}
+			failure = &Error{Err: failure, Span: at, Symbol: symbol, Related: related}
 		}
 	}()
 	abs, err := filepath.Abs(path)
@@ -96,10 +98,17 @@ func Load(path string) (result *Config, failure error) {
 		}
 		return nil, fmt.Errorf("configuration %s: %w", abs, tomlFailure(err))
 	}
-	fields, entries := declarationSpans(abs, data)
+	fields, entries, locations := declarationLocations(abs, data)
 	field := func(name string) {
+		symbol = "tool.purepy." + name
 		if span, ok := fields[name]; ok {
 			at = span
+		}
+	}
+	item := func(name string, index int) {
+		field(name)
+		if spans := locations[name]; index < len(spans) {
+			at = spans[index]
 		}
 	}
 	p := doc.Tool.PurePy
@@ -123,31 +132,32 @@ func Load(path string) (result *Config, failure error) {
 		return nil, fmt.Errorf("configuration %s: source_root: %w", abs, err)
 	}
 	cfg := &Config{Path: abs, ProjectRoot: root, SourceRoot: source, Language: p.Language, PythonSyntax: p.PythonSyntax, Entrypoints: append([]string{}, (*p.Entrypoints)...), Manifests: []string{}, EntrypointSpans: entries, FieldSpans: fields}
-	seen := make(map[string]bool)
-	for _, entry := range cfg.Entrypoints {
-		field("entrypoints")
-		if span, ok := entries[entry]; ok {
-			at = span
-		}
+	seen := make(map[string]model.Span)
+	for i, entry := range cfg.Entrypoints {
+		item("entrypoints", i)
+		symbol = entry
 		if !strings.Contains(entry, ".") || !discovery.ValidModuleName(entry) {
 			return nil, fmt.Errorf("configuration %s: invalid fully qualified entrypoint %q", abs, entry)
 		}
-		if seen[entry] {
+		if previous, ok := seen[entry]; ok {
+			related = append(related, previous)
 			return nil, fmt.Errorf("configuration %s: duplicate entrypoint %q", abs, entry)
 		}
-		seen[entry] = true
+		seen[entry] = at
 	}
-	seen = make(map[string]bool)
-	for _, manifest := range *p.Manifests {
-		field("manifests")
+	seen = make(map[string]model.Span)
+	for i, manifest := range *p.Manifests {
+		item("manifests", i)
+		symbol = manifest
 		resolved, err := resolve(root, manifest, false)
 		if err != nil {
 			return nil, fmt.Errorf("configuration %s: manifest %q: %w", abs, manifest, err)
 		}
-		if seen[resolved] {
+		if previous, ok := seen[resolved]; ok {
+			related = append(related, previous)
 			return nil, fmt.Errorf("configuration %s: duplicate manifest %q", abs, manifest)
 		}
-		seen[resolved] = true
+		seen[resolved] = at
 		cfg.Manifests = append(cfg.Manifests, resolved)
 	}
 	return cfg, nil

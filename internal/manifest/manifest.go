@@ -7,10 +7,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"unicode"
 
 	"github.com/dwrtz/purepy/internal/discovery"
+	"github.com/dwrtz/purepy/internal/model"
 	"github.com/pelletier/go-toml/v2"
 )
 
@@ -23,12 +25,14 @@ type Set struct {
 }
 
 type Module struct {
+	Span       model.Span
 	Name       string
 	ImportSafe bool
 	Source     string
 }
 
 type Type struct {
+	Span      model.Span
 	Name      string
 	Category  string
 	Labels    []string
@@ -37,6 +41,8 @@ type Type struct {
 }
 
 type Function struct {
+	Span       model.Span
+	ReturnSpan model.Span
 	Name       string
 	Kind       string
 	Trust      string
@@ -46,6 +52,13 @@ type Function struct {
 }
 
 type Parameter struct {
+	Name     string
+	Type     string
+	Span     model.Span
+	TypeSpan model.Span
+}
+
+type rawParameter struct {
 	Name string `toml:"name"`
 	Type string `toml:"type"`
 }
@@ -70,11 +83,11 @@ type rawType struct {
 }
 
 type rawFunction struct {
-	Name       string       `toml:"name"`
-	Kind       string       `toml:"kind"`
-	Trust      string       `toml:"trust"`
-	Returns    string       `toml:"returns"`
-	Parameters *[]Parameter `toml:"parameters"`
+	Name       string          `toml:"name"`
+	Kind       string          `toml:"kind"`
+	Trust      string          `toml:"trust"`
+	Returns    string          `toml:"returns"`
+	Parameters *[]rawParameter `toml:"parameters"`
 }
 
 // Load preserves configuration order and declaration order. Duplicate names
@@ -90,7 +103,7 @@ func Load(paths []string) (result *Set, loadErr error) {
 		}
 	}()
 	set := &Set{Modules: []Module{}, Types: []Type{}, Functions: []Function{}}
-	seen := make(map[string]string)
+	seen := make(map[string]model.Span)
 	for _, path := range paths {
 		currentPath = path
 		path, err := filepath.Abs(path)
@@ -113,96 +126,124 @@ func Load(paths []string) (result *Set, loadErr error) {
 		if err := toml.NewDecoder(bytes.NewReader(data)).DisallowUnknownFields().Decode(&doc); err != nil {
 			return nil, &Error{Err: fmt.Errorf("manifest %s: %w", path, tomlFailure(err)), Span: decodingSpan(path, data, err)}
 		}
+		sources := declarationSources(path, data)
 		if doc.Schema != SchemaVersion {
-			return nil, &Error{Err: fmt.Errorf("manifest %s: unsupported schema %d; expected %d", path, doc.Schema, SchemaVersion), Span: declarationSpan(path, data, "")}
+			return nil, &Error{Err: fmt.Errorf("manifest %s: unsupported schema %d; expected %d", path, doc.Schema, SchemaVersion), Span: sources.field("schema").keySpan}
 		}
-		for _, m := range doc.Modules {
+		// Check all declaration kinds together in source order so a conflict
+		// always identifies the first definition and its first redefinition.
+		type declaration struct {
+			name string
+			span model.Span
+		}
+		declarations := make([]declaration, 0, len(doc.Modules)+len(doc.Types)+len(doc.Functions))
+		for index, m := range doc.Modules {
+			declarations = append(declarations, declaration{m.Name, sources.field("module").item(index).field("name").span})
+		}
+		for index, t := range doc.Types {
+			declarations = append(declarations, declaration{t.Name, sources.field("type").item(index).field("name").span})
+		}
+		for index, f := range doc.Functions {
+			declarations = append(declarations, declaration{f.Name, sources.field("function").item(index).field("name").span})
+		}
+		sort.SliceStable(declarations, func(i, j int) bool { return declarations[i].span.Start < declarations[j].span.Start })
+		for _, declaration := range declarations {
+			// Missing names get their category-specific diagnostic below.
+			if declaration.name == "" {
+				continue
+			}
+			if err := register(seen, declaration.name, declaration.span); err != nil {
+				return nil, err
+			}
+		}
+		for index, m := range doc.Modules {
+			span := sources.field("module").item(index).field("name").span
 			if !discovery.ValidModuleName(m.Name) {
-				return nil, invalid(path, m.Name, "invalid or noncanonical module name")
+				return nil, invalid(span, m.Name, "invalid or noncanonical module name")
 			}
 			if m.ImportSafe == nil {
-				return nil, invalid(path, m.Name, "import_safe is required")
+				return nil, invalid(span, m.Name, "import_safe is required")
 			}
-			if err := register(seen, m.Name, path); err != nil {
-				return nil, err
-			}
-			set.Modules = append(set.Modules, Module{Name: m.Name, ImportSafe: *m.ImportSafe, Source: path})
+			set.Modules = append(set.Modules, Module{Name: m.Name, ImportSafe: *m.ImportSafe, Source: path, Span: span})
 		}
-		for _, t := range doc.Types {
+		for index, t := range doc.Types {
+			span := sources.field("type").item(index).field("name").span
 			if !qualified(t.Name) {
-				return nil, invalid(path, t.Name, "type name must be a canonical fully qualified name")
-			}
-			if err := register(seen, t.Name, path); err != nil {
-				return nil, err
+				return nil, invalid(span, t.Name, "type name must be a canonical fully qualified name")
 			}
 			labels := []string{}
 			immutable := false
 			switch t.Category {
 			case "value":
 				if t.Immutable == nil || !*t.Immutable {
-					return nil, invalid(path, t.Name, "external value requires immutable = true (the deep immutability contract)")
+					return nil, invalid(span, t.Name, "external value requires immutable = true (the deep immutability contract)")
 				}
 				immutable = true
 			case "capability":
 				if t.Labels == nil || len(*t.Labels) == 0 {
-					return nil, invalid(path, t.Name, "capability requires at least one exact reporting label")
+					return nil, invalid(span, t.Name, "capability requires at least one exact reporting label")
 				}
 				labelSeen := make(map[string]bool)
 				for _, label := range *t.Labels {
 					if label == "" || strings.ContainsAny(label, "*?") || strings.IndexFunc(label, func(r rune) bool { return unicode.IsSpace(r) || unicode.IsControl(r) }) >= 0 {
-						return nil, invalid(path, t.Name, "capability labels must be nonempty exact strings without whitespace, controls or wildcards")
+						return nil, invalid(span, t.Name, "capability labels must be nonempty exact strings without whitespace, controls or wildcards")
 					}
 					if labelSeen[label] {
-						return nil, invalid(path, t.Name, fmt.Sprintf("duplicate capability label %q", label))
+						return nil, invalid(span, t.Name, fmt.Sprintf("duplicate capability label %q", label))
 					}
 					labelSeen[label] = true
 					labels = append(labels, label)
 				}
 			case "host_ref":
 			default:
-				return nil, invalid(path, t.Name, fmt.Sprintf("unknown type category %q", t.Category))
+				return nil, invalid(span, t.Name, fmt.Sprintf("unknown type category %q", t.Category))
 			}
 			if t.Category != "capability" && t.Labels != nil {
-				return nil, invalid(path, t.Name, "labels are permitted only on capability types")
+				return nil, invalid(span, t.Name, "labels are permitted only on capability types")
 			}
 			if t.Category != "value" && t.Immutable != nil {
-				return nil, invalid(path, t.Name, "immutable is permitted only on value types")
+				return nil, invalid(span, t.Name, "immutable is permitted only on value types")
 			}
-			set.Types = append(set.Types, Type{Name: t.Name, Category: t.Category, Labels: labels, Immutable: immutable, Source: path})
+			set.Types = append(set.Types, Type{Name: t.Name, Category: t.Category, Labels: labels, Immutable: immutable, Source: path, Span: span})
 		}
-		for _, f := range doc.Functions {
+		for index, f := range doc.Functions {
+			source := sources.field("function").item(index)
+			span := source.field("name").span
 			if !qualified(f.Name) {
-				return nil, invalid(path, f.Name, "function name must be a canonical fully qualified name")
-			}
-			if err := register(seen, f.Name, path); err != nil {
-				return nil, err
+				return nil, invalid(span, f.Name, "function name must be a canonical fully qualified name")
 			}
 			if f.Kind != "sync" && f.Kind != "async" {
-				return nil, invalid(path, f.Name, "kind must be sync or async")
+				return nil, invalid(span, f.Name, "kind must be sync or async")
 			}
 			if f.Trust != "pure" && f.Trust != "host" {
-				return nil, invalid(path, f.Name, "trust must be pure or host")
+				return nil, invalid(span, f.Name, "trust must be pure or host")
 			}
 			if f.Parameters == nil {
-				return nil, invalid(path, f.Name, "parameters is required (use [] for no parameters)")
+				return nil, invalid(span, f.Name, "parameters is required (use [] for no parameters)")
 			}
 			if !validTypeSyntax(f.Returns) {
-				return nil, invalid(path, f.Name, fmt.Sprintf("invalid return type %q", f.Returns))
+				return nil, invalid(source.field("returns").span, f.Name, fmt.Sprintf("invalid return type %q", f.Returns), span)
 			}
-			parameterSeen := make(map[string]bool)
-			for _, p := range *f.Parameters {
+			parameterSeen := make(map[string]model.Span)
+			parameters := make([]Parameter, 0, len(*f.Parameters))
+			for index, p := range *f.Parameters {
+				parameterSource := source.field("parameters").item(index)
+				parameterSpan := parameterSource.field("name").span
+				typeSpan := parameterSource.field("type").span
+				symbol := f.Name + "." + p.Name
 				if !discovery.ValidIdentifier(p.Name) {
-					return nil, invalid(path, f.Name, fmt.Sprintf("invalid parameter name %q", p.Name))
+					return nil, invalid(parameterSpan, symbol, fmt.Sprintf("invalid parameter name %q", p.Name), span)
 				}
-				if parameterSeen[p.Name] {
-					return nil, invalid(path, f.Name, fmt.Sprintf("duplicate parameter %q", p.Name))
+				if previous, exists := parameterSeen[p.Name]; exists {
+					return nil, invalid(parameterSpan, symbol, fmt.Sprintf("duplicate parameter %q", p.Name), previous)
 				}
-				parameterSeen[p.Name] = true
+				parameterSeen[p.Name] = parameterSpan
 				if !validTypeSyntax(p.Type) {
-					return nil, invalid(path, f.Name, fmt.Sprintf("invalid type %q for parameter %q", p.Type, p.Name))
+					return nil, invalid(typeSpan, symbol, fmt.Sprintf("invalid type %q for parameter %q", p.Type, p.Name), parameterSpan, span)
 				}
+				parameters = append(parameters, Parameter{Name: p.Name, Type: p.Type, Span: parameterSpan, TypeSpan: typeSpan})
 			}
-			set.Functions = append(set.Functions, Function{Name: f.Name, Kind: f.Kind, Trust: f.Trust, Parameters: append([]Parameter{}, (*f.Parameters)...), Returns: f.Returns, Source: path})
+			set.Functions = append(set.Functions, Function{Name: f.Name, Kind: f.Kind, Trust: f.Trust, Parameters: parameters, Returns: f.Returns, Source: path, Span: span, ReturnSpan: source.field("returns").span})
 		}
 	}
 	modules := make(map[string]bool)
@@ -211,12 +252,12 @@ func Load(paths []string) (result *Set, loadErr error) {
 	}
 	for _, t := range set.Types {
 		if !modules[owner(t.Name)] {
-			return nil, invalid(t.Source, t.Name, fmt.Sprintf("containing module %q is not declared", owner(t.Name)))
+			return nil, invalid(t.Span, t.Name, fmt.Sprintf("containing module %q is not declared", owner(t.Name)))
 		}
 	}
 	for _, f := range set.Functions {
 		if !modules[owner(f.Name)] {
-			return nil, invalid(f.Source, f.Name, fmt.Sprintf("containing module %q is not declared; methods are prohibited", owner(f.Name)))
+			return nil, invalid(f.Span, f.Name, fmt.Sprintf("containing module %q is not declared; methods are prohibited", owner(f.Name)))
 		}
 	}
 	return set, nil
@@ -240,16 +281,15 @@ func tomlFailure(err error) error {
 	return err
 }
 
-func invalid(path, name, message string) error {
-	data, _ := os.ReadFile(path)
-	return &Error{Err: fmt.Errorf("manifest %s, declaration %q: %s", path, name, message), Span: declarationSpan(path, data, name)}
+func invalid(span model.Span, name, message string, related ...model.Span) error {
+	return &Error{Err: fmt.Errorf("manifest %s, declaration %q: %s", span.File, name, message), Span: span, Symbol: name, Related: related}
 }
 
-func register(seen map[string]string, name, source string) error {
+func register(seen map[string]model.Span, name string, span model.Span) error {
 	if previous, exists := seen[name]; exists {
-		return invalid(source, name, fmt.Sprintf("duplicate declaration (first declared in %s)", previous))
+		return invalid(span, name, fmt.Sprintf("duplicate declaration (first declared in %s)", previous.File), previous)
 	}
-	seen[name] = source
+	seen[name] = span
 	return nil
 }
 

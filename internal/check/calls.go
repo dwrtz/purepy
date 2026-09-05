@@ -3,13 +3,49 @@ package check
 import (
 	"fmt"
 
+	"github.com/dwrtz/purepy/internal/diag"
 	"github.com/dwrtz/purepy/internal/model"
 )
+
+// callContext describes the resolved signature without evaluating arguments.
+// Related locations follow the use through its import to the declaration.
+func (c *checker) callContext(d *diag.Diagnostic, name string) *diag.Diagnostic {
+	if d == nil {
+		return nil
+	}
+	d = d.WithSymbol(name)
+	s := c.m.Bindings[name]
+	if s == nil {
+		return d
+	}
+	d.WithSymbol(s.Name)
+	if at, ok := c.m.ImportedAt[name]; ok {
+		d.WithRelated(at)
+	}
+	d.WithRelated(s.Declaration())
+	if s.Function != nil {
+		d.WithType("return", s.Function.Returns)
+		for _, p := range s.Function.Parameters {
+			d.WithType("parameter."+p.Name, p.Type)
+		}
+	} else if s.Record != nil {
+		d.WithType("return", s.Type)
+		for _, p := range s.Record.Fields {
+			d.WithType("parameter."+p.Name, p.Type)
+		}
+	} else {
+		d.WithType("actual", s.Type)
+	}
+	return d
+}
 
 func (c *checker) call(n *model.Node, awaited bool) model.Type {
 	if n == nil || n.Kind != "Call" {
 		if n != nil {
-			c.error("PP402", "await must directly contain a call", n.Span)
+			d := c.error("PP402", "await must directly contain a call", n.Span)
+			if n.Kind == "Name" {
+				c.nameContext(d, n.A("name"))
+			}
 		} else {
 			c.error("PP099", "malformed semantic call: missing call node", c.m.Tree.Span)
 		}
@@ -17,26 +53,32 @@ func (c *checker) call(n *model.Node, awaited bool) model.Type {
 	}
 	target := n.Get("target")
 	if target == nil || target.Kind != "Name" {
-		c.error("PP301", "call target must be a direct top-level function or record name; methods and dynamic calls are prohibited", n.Span)
+		d := c.error("PP301", "call target must be a direct top-level function or record name; methods and dynamic calls are prohibited", n.Span)
+		if target != nil && target.Kind == "Attribute" {
+			d.WithNote("The requested method is " + target.A("name") + ".")
+			if base := target.Get("value"); base != nil && base.Kind == "Name" {
+				c.nameContext(d, base.A("name"))
+			}
+		}
 		return model.Invalid
 	}
 	name := target.A("name")
 	if forbiddenName(name) {
-		c.error("PP301", "dunder calls are prohibited", n.Span)
+		c.nameContext(c.error("PP301", "dunder calls are prohibited", n.Span), name)
 		return model.Invalid
 	}
 	if _, ok := c.vars[name]; ok {
-		c.error("PP301", "local values cannot be called: "+name, n.Span)
+		c.nameContext(c.error("PP301", "local values cannot be called: "+name, n.Span), name)
 		return model.Invalid
 	}
 	s := c.m.Bindings[name]
 	if s == nil {
 		if c.constant {
-			c.error("PP502", "ordinary calls cannot initialize module constants", n.Span)
+			c.callContext(c.error("PP502", "ordinary calls cannot initialize module constants", n.Span), name)
 			return model.Invalid
 		}
 		if awaited {
-			c.error("PP403", "sealed synchronous intrinsics cannot be awaited", n.Span)
+			c.callContext(c.error("PP403", "sealed synchronous intrinsics cannot be awaited", n.Span), name)
 			return model.Invalid
 		}
 		return c.intrinsic(name, n)
@@ -48,36 +90,39 @@ func (c *checker) call(n *model.Node, awaited bool) model.Type {
 		if c.constant {
 			if at, imported := c.m.ImportedAt[name]; imported {
 				if at.Start > n.Span.Start {
-					c.error("PP502", "record constructor used before its import: "+name, n.Span)
+					c.callContext(c.error("PP502", "record constructor used before its import: "+name, n.Span), name)
 				}
 			} else if s.Node != nil && s.Node.Span.Start > n.Span.Start {
-				c.error("PP502", "record constructor used before its declaration: "+name, n.Span)
+				c.callContext(c.error("PP502", "record constructor used before its declaration: "+name, n.Span), name)
 			}
 		}
 		params = s.Record.Fields
 		ret = s.Type
 		if awaited {
-			c.error("PP403", "record construction is synchronous", n.Span)
+			c.callContext(c.error("PP403", "record construction is synchronous", n.Span), name)
 		}
 	} else if s.Function != nil {
 		fn = s.Function
 		params = fn.Parameters
 		ret = fn.Returns
 		if c.constant {
-			c.error("PP502", "ordinary calls cannot initialize module constants", n.Span)
+			c.callContext(c.error("PP502", "ordinary calls cannot initialize module constants", n.Span), name)
 			return model.Invalid
 		}
 		if fn.Kind == "async" && !awaited {
-			c.error("PP401", "coroutine values are not first-class; directly await this async call", n.Span)
+			c.callContext(c.error("PP401", "coroutine values are not first-class; directly await this async call", n.Span), name)
 		}
 		if fn.Kind == "sync" && awaited {
-			c.error("PP403", "cannot await a synchronous function", n.Span)
+			c.callContext(c.error("PP403", "cannot await a synchronous function", n.Span), name)
 		}
 		if awaited && (c.f == nil || c.f.Kind != "async") {
-			c.error("PP404", "await is permitted only inside async functions", n.Span)
+			d := c.callContext(c.error("PP404", "await is permitted only inside async functions", n.Span), name)
+			if c.f != nil {
+				d.WithRelated(c.f.Span).WithNote("The enclosing function " + c.f.Name + " is " + c.f.Kind + ".")
+			}
 		}
 	} else {
-		c.error("PP301", name+" does not name a callable declaration", n.Span)
+		c.callContext(c.error("PP301", name+" does not name a callable declaration", n.Span), name)
 		return model.Invalid
 	}
 	bound := make([]*model.Node, len(params))
@@ -85,14 +130,14 @@ func (c *checker) call(n *model.Node, awaited bool) model.Type {
 	position := 0
 	for _, a := range n.Items("args") {
 		if a.Kind != "Arg" || a.A("unpack") != "" || a.Get("value") == nil {
-			c.error("PP302", "argument unpacking is prohibited", a.Span)
+			c.callContext(c.error("PP302", "argument unpacking is prohibited", a.Span), name)
 			continue
 		}
 		idx := -1
 		key := a.A("name")
 		if key == "" {
 			if keyword {
-				c.error("PP302", "positional arguments cannot follow keyword arguments", a.Span)
+				c.callContext(c.error("PP302", "positional arguments cannot follow keyword arguments", a.Span), name)
 			}
 			idx = position
 			position++
@@ -106,12 +151,17 @@ func (c *checker) call(n *model.Node, awaited bool) model.Type {
 			}
 		}
 		if idx < 0 || idx >= len(params) {
-			c.error("PP302", "unexpected argument "+key, a.Span)
-			c.expr(a.Get("value"), model.Invalid)
+			c.callContext(c.error("PP302", "unexpected argument "+key, a.Span), name)
+			// Expression checking can append diagnostics and reallocate the slice.
+			diagnosticIndex := len(c.result.Diagnostics) - 1
+			actual := c.expr(a.Get("value"), model.Invalid)
+			c.result.Diagnostics[diagnosticIndex].WithType("actual", actual)
 			continue
 		}
 		if bound[idx] != nil {
-			c.error("PP302", "duplicate argument for "+params[idx].Name, a.Span)
+			c.callContext(c.error("PP302", "duplicate argument for "+params[idx].Name, a.Span), name).
+				WithSymbol(s.Name+"."+params[idx].Name).WithType("expected", params[idx].Type).
+				WithRelated(params[idx].Span, bound[idx].Span)
 			continue
 		}
 		bound[idx] = a.Get("value")
@@ -130,11 +180,10 @@ func (c *checker) call(n *model.Node, awaited bool) model.Type {
 			if param.Type.Kind == "capability" {
 				code = "PP312"
 			}
-			c.error(code, fmt.Sprintf("call to %s requires argument %s: %s", s.Name, param.Name, param.Type), n.Span)
-			d := &c.result.Diagnostics[len(c.result.Diagnostics)-1]
-			d.Related = append(d.Related, param.Span)
+			d := c.callContext(c.error(code, fmt.Sprintf("call to %s requires argument %s: %s", s.Name, param.Name, param.Type), n.Span), name).
+				WithSymbol(s.Name+"."+param.Name).WithType("expected", param.Type).WithRelated(param.Span)
 			if code == "PP312" {
-				d.Notes = append(d.Notes, "Pass an original capability parameter of the exact declared type; capability labels do not grant subtyping.")
+				d.WithNote("Pass an original capability parameter of the exact declared type; capability labels do not grant subtyping.")
 			}
 			continue
 		}
@@ -145,9 +194,13 @@ func (c *checker) call(n *model.Node, awaited bool) model.Type {
 			}
 			v, ok := c.vars[a.A("name")]
 			if a.Kind != "Name" || !ok || !v.Parameter || !v.Assigned || !v.Type.Equal(param.Type) {
-				c.error(code, "argument "+param.Name+" requires direct forwarding of an original parameter of exact type "+param.Type.String(), a.Span)
-				d := &c.result.Diagnostics[len(c.result.Diagnostics)-1]
-				d.Related = append(d.Related, param.Span)
+				d := c.callContext(c.error(code, "argument "+param.Name+" requires direct forwarding of an original parameter of exact type "+param.Type.String(), a.Span), name)
+				if a.Kind == "Name" {
+					c.nameContext(d, a.A("name"))
+				} else {
+					c.expressionContext(d, a)
+				}
+				d.WithSymbol(s.Name+"."+param.Name).WithType("expected", param.Type).WithRelated(param.Span)
 				continue
 			}
 			if param.Type.Kind == "capability" {
@@ -158,7 +211,8 @@ func (c *checker) call(n *model.Node, awaited bool) model.Type {
 			c.fact(a, param.Type, "", "direct parameter forwarding to "+s.Name+"."+param.Name)
 		} else {
 			actual := c.expr(a, param.Type)
-			c.expect(param.Type, actual, a.Span)
+			c.expressionContext(c.callContext(c.expect(param.Type, actual, a.Span), name).
+				WithSymbol(s.Name+"."+param.Name).WithRelated(param.Span), a)
 		}
 	}
 	if fn != nil && c.f != nil {
@@ -172,14 +226,26 @@ func (c *checker) call(n *model.Node, awaited bool) model.Type {
 // fallback to Python callable lookup, protocol dispatch or a library import.
 func (c *checker) intrinsic(name string, n *model.Node) model.Type {
 	args := []model.Type{}
-	for _, a := range n.Items("args") {
+	for i, a := range n.Items("args") {
+		diagnosticIndex := -1
 		if a.Kind != "Arg" || a.A("name") != "" || a.A("unpack") != "" {
-			c.error("PP302", "intrinsics accept only explicit positional arguments", a.Span)
+			c.error("PP302", "intrinsics accept only explicit positional arguments", a.Span).WithSymbol(name)
+			diagnosticIndex = len(c.result.Diagnostics) - 1
 		}
-		args = append(args, c.expr(a.Get("value"), model.Invalid))
+		actual := c.expr(a.Get("value"), model.Invalid)
+		args = append(args, actual)
+		if diagnosticIndex >= 0 {
+			c.result.Diagnostics[diagnosticIndex].WithType(fmt.Sprintf("arg%d", i+1), actual)
+		}
+	}
+	context := func(d *diag.Diagnostic) {
+		d.WithSymbol(name)
+		for i, arg := range args {
+			d.WithType(fmt.Sprintf("arg%d", i+1), arg)
+		}
 	}
 	fail := func() model.Type {
-		c.error("PP303", "no sealed intrinsic signature matches "+name, n.Span)
+		context(c.error("PP303", "no sealed intrinsic signature matches "+name, n.Span))
 		return model.Invalid
 	}
 	if len(args) == 1 {
@@ -239,7 +305,7 @@ func (c *checker) intrinsic(name string, n *model.Node) model.Type {
 		return args[1]
 	}
 	if name == "range" {
-		c.error("PP304", "range is ephemeral and can only be consumed directly by a for loop", n.Span)
+		context(c.error("PP304", "range is ephemeral and can only be consumed directly by a for loop", n.Span))
 		return model.Invalid
 	}
 	return fail()

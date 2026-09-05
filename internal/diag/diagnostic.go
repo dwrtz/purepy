@@ -7,18 +7,78 @@ import (
 	"fmt"
 	"io"
 	"sort"
+	"strings"
 
 	"github.com/dwrtz/purepy/internal/model"
 )
 
 type Diagnostic struct {
-	Code     string       `json:"code"`
-	Severity string       `json:"severity"`
-	Message  string       `json:"message"`
-	Span     model.Span   `json:"span"`
-	Symbol   string       `json:"symbol,omitempty"`
-	Notes    []string     `json:"notes"`
-	Related  []model.Span `json:"related_locations"`
+	Code     string                `json:"code"`
+	Severity string                `json:"severity"`
+	Message  string                `json:"message"`
+	Span     model.Span            `json:"span"`
+	Symbol   string                `json:"symbol,omitempty"`
+	Notes    []string              `json:"notes"`
+	Related  []model.Span          `json:"related_locations"`
+	Types    map[string]model.Type `json:"types,omitempty"`
+}
+
+// Context methods are nil-safe so a successful type expectation can be
+// annotated without manufacturing a diagnostic. Related locations retain causal
+// order; duplicates and locations without a known source file are omitted.
+func (d *Diagnostic) WithSymbol(symbol string) *Diagnostic {
+	if d != nil && symbol != "" {
+		d.Symbol = symbol
+	}
+	return d
+}
+
+func (d *Diagnostic) WithType(role string, typ model.Type) *Diagnostic {
+	if d != nil && role != "" && typ.Kind != "" && typ.Kind != "invalid" {
+		if d.Types == nil {
+			d.Types = map[string]model.Type{}
+		}
+		d.Types[role] = typ
+	}
+	return d
+}
+
+func (d *Diagnostic) WithRelated(locations ...model.Span) *Diagnostic {
+	if d == nil {
+		return d
+	}
+	for _, at := range locations {
+		if at.File == "" {
+			continue
+		}
+		at = New("", "", at).Span
+		if at == d.Span {
+			continue
+		}
+		duplicate := false
+		for _, previous := range d.Related {
+			if previous == at {
+				duplicate = true
+				break
+			}
+		}
+		if !duplicate {
+			d.Related = append(d.Related, at)
+		}
+	}
+	return d
+}
+
+func (d *Diagnostic) WithNote(note string) *Diagnostic {
+	if d != nil && note != "" {
+		for _, previous := range d.Notes {
+			if previous == note {
+				return d
+			}
+		}
+		d.Notes = append(d.Notes, note)
+	}
+	return d
 }
 
 func New(code, message string, span model.Span) Diagnostic {
@@ -72,6 +132,17 @@ func SortModules(ds []Diagnostic, modules map[string]string) {
 func Text(w io.Writer, ds []Diagnostic) {
 	for _, d := range ds {
 		fmt.Fprintf(w, "%s:%d:%d %s %s\n", d.Span.File, d.Span.Line, d.Span.Column, d.Code, d.Message)
+		if d.Symbol != "" {
+			fmt.Fprintf(w, "  symbol: %s\n", d.Symbol)
+		}
+		roles := make([]string, 0, len(d.Types))
+		for role := range d.Types {
+			roles = append(roles, role)
+		}
+		sort.Strings(roles)
+		for _, role := range roles {
+			fmt.Fprintf(w, "  %s type: %s\n", strings.ReplaceAll(role, "_", " "), d.Types[role])
+		}
 		for _, n := range d.Notes {
 			fmt.Fprintf(w, "  %s\n", n)
 		}

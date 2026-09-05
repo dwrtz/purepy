@@ -73,7 +73,9 @@ func Check(opts Options) *Report {
 	if err != nil {
 		var located *config.Error
 		if errors.As(err, &located) {
-			r.Diagnostics = append(r.Diagnostics, diag.New("PP001", err.Error(), located.Span))
+			d := diag.New("PP001", err.Error(), located.Span)
+			d.WithSymbol(located.Symbol).WithRelated(located.Related...)
+			r.Diagnostics = append(r.Diagnostics, d)
 		} else {
 			r.failure("PP001", err.Error(), path)
 		}
@@ -83,7 +85,9 @@ func Check(opts Options) *Report {
 	files, err := discovery.Discover(cfg.SourceRoot)
 	stamp("discovery")
 	if err != nil {
-		r.Diagnostics = append(r.Diagnostics, diag.New("PP101", err.Error(), cfg.FieldSpans["source_root"]))
+		d := diag.New("PP101", err.Error(), cfg.FieldSpans["source_root"])
+		d.WithSymbol("tool.purepy.source_root")
+		r.Diagnostics = append(r.Diagnostics, d)
 		return r
 	}
 	r.Files = len(files)
@@ -96,7 +100,9 @@ func Check(opts Options) *Report {
 	if err != nil {
 		var located *manifest.Error
 		if errors.As(err, &located) {
-			r.Diagnostics = append(r.Diagnostics, diag.New("PP601", err.Error(), located.Span))
+			d := diag.New("PP601", err.Error(), located.Span)
+			d.WithSymbol(located.Symbol).WithRelated(located.Related...)
+			r.Diagnostics = append(r.Diagnostics, d)
 		} else {
 			r.failure("PP601", err.Error(), cfg.Path)
 		}
@@ -148,7 +154,9 @@ func Check(opts Options) *Report {
 				f := files[i]
 				data, err := os.ReadFile(f.Path)
 				if err != nil {
-					parsedFiles[i].ds = []diag.Diagnostic{diag.New("PP101", err.Error(), model.Span{File: f.Path, Line: 1, Column: 1})}
+					d := diag.New("PP101", err.Error(), model.Span{File: f.Path, Line: 1, Column: 1})
+					d.WithSymbol(f.Module).WithRelated(cfg.FieldSpans["source_root"])
+					parsedFiles[i].ds = []diag.Diagnostic{d}
 					continue
 				}
 				key := cache.Key(imageKey, f.Module, f.Path, cache.Digest(data))
@@ -188,8 +196,16 @@ func Check(opts Options) *Report {
 	p := check.Link(modules, ext, cfg.Entrypoints)
 	for i := range p.Diagnostics {
 		d := &p.Diagnostics[i]
-		if d.Code == "PP701" && d.Span.File == "" {
-			d.Span = cfg.EntrypointSpans[d.Symbol]
+		if d.Code == "PP701" {
+			declaration := cfg.EntrypointSpans[d.Symbol]
+			if declaration.File == "" {
+				declaration = cfg.FieldSpans["entrypoints"]
+			}
+			if d.Span.File == "" {
+				d.Span = declaration
+			} else {
+				d.WithRelated(declaration)
+			}
 		}
 	}
 	r.Program = p

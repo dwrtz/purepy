@@ -92,6 +92,7 @@ type Function struct {
 	Trust      string      `json:"trust"`
 	Source     string      `json:"source,omitempty"`
 	Span       Span        `json:"span"`
+	ReturnSpan Span        `json:"-"`
 	Body       []*Node     `json:"-"`
 	Module     string      `json:"-"`
 }

@@ -2,21 +2,73 @@
   {
     "section": "28.1",
     "quote": "A diagnostic MUST include:",
-    "status": "partial",
+    "status": "tested",
     "positive": [
       {
-        "path": "internal/app/spec_diagnostics_test.go",
-        "test": "TestDiagnosticMetadataForVerificationAndConfigurationErrors"
+        "path": "internal/diag/context_test.go",
+        "test": "TestDiagnosticContextBuilders"
+      },
+      {
+        "path": "internal/app/context_diagnostics_test.go",
+        "test": "TestDiagnosticDeclarationPathsAcrossCacheAndWorkers"
       }
     ],
     "negative": [
       {
-        "path": "internal/app/spec_diagnostics_test.go",
-        "test": "TestDiagnosticMetadataForVerificationAndConfigurationErrors"
+        "path": "internal/app/context_diagnostics_test.go",
+        "test": "TestDiagnosticDeclarationPathsAcrossCacheAndWorkers"
+      },
+      {
+        "path": "internal/check/call_diagnostics_test.go",
+        "test": "TestCallDiagnosticParameterContext"
+      },
+      {
+        "path": "internal/check/call_diagnostics_test.go",
+        "test": "TestCallDiagnosticArgumentOrigin"
+      },
+      {
+        "path": "internal/check/expression_diagnostics_test.go",
+        "test": "TestExpressionDiagnosticTypesAndDeclarations"
+      },
+      {
+        "path": "internal/check/expression_diagnostics_test.go",
+        "test": "TestLocalDiagnosticDeclarationPaths"
+      },
+      {
+        "path": "internal/check/expression_diagnostics_test.go",
+        "test": "TestExpressionDiagnosticFieldAndCallOrigins"
+      },
+      {
+        "path": "internal/check/program_diagnostics_test.go",
+        "test": "TestDeclarationConflictDiagnosticContext"
+      },
+      {
+        "path": "internal/check/program_diagnostics_test.go",
+        "test": "TestAnnotationDiagnosticContext"
+      },
+      {
+        "path": "internal/check/program_diagnostics_test.go",
+        "test": "TestConstantDiagnosticContext"
+      },
+      {
+        "path": "internal/check/program_diagnostics_test.go",
+        "test": "TestCycleDiagnosticDeclarationPaths"
+      },
+      {
+        "path": "internal/check/program_diagnostics_test.go",
+        "test": "TestManifestLinkDiagnosticContext"
+      },
+      {
+        "path": "internal/manifest/diagnostic_source_test.go",
+        "test": "TestManifestDuplicateDeclarationContext"
+      },
+      {
+        "path": "internal/config/spec_source_test.go",
+        "test": "TestConfigurationDuplicateDeclarationPaths"
       }
     ],
     "fixtures": [],
-    "notes": "Primary ranges, codes, severity, messages, and related declaration text have regression coverage. Contextual symbol/type information and declaration paths are not yet exhaustive across every rejection family."
+    "notes": "Diagnostic metadata, structured known types, qualified symbols, and declaration paths are covered across expressions, flow, calls, imports, signatures, constants, cycles, manifests, and configuration. End-to-end JSON/text reports preserve complete context across cold/warm/disabled caches and worker counts. Syntax-only errors omit unavailable semantic context."
   },
   {
     "section": "28.1",
@@ -120,46 +172,150 @@
   {
     "section": "28.1",
     "quote": "- relevant symbol and type information; and",
-    "status": "partial",
+    "status": "tested",
     "positive": [
       {
-        "path": "internal/app/spec_diagnostics_test.go",
-        "test": "TestDiagnosticMetadataForVerificationAndConfigurationErrors"
+        "path": "internal/diag/context_test.go",
+        "test": "TestDiagnosticContextBuilders"
+      },
+      {
+        "path": "internal/app/context_diagnostics_test.go",
+        "test": "TestDiagnosticDeclarationPathsAcrossCacheAndWorkers"
       }
     ],
     "negative": [
       {
-        "path": "internal/app/spec_diagnostics_test.go",
-        "test": "TestEntrypointRejectionPointsToConfigurationDeclaration"
+        "path": "internal/app/context_diagnostics_test.go",
+        "test": "TestDiagnosticDeclarationPathsAcrossCacheAndWorkers"
+      },
+      {
+        "path": "internal/check/call_diagnostics_test.go",
+        "test": "TestCallDiagnosticParameterContext"
+      },
+      {
+        "path": "internal/check/call_diagnostics_test.go",
+        "test": "TestCallDiagnosticArgumentOrigin"
+      },
+      {
+        "path": "internal/check/expression_diagnostics_test.go",
+        "test": "TestExpressionDiagnosticTypesAndDeclarations"
+      },
+      {
+        "path": "internal/check/expression_diagnostics_test.go",
+        "test": "TestLocalDiagnosticDeclarationPaths"
+      },
+      {
+        "path": "internal/check/expression_diagnostics_test.go",
+        "test": "TestExpressionDiagnosticFieldAndCallOrigins"
+      },
+      {
+        "path": "internal/check/program_diagnostics_test.go",
+        "test": "TestDeclarationConflictDiagnosticContext"
+      },
+      {
+        "path": "internal/check/program_diagnostics_test.go",
+        "test": "TestAnnotationDiagnosticContext"
+      },
+      {
+        "path": "internal/check/program_diagnostics_test.go",
+        "test": "TestConstantDiagnosticContext"
+      },
+      {
+        "path": "internal/check/program_diagnostics_test.go",
+        "test": "TestCycleDiagnosticDeclarationPaths"
+      },
+      {
+        "path": "internal/check/program_diagnostics_test.go",
+        "test": "TestManifestLinkDiagnosticContext"
+      },
+      {
+        "path": "internal/manifest/diagnostic_source_test.go",
+        "test": "TestManifestDuplicateDeclarationContext"
+      },
+      {
+        "path": "internal/config/spec_source_test.go",
+        "test": "TestConfigurationDuplicateDeclarationPaths"
       }
     ],
     "fixtures": [
       "bool_is_not_int",
       "wrong_capability"
     ],
-    "notes": "Entrypoint symbols and representative exact-type/capability messages are exercised. Some linker and declaration diagnostics still rely on prose instead of complete structured symbol/type context."
+    "notes": "Optional structured type roles preserve expected/actual, operand, declaration, field, and signature types. Errors identify relevant qualified symbols; unknown types are omitted rather than invented. Focused tests assert types and declaration owners across rejection families without extra expression or authority evaluation."
   },
   {
     "section": "28.1",
     "quote": "- a deterministic explanation path when another declaration is involved.",
-    "status": "partial",
+    "status": "tested",
     "positive": [
       {
-        "path": "internal/diag/spec_diagnostics_test.go",
-        "test": "TestDiagnosticTextIncludesDeclarationPath"
+        "path": "internal/diag/context_test.go",
+        "test": "TestDiagnosticContextBuilders"
+      },
+      {
+        "path": "internal/app/context_diagnostics_test.go",
+        "test": "TestDiagnosticDeclarationPathsAcrossCacheAndWorkers"
       }
     ],
     "negative": [
       {
-        "path": "internal/diag/spec_diagnostics_test.go",
-        "test": "TestDiagnosticSortHasCompleteDeterministicTieBreaker"
+        "path": "internal/app/context_diagnostics_test.go",
+        "test": "TestDiagnosticDeclarationPathsAcrossCacheAndWorkers"
+      },
+      {
+        "path": "internal/check/call_diagnostics_test.go",
+        "test": "TestCallDiagnosticParameterContext"
+      },
+      {
+        "path": "internal/check/call_diagnostics_test.go",
+        "test": "TestCallDiagnosticArgumentOrigin"
+      },
+      {
+        "path": "internal/check/expression_diagnostics_test.go",
+        "test": "TestExpressionDiagnosticTypesAndDeclarations"
+      },
+      {
+        "path": "internal/check/expression_diagnostics_test.go",
+        "test": "TestLocalDiagnosticDeclarationPaths"
+      },
+      {
+        "path": "internal/check/expression_diagnostics_test.go",
+        "test": "TestExpressionDiagnosticFieldAndCallOrigins"
+      },
+      {
+        "path": "internal/check/program_diagnostics_test.go",
+        "test": "TestDeclarationConflictDiagnosticContext"
+      },
+      {
+        "path": "internal/check/program_diagnostics_test.go",
+        "test": "TestAnnotationDiagnosticContext"
+      },
+      {
+        "path": "internal/check/program_diagnostics_test.go",
+        "test": "TestConstantDiagnosticContext"
+      },
+      {
+        "path": "internal/check/program_diagnostics_test.go",
+        "test": "TestCycleDiagnosticDeclarationPaths"
+      },
+      {
+        "path": "internal/check/program_diagnostics_test.go",
+        "test": "TestManifestLinkDiagnosticContext"
+      },
+      {
+        "path": "internal/manifest/diagnostic_source_test.go",
+        "test": "TestManifestDuplicateDeclarationContext"
+      },
+      {
+        "path": "internal/config/spec_source_test.go",
+        "test": "TestConfigurationDuplicateDeclarationPaths"
       }
     ],
     "fixtures": [
       "capability_missing",
       "wrong_capability"
     ],
-    "notes": "Capability errors carry parameter declaration locations, human output renders them, and ties include complete context. Other declaration-dependent errors do not yet all carry related-location chains."
+    "notes": "Related locations follow relevant imports, declarations, actual argument and field origins, conflicting bindings, and actual import/record cycle edges. Config and manifest duplicates retain exact occurrence ranges. JSON/text integration and complete-context sorting tests check deterministic paths; no nonexistent declaration is invented for unresolved names."
   },
   {
     "section": "30.2",

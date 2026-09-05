@@ -88,3 +88,23 @@ func TestMalformedConfigurationAlwaysReturnsLocatedError(t *testing.T) {
 		})
 	}
 }
+
+func TestConfigurationDuplicateDeclarationPaths(t *testing.T) {
+	for _, tc := range []struct{ name, source, symbol, first, second string }{
+		{"entrypoint", strings.Replace(validConfig, `["app.main"]`, `["app.main", 'app.main']`, 1), "app.main", `"app.main"`, `'app.main'`},
+		{"escaped_entrypoint", strings.Replace(validConfig, `["app.main"]`, `["app.ma\u0069n", 'app.main']`, 1), "app.main", `"app.ma\u0069n"`, `'app.main'`},
+		{"resolved_manifest", strings.Replace(validConfig, `["manifests/host.toml"]`, `["manifests/host.toml", './manifests/host.toml']`, 1), "./manifests/host.toml", `"manifests/host.toml"`, `'./manifests/host.toml'`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := Load(project(t, tc.source))
+			var located *Error
+			if !errors.As(err, &located) || located.Symbol != tc.symbol || len(located.Related) != 1 {
+				t.Fatalf("duplicate must identify its symbol and first declaration: %+v", err)
+			}
+			primary, previous := located.Span, located.Related[0]
+			if primary.Start <= previous.Start || primary.File != previous.File || tc.source[primary.Start:primary.End] != tc.second || tc.source[previous.Start:previous.End] != tc.first {
+				t.Fatalf("duplicate locations lost their literal occurrences: %+v -> %+v", primary, previous)
+			}
+		})
+	}
+}

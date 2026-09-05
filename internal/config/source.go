@@ -11,8 +11,10 @@ import (
 // Error preserves a configuration rejection's source location for CLI reports.
 // Unreadable files use a zero-width position at the beginning of the file.
 type Error struct {
-	Err  error
-	Span model.Span
+	Err     error
+	Span    model.Span
+	Symbol  string
+	Related []model.Span
 }
 
 func (e *Error) Error() string { return e.Err.Error() }
@@ -34,8 +36,16 @@ func sourceSpan(path string, data []byte, start, end int) model.Span {
 // declarationSpans reads only declarative TOML syntax. The returned model spans
 // are detached from the parser, including escaped and multiline entrypoint names.
 func declarationSpans(path string, data []byte) (map[string]model.Span, map[string]model.Span) {
+	fields, entries, _ := declarationLocations(path, data)
+	return fields, entries
+}
+
+// List locations retain each occurrence, including duplicate names and paths
+// that resolve to the same file. Decoded values alone cannot locate conflicts.
+func declarationLocations(path string, data []byte) (map[string]model.Span, map[string]model.Span, map[string][]model.Span) {
 	fields := map[string]model.Span{}
 	entries := map[string]model.Span{}
+	lists := map[string][]model.Span{}
 	var parser unstable.Parser
 	parser.Reset(data)
 	key := func(node *unstable.Node) []string {
@@ -63,13 +73,17 @@ func declarationSpans(path string, data []byte) (map[string]model.Span, map[stri
 		iter.Next()
 		raw := iter.Node().Raw
 		fields[parts[2]] = sourceSpan(path, data, int(raw.Offset), int(raw.Offset+raw.Length))
-		if parts[2] == "entrypoints" && value.Kind == unstable.Array {
+		if (parts[2] == "entrypoints" || parts[2] == "manifests") && value.Kind == unstable.Array {
 			iter := value.Children()
 			for iter.Next() {
 				entry := iter.Node()
 				if entry.Kind == unstable.String {
 					raw := entry.Raw
-					entries[string(entry.Data)] = sourceSpan(path, data, int(raw.Offset), int(raw.Offset+raw.Length))
+					span := sourceSpan(path, data, int(raw.Offset), int(raw.Offset+raw.Length))
+					lists[parts[2]] = append(lists[parts[2]], span)
+					if parts[2] == "entrypoints" {
+						entries[string(entry.Data)] = span
+					}
 				}
 			}
 		}
@@ -84,7 +98,7 @@ func declarationSpans(path string, data []byte) (map[string]model.Span, map[stri
 			visit(expression, table)
 		}
 	}
-	return fields, entries
+	return fields, entries, lists
 }
 
 func errorPosition(path string, data []byte, line, column int) model.Span {

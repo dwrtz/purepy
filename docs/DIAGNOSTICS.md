@@ -83,14 +83,66 @@ diagnostic contains:
 | `severity` | Currently `error`. |
 | `message` | Explanation of the violated rule. |
 | `span` | File, half-open byte offsets `start`/`end`, and one-based Unicode code-point line/column positions. |
-| `symbol` | Qualified related symbol, when available. |
+| `symbol` | Most relevant declaration, when known: a qualified function, parameter, field, local or module symbol; sealed intrinsic names remain unqualified. |
+| `types` | Optional object mapping diagnostic-specific roles to structured exact types. Unknown types are omitted. |
 | `notes` | Ordered explanatory strings, possibly empty. |
-| `related_locations` | Other relevant spans, possibly empty. |
+| `related_locations` | Ordered explanation path through relevant imports, declarations and previous uses, possibly empty. |
+
+The [experimental schema-1 JSON contract](schema/diagnostics-v1.json) includes
+`types` as an additive optional field. Reports without type context retain the
+previous shape. Consumers using an earlier strict schema must update that schema
+to accept the new field; this is not yet a frozen tagged-release contract. The
+diagnostic codes, severity and rejection rules are unchanged. Clients should use
+the structured fields rather than parse text messages, and tolerate new type
+roles as diagnostics gain context.
+
+Each type has a `kind`, with `name` for nominal types and a recursive `element`
+for tuple or optional types. Common roles are:
+
+| Role | Meaning |
+| --- | --- |
+| `expected`, `actual` | Required and known supplied types at an incompatible use. |
+| `left`, `right` | Operand or control-flow branch types being compared. |
+| `declared`, `previous` | Current and earlier declaration types. |
+| `return` | A function or constructor's declared result type. |
+| `parameter`, `parameter.NAME` | The affected parameter type or a named member of a resolved call signature. |
+| `field`, `record`, `element` | Relevant record or contained type. |
+| `arg1`, `arg2`, ... | Known argument types for a sealed intrinsic, numbered from one. |
+
+For example, passing `True` to `library.consume(value: int)` produces a `PP205`
+diagnostic with `symbol: "library.consume.value"` and context like:
+
+```json
+{
+  "types": {
+    "actual": {"kind": "bool"},
+    "expected": {"kind": "int"},
+    "parameter.value": {"kind": "int"},
+    "return": {"kind": "int"}
+  }
+}
+```
+
+The main span locates the incompatible argument. Its related locations follow
+the import in the caller to the callee declaration and then its parameter.
+Manifest-backed calls point to the function and parameter inside the TOML file;
+an invalid authority argument can also relate the caller's original parameter.
+Duplicate arguments include the earlier argument's span, and conflicting local
+bindings include the earlier binding. Import and record-type cycles retain an
+ordered path through the declarations that form the cycle. Repeated locations
+and the main span are omitted from that path; related locations are not sorted
+independently. A diagnostic with no other relevant declaration has an empty path.
+
+Context describes information already established during verification. An
+unknown name or a construct rejected before type checking need not have a type.
+The verifier does not evaluate rejected arguments or read authority values as
+ordinary expressions merely to populate diagnostic context.
 
 Diagnostics sort by module identity, file, starting byte offset, code and message,
 with the complete diagnostic JSON breaking any remaining ties. Locations outside
 project modules use their file path as the module sort key. Text reports include
-related declaration locations. Cache hits, worker scheduling and stage timings
+the relevant symbol, type roles in lexical order, notes and related declaration
+locations. Cache hits, worker scheduling and stage timings
 do not change the JSON report. Timing output
 is requested with `--timings` and goes to stderr.
 

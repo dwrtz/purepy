@@ -16,31 +16,36 @@ type Result struct {
 type variable struct {
 	Type, Current       model.Type
 	Assigned, Parameter bool
+	Declaration         model.Span
 }
 type checker struct {
-	p        *Program
-	m        *Module
-	f        *model.Function
-	vars     map[string]variable
-	result   Result
-	constant bool
-	loop     int
+	p             *Program
+	m             *Module
+	f             *model.Function
+	vars          map[string]variable
+	result        Result
+	constant      bool
+	loop          int
+	contextSymbol string
 }
 
 func newChecker(p *Program, m *Module, f *model.Function) *checker {
 	return &checker{p: p, m: m, f: f, vars: map[string]variable{}, result: Result{Diagnostics: []diag.Diagnostic{}, Calls: []model.CallEdge{}, Facts: []model.Fact{}}}
 }
-func (c *checker) error(code, msg string, at model.Span) {
+func (c *checker) error(code, msg string, at model.Span) *diag.Diagnostic {
 	d := diag.New(code, msg, at)
+	d.Symbol = c.contextSymbol
 	if c.f != nil {
 		d.Symbol = c.f.Name
 	}
 	c.result.Diagnostics = append(c.result.Diagnostics, d)
+	return &c.result.Diagnostics[len(c.result.Diagnostics)-1]
 }
-func (c *checker) expect(want, got model.Type, at model.Span) {
+func (c *checker) expect(want, got model.Type, at model.Span) *diag.Diagnostic {
 	if want.Kind != "invalid" && got.Kind != "invalid" && !want.Accepts(got) {
-		c.error("PP205", fmt.Sprintf("expected %s, got %s", want, got), at)
+		return c.error("PP205", fmt.Sprintf("expected %s, got %s", want, got), at).WithType("expected", want).WithType("actual", got)
 	}
+	return nil
 }
 func (c *checker) fact(n *model.Node, t model.Type, symbol, desc string) {
 	c.result.Facts = append(c.result.Facts, model.Fact{Span: n.Span, Symbol: symbol, Type: t, Category: t.Category(), Description: desc})
@@ -57,7 +62,7 @@ func (c *checker) pure(t model.Type, at model.Span) bool {
 		if t.Kind == "capability" {
 			code = "PP313"
 		}
-		c.error(code, "only direct forwarding from an original parameter is permitted for "+t.String(), at)
+		c.error(code, "only direct forwarding from an original parameter is permitted for "+t.String(), at).WithType("actual", t)
 		return false
 	}
 	return true
@@ -91,15 +96,15 @@ func (c *checker) expr(n *model.Node, want model.Type) (t model.Type) {
 	case "Name":
 		name := n.A("name")
 		if forbiddenName(name) {
-			c.error("PP104", "dunder names are not accessible", n.Span)
+			c.nameContext(c.error("PP104", "dunder names are not accessible", n.Span), name)
 			return
 		}
 		if v, ok := c.vars[name]; ok {
 			if !v.Assigned {
-				c.error("PP206", "local "+name+" is not definitely assigned", n.Span)
+				c.nameContext(c.error("PP206", "local "+name+" is not definitely assigned", n.Span), name)
 				return
 			}
-			if !c.pure(v.Current, n.Span) {
+			if !c.pureExpression(v.Current, n) {
 				return
 			}
 			return v.Current
@@ -107,21 +112,21 @@ func (c *checker) expr(n *model.Node, want model.Type) (t model.Type) {
 		if s := c.m.Bindings[name]; s != nil {
 			if c.constant {
 				if at, imported := c.m.ImportedAt[name]; imported && at.Start > n.Span.Start {
-					c.error("PP502", "constant initializer uses "+name+" before its import", n.Span)
+					c.nameContext(c.error("PP502", "constant initializer uses "+name+" before its import", n.Span), name)
 					return
 				}
 			}
 			if s.Kind == "constant" {
 				if !s.Type.Pure() {
-					c.error("PP502", "constant must be defined before use: "+name, n.Span)
+					c.nameContext(c.error("PP502", "constant must be defined before use: "+name, n.Span), name)
 					return
 				}
 				return s.Type
 			}
-			c.error("PP301", name+" is a declaration, not a first-class value", n.Span)
+			c.nameContext(c.error("PP301", name+" is a declaration, not a first-class value", n.Span), name)
 			return
 		}
-		c.error("PP104", "unknown name "+name, n.Span)
+		c.nameContext(c.error("PP104", "unknown name "+name, n.Span), name)
 	case "Tuple":
 		xs := n.Items("elements")
 		element := model.Invalid
@@ -137,11 +142,14 @@ func (c *checker) expr(n *model.Node, want model.Type) (t model.Type) {
 		}
 		for i, x := range xs {
 			actual := c.expr(x, element)
-			c.pure(actual, x.Span)
+			c.pureExpression(actual, x)
 			if i == 0 && element.Kind == "invalid" {
 				element = actual
 			} else if !element.Equal(actual) && actual.Kind != "invalid" {
-				c.error("PP207", "tuple elements must have one exact type", x.Span)
+				d := c.expressionContext(c.error("PP207", "tuple elements must have one exact type", x.Span).WithType("expected", element).WithType("actual", actual), x)
+				if i > 0 {
+					c.expressionContext(d.WithRelated(xs[0].Span), xs[0])
+				}
 			}
 		}
 		if element.Pure() {
@@ -151,7 +159,7 @@ func (c *checker) expr(n *model.Node, want model.Type) (t model.Type) {
 		base := c.expr(n.Get("value"), model.Invalid)
 		name := n.A("name")
 		if forbiddenName(name) {
-			c.error("PP104", "dunder attributes are not accessible", n.Span)
+			c.expressionContext(c.error("PP104", "dunder attributes are not accessible", n.Span).WithType("receiver", base), n.Get("value"))
 			return
 		}
 		if base.Kind == "record" {
@@ -164,7 +172,10 @@ func (c *checker) expr(n *model.Node, want model.Type) (t model.Type) {
 			}
 		}
 		if base.Kind != "invalid" {
-			c.error("PP208", "attribute reads require a declared field of an exact @value record", n.Span)
+			d := c.expressionContext(c.error("PP208", "attribute reads require a declared field of an exact @value record", n.Span).WithType("receiver", base), n.Get("value"))
+			if r := c.p.Records[base.Name]; r != nil {
+				d.WithSymbol(r.Name + "." + name).WithRelated(r.Span)
+			}
 		}
 	case "Unary":
 		v := c.expr(n.Get("operand"), model.Invalid)
@@ -174,30 +185,35 @@ func (c *checker) expr(n *model.Node, want model.Type) (t model.Type) {
 			return
 		}
 		if op == "not" {
-			c.expect(model.Bool, v, n.Span)
+			c.expectExpression(model.Bool, v, n.Get("operand"))
 			return model.Bool
 		}
 		if (op == "+" || op == "-") && (v.Kind == "int" || v.Kind == "float") || op == "~" && v.Kind == "int" {
 			return v
 		}
 		if v.Kind != "invalid" {
-			c.error("PP209", "unsupported unary operator for "+v.String(), n.Span)
+			c.expressionContext(c.error("PP209", "unsupported unary operator for "+v.String(), n.Span).WithType("operand", v), n.Get("operand"))
 		}
 	case "Binary":
 		l := c.expr(n.Get("left"), model.Invalid)
 		r := c.expr(n.Get("right"), model.Invalid)
-		return c.binary(n.A("op"), l, r, n.Span)
+		before := len(c.result.Diagnostics)
+		t = c.binary(n.A("op"), l, r, n.Span)
+		for i := before; i < len(c.result.Diagnostics); i++ {
+			c.expressionContext(&c.result.Diagnostics[i], n)
+		}
+		return t
 	case "Bool":
 		if n.A("op") != "and" && n.A("op") != "or" {
 			c.error("PP099", "malformed semantic boolean operator", n.Span)
 			return
 		}
 		l := c.expr(n.Get("left"), model.Bool)
-		c.expect(model.Bool, l, n.Span)
+		c.expectExpression(model.Bool, l, n.Get("left"))
 		before := clone(c.vars)
 		c.narrow(n.Get("left"), n.A("op") == "and")
 		r := c.expr(n.Get("right"), model.Bool)
-		c.expect(model.Bool, r, n.Span)
+		c.expectExpression(model.Bool, r, n.Get("right"))
 		c.vars = before
 		return model.Bool
 	case "Compare":
@@ -212,11 +228,15 @@ func (c *checker) expr(n *model.Node, want model.Type) (t model.Type) {
 			types[i] = c.expr(x, model.Invalid)
 		}
 		for i, op := range ops {
+			before := len(c.result.Diagnostics)
 			c.compare(op, types[i], types[i+1], n.Span)
+			for j := before; j < len(c.result.Diagnostics); j++ {
+				c.expressionContext(c.expressionContext(&c.result.Diagnostics[j], xs[i]), xs[i+1])
+			}
 		}
 		return model.Bool
 	case "Conditional":
-		c.expect(model.Bool, c.expr(n.Get("test"), model.Bool), n.Span)
+		c.expectExpression(model.Bool, c.expr(n.Get("test"), model.Bool), n.Get("test"))
 		before := clone(c.vars)
 		c.narrow(n.Get("test"), true)
 		a := c.expr(n.Get("body"), want)
@@ -225,7 +245,7 @@ func (c *checker) expr(n *model.Node, want model.Type) (t model.Type) {
 		b := c.expr(n.Get("else"), want)
 		c.vars = before
 		if !a.Equal(b) {
-			c.error("PP205", "conditional expression branches must have the same exact type", n.Span)
+			c.expressionContext(c.error("PP205", "conditional expression branches must have the same exact type", n.Span).WithType("left", a).WithType("right", b), n)
 			return
 		}
 		return a
@@ -233,22 +253,22 @@ func (c *checker) expr(n *model.Node, want model.Type) (t model.Type) {
 		base := c.expr(n.Get("value"), model.Invalid)
 		if base.Kind != "str" && base.Kind != "bytes" && base.Kind != "tuple" {
 			if base.Kind != "invalid" {
-				c.error("PP210", "only str, bytes and homogeneous tuples support subscription", n.Span)
+				c.expressionContext(c.error("PP210", "only str, bytes and homogeneous tuples support subscription", n.Span).WithType("receiver", base), n.Get("value"))
 			}
 			return
 		}
 		if n.Kind == "Slice" {
 			if n.Get("step") != nil {
-				c.error("PP210", "extended slicing is prohibited", n.Span)
+				c.expressionContext(c.error("PP210", "extended slicing is prohibited", n.Span).WithType("receiver", base), n.Get("value"))
 			}
 			for _, key := range []string{"start", "stop"} {
 				if bound := n.Get(key); bound != nil {
-					c.expect(model.Optional(model.Int), c.expr(bound, model.Optional(model.Int)), bound.Span)
+					c.expectExpression(model.Optional(model.Int), c.expr(bound, model.Optional(model.Int)), bound)
 				}
 			}
 			return base
 		}
-		c.expect(model.Int, c.expr(n.Get("index"), model.Int), n.Span)
+		c.expectExpression(model.Int, c.expr(n.Get("index"), model.Int), n.Get("index"))
 		if base.Kind == "bytes" {
 			return model.Int
 		}
@@ -277,10 +297,10 @@ func (c *checker) expr(n *model.Node, want model.Type) (t model.Type) {
 			}
 			value := c.expr(part.Get("value"), model.Invalid)
 			if value.Kind != "bool" && value.Kind != "int" && value.Kind != "float" && value.Kind != "str" && value.Kind != "invalid" {
-				c.error("PP211", "formatting requires bool, int, float or str", part.Span)
+				c.expressionContext(c.error("PP211", "formatting requires bool, int, float or str", part.Span).WithType("actual", value), part.Get("value"))
 			}
 			if part.A("conversion") != "" || part.A("format") != "" {
-				c.error("PP211", "format conversions and specifications are not in the sealed formatting table", part.Span)
+				c.expressionContext(c.error("PP211", "format conversions and specifications are not in the sealed formatting table", part.Span).WithType("actual", value), part.Get("value"))
 			}
 		}
 		return model.Str
@@ -314,7 +334,7 @@ func (c *checker) binary(op string, l, r model.Type, at model.Span) model.Type {
 	}
 	// Power is intentionally absent: int**int can return int or float, and
 	// float**float can return complex. No single exact return type is sound.
-	c.error("PP209", fmt.Sprintf("operator %s has no exact rule for %s and %s", op, l, r), at)
+	c.error("PP209", fmt.Sprintf("operator %s has no exact rule for %s and %s", op, l, r), at).WithType("left", l).WithType("right", r)
 	return model.Invalid
 }
 func (c *checker) equality(t model.Type, active map[string]bool) bool {
@@ -361,6 +381,6 @@ func (c *checker) compare(op string, l, r model.Type, at model.Span) {
 		ok = r.Kind == "tuple" && r.Elem != nil && r.Elem.Equal(l) && c.equality(l, map[string]bool{}) || l.Kind == "str" && r.Kind == "str" || l.Kind == "int" && r.Kind == "bytes"
 	}
 	if !ok {
-		c.error("PP212", fmt.Sprintf("comparison %s is not defined for %s and %s", op, l, r), at)
+		c.error("PP212", fmt.Sprintf("comparison %s is not defined for %s and %s", op, l, r), at).WithType("left", l).WithType("right", r)
 	}
 }

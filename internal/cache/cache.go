@@ -162,7 +162,9 @@ func validSummary(s Summary) bool {
 		return false
 	}
 	for _, d := range s.Diagnostics {
-		if (d.Code != "PP002" && d.Code != "PP003") || d.Severity != "error" || d.Message == "" || !validSpan(d.Span, root.Span) {
+		// Cached diagnostics come only from parsing; semantic type context is
+		// recomputed against linked declarations on every verification run.
+		if (d.Code != "PP002" && d.Code != "PP003") || d.Severity != "error" || d.Message == "" || len(d.Types) != 0 || !validSpan(d.Span, root.Span) {
 			return false
 		}
 		for _, at := range d.Related {
