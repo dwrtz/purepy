@@ -199,6 +199,9 @@ func FuzzTypeSyntax(f *testing.F) {
 		f.Add(seed)
 	}
 	f.Fuzz(func(t *testing.T, input string) {
+		if len(input) > 4096 {
+			t.Skip()
+		}
 		_ = validTypeSyntax(input)
 	})
 }

@@ -30,8 +30,8 @@ a percentage of semantic correctness.
 ## Open evidence and scope limits
 
 - [S1.2-d604ffbd](#s12-d604ffbd) (deferred): Future language evolution obligation. Only PurePy 0.1 is implemented; preserving prior semantics across future versions is not established by the present tests.
-- [S3.2-879ab30b](#s32-879ab30b) (partial): Exact supported operations and unknown-operation/suppression rejection have direct controls. Fail-closed behavior for every parser and semantic combination still requires independent soundness and fuzz testing.
-- [S3.2-4bfca5fc](#s32-4bfca5fc) (partial): Exact supported operations and unknown-operation/suppression rejection have direct controls. Fail-closed behavior for every parser and semantic combination still requires independent soundness and fuzz testing.
+- [S3.2-879ab30b](#s32-879ab30b) (partial): Exact operations and unknown-operation/suppression rejection have direct controls. Bounded generated semantic pairs require acceptance and specific rejection codes; arbitrary-source fuzzing checks parser-to-checker integrity, spans, and worker determinism. These short campaigns do not establish all syntax/semantic combinations or replace independent soundness review.
+- [S3.2-4bfca5fc](#s32-4bfca5fc) (partial): Exact operations and unknown-operation/suppression rejection have direct controls. Bounded generated semantic pairs require acceptance and specific rejection codes; arbitrary-source fuzzing checks parser-to-checker integrity, spans, and worker determinism. These short campaigns do not establish all syntax/semantic combinations or replace independent soundness review.
 - [S3.3-2c62bcf8](#s33-2c62bcf8) (partial): Tests establish direct parameter forwarding and representative construction/storage/ambient-call rejection. Host entrypoint argument provenance remains trusted.
 - [S3.9-b9af2dbd](#s39-b9af2dbd) (partial): The reference service statically verifies and the cited runtime test exercises this workload behavior. This workload evidence is not a general service-correctness or host-implementation proof; host scheduling/resources and integration environment remain trusted.
 - [S3.9-6ced6b54](#s39-6ced6b54) (partial): The reference service statically verifies and the cited runtime test exercises this workload behavior. This workload evidence is not a general service-correctness or host-implementation proof; host scheduling/resources and integration environment remain trusted.
@@ -80,7 +80,7 @@ a percentage of semantic correctness.
 - [S9.3-92091b33](#s93-92091b33) (partial): The table rejects named dynamic/mutable/iterator/coroutine/union/fixed-tuple annotations. Unsupported names alone do not exhaust every possible spelling or recursive alias form.
 - [S11.4-9c04b506](#s114-9c04b506) (partial): Pure Value/None returns and source-level returns of both authority categories have direct tests. Ephemeral/function/module/class/coroutine return bans are partly enforced by rejecting their source expressions or annotations; this is not a complete return-expression matrix. Targeted dynamically generated subtests: Read_returned, Connection_returned.
 - [S14.10-6fd2f044](#s1410-6fd2f044) (partial): Positional and keyword binding pass; star arguments reject. Double-star coverage is provided by frontend unsupported-syntax fixtures, not claimed exhaustive here.
-- [S15.4-7d2ae611](#s154-7d2ae611) (partial): The intrinsic implementation is closed and coupled to verifier version/cache identity. Existing and added tables test individual signatures, but an independent explicit intrinsic-table version and exhaustive operand/result differential table are not yet release-frozen.
+- [S15.4-7d2ae611](#s154-7d2ae611) (partial): The table is coupled to verifier version/cache identity. make differential-test now checks the documented operator/intrinsic verdict matrix and inferred exact types against CPython 3.14, including typed empty tuples, domain failures, and permanent regression controls. The finite matrix is not exhaustive, and an independent explicit intrinsic-table version is not yet release-frozen.
 - [S16.4-4c852054](#s164-4c852054) (partial): Original parameters forward directly; aliases, tuples, comparisons, and formatting reject. Section 8.6 lists each category exclusion.
 - [S16.7-6d8d9b23](#s167-6d8d9b23) (partial): Direct resolution plus rejected computed targets, decorators, and mutation cover representative ambient resolution mechanisms. No dedicated runtime registry/import-hook differential matrix is claimed.
 - [S22.6-56f3c626](#s226-56f3c626) (trust): The verifier validates declared capability categories, exact forwarding, and reports labels. It cannot prove that native/host code discloses every effect or uses the granted authority correctly; effect completeness is explicitly part of the trusted host contract.
@@ -88,10 +88,10 @@ a percentage of semantic correctness.
 - [S28.1-7bfbac9d](#s281-7bfbac9d) (partial): Entrypoint symbols and representative exact-type/capability messages are exercised. Some linker and declaration diagnostics still rely on prose instead of complete structured symbol/type context.
 - [S28.1-f8a8135a](#s281-f8a8135a) (partial): Capability errors carry parameter declaration locations, human output renders them, and ties include complete context. Other declaration-dependent errors do not yet all carry related-location chains.
 - [S32.1-31bd3d2e](#s321-31bd3d2e) (partial): The required fixture runner and representative safety/determinism tests run, but experimental status remains: full closed-language compliance and independent soundness evidence are not established.
-- [S32.1-d4cb00a5](#s321-d4cb00a5) (partial): The audit maps mandatory rules and feature families, but named Unicode escapes remain a documented primitive-literal gap, and finite fixtures do not exhaust the closed Python subset.
-- [S32.4-018499f6](#s324-018499f6) (partial): The suite has positive and negative cases across required feature families; an exhaustive enumeration of statement/operator/type combinations remains open.
-- [S32.4-f5622679](#s324-f5622679) (partial): Fixtures span the supported statement/expression families, but all operator/type combinations and Python literal spellings are not yet exhaustive.
-- [S32.4-0449ecd2](#s324-0449ecd2) (partial): The suite has positive and negative cases across required feature families; an exhaustive enumeration of statement/operator/type combinations remains open.
+- [S32.1-d4cb00a5](#s321-d4cb00a5) (partial): The audit maps mandatory rules and feature families. Named Unicode escapes now cover pinned character names and aliases, raw/bytes behavior, malformed names, exact lexical ranges, and cache equivalence. Finite fixtures still do not exhaust the closed Python subset.
+- [S32.4-018499f6](#s324-018499f6) (partial): The suite has positive and negative cases across required feature families; an exhaustive enumeration of statement/operator/type combinations remains open. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; nominal/optional combinations and arbitrary compositions remain outside this finite matrix.
+- [S32.4-f5622679](#s324-f5622679) (partial): Fixtures span the supported statement/expression families, but all operator/type combinations and Python literal spellings are not yet exhaustive. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; nominal/optional combinations and arbitrary compositions remain outside this finite matrix.
+- [S32.4-0449ecd2](#s324-0449ecd2) (partial): The suite has positive and negative cases across required feature families; an exhaustive enumeration of statement/operator/type combinations remains open. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; nominal/optional combinations and arbitrary compositions remain outside this finite matrix.
 - [S32.5-a0c47895](#s325-a0c47895) (release): The reference service demonstrates the required behavior and has a documented sample load run. Release still needs agreed performance budgets and representative load evidence.
 - [S32.5-66e0ae7d](#s325-66e0ae7d) (release): docs/PERFORMANCE.md and loadtest/sample.json record the harness and a local sample; acceptable release-scale verifier/runtime budgets and sustained representative measurements are not established.
 
@@ -123,11 +123,11 @@ Section 3.2; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L125)
 
 > When the verifier cannot establish the exact meaning of an operation, it MUST reject the operation.
 
-Positive: [TestSpecCoreAccepted/primitive_intrinsics](../internal/check/spec_core_test.go#L30).
+Positive: [TestSpecCoreAccepted/primitive_intrinsics](../internal/check/spec_core_test.go#L30); [FuzzCheckerSemantics](../internal/check/semantic_fuzz_test.go#L28).
 
-Negative: [TestSpecCoreSuppressionDoesNotAuthorizeUnknownCalls](../internal/check/spec_core_test.go#L251); [TestSpecCoreRejected/unknown_local_first_use](../internal/check/spec_core_test.go#L62); [TestSpecCoreRejected/intrinsic_no_protocol_dispatch](../internal/check/spec_core_test.go#L62).
+Negative: [TestSpecCoreSuppressionDoesNotAuthorizeUnknownCalls](../internal/check/spec_core_test.go#L251); [TestSpecCoreRejected/unknown_local_first_use](../internal/check/spec_core_test.go#L62); [TestSpecCoreRejected/intrinsic_no_protocol_dispatch](../internal/check/spec_core_test.go#L62); [FuzzCheckerSemantics](../internal/check/semantic_fuzz_test.go#L28); [FuzzCheckerSource](../internal/check/semantic_fuzz_test.go#L70).
 
-Exact supported operations and unknown-operation/suppression rejection have direct controls. Fail-closed behavior for every parser and semantic combination still requires independent soundness and fuzz testing.
+Exact operations and unknown-operation/suppression rejection have direct controls. Bounded generated semantic pairs require acceptance and specific rejection codes; arbitrary-source fuzzing checks parser-to-checker integrity, spans, and worker determinism. These short campaigns do not establish all syntax/semantic combinations or replace independent soundness review.
 
 ### S3.2-4bfca5fc
 
@@ -135,11 +135,11 @@ Section 3.2; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L127)
 
 > Unknown behavior MUST NOT be downgraded to a warning, inferred as pure, or authorized by a broad suppression comment.
 
-Positive: [TestSpecCoreAccepted/primitive_intrinsics](../internal/check/spec_core_test.go#L30).
+Positive: [TestSpecCoreAccepted/primitive_intrinsics](../internal/check/spec_core_test.go#L30); [FuzzCheckerSemantics](../internal/check/semantic_fuzz_test.go#L28).
 
-Negative: [TestSpecCoreSuppressionDoesNotAuthorizeUnknownCalls](../internal/check/spec_core_test.go#L251); [TestSpecCoreRejected/unknown_local_first_use](../internal/check/spec_core_test.go#L62); [TestSpecCoreRejected/intrinsic_no_protocol_dispatch](../internal/check/spec_core_test.go#L62).
+Negative: [TestSpecCoreSuppressionDoesNotAuthorizeUnknownCalls](../internal/check/spec_core_test.go#L251); [TestSpecCoreRejected/unknown_local_first_use](../internal/check/spec_core_test.go#L62); [TestSpecCoreRejected/intrinsic_no_protocol_dispatch](../internal/check/spec_core_test.go#L62); [FuzzCheckerSemantics](../internal/check/semantic_fuzz_test.go#L28); [FuzzCheckerSource](../internal/check/semantic_fuzz_test.go#L70).
 
-Exact supported operations and unknown-operation/suppression rejection have direct controls. Fail-closed behavior for every parser and semantic combination still requires independent soundness and fuzz testing.
+Exact operations and unknown-operation/suppression rejection have direct controls. Bounded generated semantic pairs require acceptance and specific rejection codes; arbitrary-source fuzzing checks parser-to-checker integrity, spans, and worker determinism. These short campaigns do not establish all syntax/semantic combinations or replace independent soundness review.
 
 ### S3.3-2c62bcf8
 
@@ -1831,13 +1831,13 @@ Section 15.4; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L1127)
 
 > The verifier MUST version and test the intrinsic table. Adding an intrinsic is a language change.
 
-Positive: [TestSpecCoreAccepted/primitive_intrinsics](../internal/check/spec_core_test.go#L30); [TestSpecCoreAccepted/float_sum_explicit_start](../internal/check/spec_core_test.go#L30).
+Positive: [TestSpecCoreAccepted/primitive_intrinsics](../internal/check/spec_core_test.go#L30); [TestSpecCoreAccepted/float_sum_explicit_start](../internal/check/spec_core_test.go#L30); [DifferentialTests.test_live_primitive_and_near_miss_cases](../tools/tests/test_differential_semantics.py#L138).
 
-Negative: [TestSpecCoreRejected/intrinsic_no_protocol_dispatch](../internal/check/spec_core_test.go#L62); [TestSpecCoreRejected/float_sum_requires_start](../internal/check/spec_core_test.go#L62).
+Negative: [TestSpecCoreRejected/intrinsic_no_protocol_dispatch](../internal/check/spec_core_test.go#L62); [TestSpecCoreRejected/float_sum_requires_start](../internal/check/spec_core_test.go#L62); [DifferentialTests.test_live_primitive_and_near_miss_cases](../tools/tests/test_differential_semantics.py#L138).
 
 [Conformance fixtures](../fixtures/conformance/cases.json): `intrinsics`.
 
-The intrinsic implementation is closed and coupled to verifier version/cache identity. Existing and added tables test individual signatures, but an independent explicit intrinsic-table version and exhaustive operand/result differential table are not yet release-frozen.
+The table is coupled to verifier version/cache identity. make differential-test now checks the documented operator/intrinsic verdict matrix and inferred exact types against CPython 3.14, including typed empty tuples, domain failures, and permanent regression controls. The finite matrix is not exhaustive, and an independent explicit intrinsic-table version is not yet release-frozen.
 
 ### S16.1-5af8aa5d
 
@@ -2509,11 +2509,11 @@ Section 31.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2157)
 
 > Cached and uncached runs MUST produce byte-for-byte equivalent machine-readable results.
 
-Positive: [TestCacheColdWarmDisabledAndWorkersAreEquivalent](../internal/app/cli_test.go#L104).
+Positive: [TestCacheColdWarmDisabledAndWorkersAreEquivalent](../internal/app/cli_test.go#L104); [TestMalformedCacheFallbackMatchesUncachedReport](../internal/app/cache_fuzz_test.go#L27).
 
-Negative: [TestRejectedReportsAreEquivalentAcrossCacheAndWorkers](../internal/app/spec_diagnostics_test.go#L11); [TestDependencySignatureChangeRelinksCachedCaller](../internal/app/cli_test.go#L128).
+Negative: [TestRejectedReportsAreEquivalentAcrossCacheAndWorkers](../internal/app/spec_diagnostics_test.go#L11); [TestDependencySignatureChangeRelinksCachedCaller](../internal/app/cli_test.go#L128); [TestMalformedCacheFallbackMatchesUncachedReport](../internal/app/cache_fuzz_test.go#L27); [FuzzCacheFallback](../internal/app/cache_fuzz_test.go#L41).
 
-JSON equivalence is checked for accepted projects plus parser, linker, local-call, and changed-signature rejections; text rejection output is also compared.
+JSON equivalence is checked for accepted projects plus parser, linker, local-call, and changed-signature rejections; text rejection output is also compared. New cache-fallback regressions and bounded fuzzing compare full accepted/rejected reports while corrupting both real module artifacts.
 
 ### S31.6-211a6984
 
@@ -2521,11 +2521,11 @@ Section 31.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2159)
 
 > Cache corruption or schema mismatch MUST fall back safely to reanalysis.
 
-Positive: [TestRoundTripAndMalformedArtifactsAreMisses](../internal/cache/cache_test.go#L29).
+Positive: [TestRoundTripAndMalformedArtifactsAreMisses](../internal/cache/cache_test.go#L29); [TestMalformedCacheFallbackMatchesUncachedReport](../internal/app/cache_fuzz_test.go#L27); [TestMalformedCacheSummaryRegression](../internal/cache/fuzz_test.go#L229).
 
-Negative: [TestRoundTripAndMalformedArtifactsAreMisses](../internal/cache/cache_test.go#L29); [TestSchemaMismatchReanalyzesRejectedProject](../internal/app/spec_diagnostics_test.go#L79); [TestTruncatedCacheRegeneratesEquivalentReport](../internal/app/cli_test.go#L147).
+Negative: [TestRoundTripAndMalformedArtifactsAreMisses](../internal/cache/cache_test.go#L29); [TestSchemaMismatchReanalyzesRejectedProject](../internal/app/spec_diagnostics_test.go#L79); [TestTruncatedCacheRegeneratesEquivalentReport](../internal/app/cli_test.go#L147); [TestMalformedCacheFallbackMatchesUncachedReport](../internal/app/cache_fuzz_test.go#L27); [TestMalformedCacheSummaryRegression](../internal/cache/fuzz_test.go#L229); [FuzzCacheSummary](../internal/cache/fuzz_test.go#L305); [FuzzCacheArtifact](../internal/cache/fuzz_test.go#L339).
 
-Valid artifacts round-trip; truncation, malformed payloads, checksums, and schema mismatch become misses. Integration tests reanalyze both accepted and rejected programs without changing their reports.
+Valid artifacts round-trip; truncation, malformed payloads, checksums, and schema mismatch become misses. Integration tests reanalyze both accepted and rejected programs without changing their reports. Correct-checksum structural/role/diagnostic mutations now exercise strict validation, with explicit hit/miss oracles and bounded node/depth tests. Application campaigns compare cold, warm, corrupted, repaired, and uncached reports. Checksums do not authenticate intentional valid semantic rewrites.
 
 ### S31.7-f5656237
 
@@ -2591,11 +2591,11 @@ Section 32.1; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L2175)
 
 List obligation introduced by S32.1-31bd3d2e.
 
-Positive: [TestControlFlowAndExpressions](../internal/frontend/parser_test.go#L100).
+Positive: [TestControlFlowAndExpressions](../internal/frontend/parser_test.go#L100); [TestNamedUnicodeEscapes](../internal/frontend/unicode_test.go#L36); [TestNamedUnicodeEscapesAcrossCacheStates](../internal/app/unicode_test.go#L8); [TestUnicodeDataNamesAndAliases](../internal/unicodenames/names_test.go#L37).
 
-Negative: [TestUnsupportedSyntaxIsNeverDropped](../internal/frontend/parser_test.go#L175).
+Negative: [TestUnsupportedSyntaxIsNeverDropped](../internal/frontend/parser_test.go#L175); [TestInvalidNamedUnicodeEscapesRetainRanges](../internal/frontend/unicode_test.go#L68); [TestNameSpellingBoundaries](../internal/unicodenames/names_test.go#L150).
 
-The audit maps mandatory rules and feature families, but named Unicode escapes remain a documented primitive-literal gap, and finite fixtures do not exhaust the closed Python subset.
+The audit maps mandatory rules and feature families. Named Unicode escapes now cover pinned character names and aliases, raw/bytes behavior, malformed names, exact lexical ranges, and cache equivalence. Finite fixtures still do not exhaust the closed Python subset.
 
 ### S32.1-4a1e78a9
 
@@ -2661,11 +2661,11 @@ Section 32.4; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L2203)
 
 > The conformance suite MUST include positive and negative fixtures for:
 
-Positive: [TestConformance](../internal/app/conformance_test.go#L20).
+Positive: [TestConformance](../internal/app/conformance_test.go#L20); [DifferentialTests.test_live_primitive_and_near_miss_cases](../tools/tests/test_differential_semantics.py#L138).
 
-Negative: [TestUnsupportedSyntaxIsNeverDropped](../internal/frontend/parser_test.go#L175).
+Negative: [TestUnsupportedSyntaxIsNeverDropped](../internal/frontend/parser_test.go#L175); [DifferentialTests.test_live_primitive_and_near_miss_cases](../tools/tests/test_differential_semantics.py#L138).
 
-The suite has positive and negative cases across required feature families; an exhaustive enumeration of statement/operator/type combinations remains open.
+The suite has positive and negative cases across required feature families; an exhaustive enumeration of statement/operator/type combinations remains open. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; nominal/optional combinations and arbitrary compositions remain outside this finite matrix.
 
 ### S32.4-f5622679
 
@@ -2675,13 +2675,13 @@ Section 32.4; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L2205)
 
 List obligation introduced by S32.4-018499f6.
 
-Positive: [TestControlFlowAndExpressions](../internal/frontend/parser_test.go#L100).
+Positive: [TestControlFlowAndExpressions](../internal/frontend/parser_test.go#L100); [DifferentialTests.test_live_primitive_and_near_miss_cases](../tools/tests/test_differential_semantics.py#L138).
 
-Negative: [TestUnsupportedSyntaxIsNeverDropped](../internal/frontend/parser_test.go#L175).
+Negative: [TestUnsupportedSyntaxIsNeverDropped](../internal/frontend/parser_test.go#L175); [DifferentialTests.test_live_primitive_and_near_miss_cases](../tools/tests/test_differential_semantics.py#L138).
 
 [Conformance fixtures](../fixtures/conformance/cases.json): `continue_and_break`, `while_loop`, `slicing`, `fstrings`, `unassigned_branch`, `discarded_result`.
 
-Fixtures span the supported statement/expression families, but all operator/type combinations and Python literal spellings are not yet exhaustive.
+Fixtures span the supported statement/expression families, but all operator/type combinations and Python literal spellings are not yet exhaustive. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; nominal/optional combinations and arbitrary compositions remain outside this finite matrix.
 
 ### S32.4-2ccfd594
 
@@ -2801,11 +2801,11 @@ Section 32.4; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L2215)
 
 List obligation introduced by S32.4-018499f6.
 
-Positive: [TestConformance](../internal/app/conformance_test.go#L20).
+Positive: [TestConformance](../internal/app/conformance_test.go#L20); [DifferentialTests.test_live_primitive_and_near_miss_cases](../tools/tests/test_differential_semantics.py#L138).
 
-Negative: [TestUnsupportedSyntaxIsNeverDropped](../internal/frontend/parser_test.go#L175).
+Negative: [TestUnsupportedSyntaxIsNeverDropped](../internal/frontend/parser_test.go#L175); [DifferentialTests.test_live_primitive_and_near_miss_cases](../tools/tests/test_differential_semantics.py#L138).
 
-The suite has positive and negative cases across required feature families; an exhaustive enumeration of statement/operator/type combinations remains open.
+The suite has positive and negative cases across required feature families; an exhaustive enumeration of statement/operator/type combinations remains open. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; nominal/optional combinations and arbitrary compositions remain outside this finite matrix.
 
 ### S32.4-9df511b8
 

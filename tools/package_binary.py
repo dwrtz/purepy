@@ -24,6 +24,8 @@ def main():
         (root / "docs" / "IMPLEMENTATION.md", "docs/IMPLEMENTATION.md"),
         (root / "docs" / "DIAGNOSTICS.md", "docs/DIAGNOSTICS.md"),
         (root / "docs" / "SYNTAX_MATRIX.md", "docs/SYNTAX_MATRIX.md"),
+        (root / "docs" / "UNICODE.md", "docs/UNICODE.md"),
+        (root / "internal" / "unicodenames" / "ucd" / "LICENSE", "licenses/UNICODE.txt"),
     ]
     with tarfile.open(archive, "w", format=tarfile.USTAR_FORMAT) as tar:
         for source, name in entries:

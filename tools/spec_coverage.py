@@ -107,8 +107,9 @@ def test_location(root, evidence):
     if path.name.endswith("_test.go"):
         parts = name.split("/")
         function = parts[0]
-        match = re.search(r"(?m)^func " + re.escape(function) + r"\(\s*\w+ \*testing\.T\)", text)
-        if not function.startswith("Test") or match is None:
+        argument = "F" if function.startswith("Fuzz") else "T"
+        match = re.search(r"(?m)^func " + re.escape(function) + r"\(\s*\w+ \*testing\." + argument + r"\)", text)
+        if not function.startswith(("Test", "Fuzz")) or match is None:
             raise ValueError(f"Go test {name!r} not found in {evidence['path']}")
         # Statically named table cases and t.Run strings can be checked without
         # running Go. Use the parent function for dynamically generated names.

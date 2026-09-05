@@ -59,111 +59,228 @@ func Read(dir, key string) (Summary, bool) {
 		return Summary{}, false
 	}
 	var s Summary
-	if json.Unmarshal(a.Payload, &s) != nil || s.Tree == nil || s.Tree.Kind != "Module" || !validNode(s.Tree, 0, s.Tree.Span) {
+	if json.Unmarshal(a.Payload, &s) != nil || s.Tree == nil || s.Tree.Kind != "Module" || !validSummary(s) {
 		return Summary{}, false
 	}
 	return s, true
 }
 
-// Checksums detect byte corruption; structural checks also reject malformed
-// summaries that happen to be valid JSON. Nil optional fields are allowed, but
-// an ordered syntax list can never contain a nil node.
-func validNode(n *model.Node, depth int, root model.Span) bool {
-	if n == nil || depth > 1024 || n.Kind == "" || n.Span.Start < 0 || n.Span.End < n.Span.Start || n.Span.File != root.File || n.Span.Start < root.Start || n.Span.End > root.End {
+// Checksums detect byte corruption, not deliberate tampering. The structural
+// boundary below rejects malformed IR before it reaches linker/checker code;
+// it does not authenticate a summary as the parse of a particular source file.
+const (
+	maxNodeDepth = 1024
+	maxNodes     = 100_000
+)
+
+type nodeRole uint8
+
+const (
+	roleModule nodeRole = 1 << iota
+	roleStatement
+	roleExpression
+	roleParam
+	roleArg
+	roleFormat
+	roleRaw
+)
+
+type nodeShape struct {
+	role     nodeRole
+	attrs    string
+	required string
+	fields   map[string]nodeRole
+	lists    map[string]nodeRole
+}
+
+// This table describes parser-independent syntax shapes, not PurePy typing
+// rules. Structurally valid but prohibited Python still goes through ordinary
+// diagnostics. Unknown keys cannot smuggle unchecked descendants into a hit.
+var nodeShapes = map[string]nodeShape{
+	"Module":      {role: roleModule, lists: map[string]nodeRole{"body": roleStatement}},
+	"Function":    {role: roleStatement, attrs: "name async", required: "returns", fields: map[string]nodeRole{"returns": roleExpression}, lists: map[string]nodeRole{"body": roleStatement, "params": roleParam, "decorators": roleExpression}},
+	"Record":      {role: roleStatement, attrs: "name", lists: map[string]nodeRole{"body": roleStatement, "bases": roleExpression, "decorators": roleExpression}},
+	"Param":       {role: roleParam, attrs: "name", required: "annotation", fields: map[string]nodeRole{"annotation": roleExpression, "default": roleExpression}},
+	"Import":      {role: roleStatement, attrs: "module", lists: map[string]nodeRole{"names": roleExpression}},
+	"Name":        {role: roleExpression, attrs: "name alias"},
+	"Literal":     {role: roleExpression, attrs: "type", lists: map[string]nodeRole{"parts": roleExpression}},
+	"Assign":      {role: roleStatement, required: "target", fields: map[string]nodeRole{"target": roleExpression, "annotation": roleExpression, "value": roleExpression}},
+	"If":          {role: roleStatement, required: "test", fields: map[string]nodeRole{"test": roleExpression}, lists: map[string]nodeRole{"body": roleStatement, "else": roleStatement}},
+	"While":       {role: roleStatement, required: "test", fields: map[string]nodeRole{"test": roleExpression}, lists: map[string]nodeRole{"body": roleStatement, "else": roleStatement}},
+	"For":         {role: roleStatement, required: "target iter", fields: map[string]nodeRole{"target": roleExpression, "iter": roleExpression}, lists: map[string]nodeRole{"body": roleStatement, "else": roleStatement}},
+	"ExprStmt":    {role: roleStatement, required: "value", fields: map[string]nodeRole{"value": roleExpression}},
+	"Return":      {role: roleStatement, fields: map[string]nodeRole{"value": roleExpression}},
+	"Pass":        {role: roleStatement},
+	"Break":       {role: roleStatement},
+	"Continue":    {role: roleStatement},
+	"Tuple":       {role: roleExpression, lists: map[string]nodeRole{"elements": roleExpression}},
+	"Attribute":   {role: roleExpression, attrs: "name", required: "value", fields: map[string]nodeRole{"value": roleExpression}},
+	"Unary":       {role: roleExpression, attrs: "op", required: "operand", fields: map[string]nodeRole{"operand": roleExpression}},
+	"Binary":      {role: roleExpression, attrs: "op", required: "left right", fields: map[string]nodeRole{"left": roleExpression, "right": roleExpression}},
+	"Bool":        {role: roleExpression, attrs: "op", required: "left right", fields: map[string]nodeRole{"left": roleExpression, "right": roleExpression}},
+	"Compare":     {role: roleExpression, attrs: "ops", lists: map[string]nodeRole{"operands": roleExpression}},
+	"Conditional": {role: roleExpression, required: "test body else", fields: map[string]nodeRole{"test": roleExpression, "body": roleExpression, "else": roleExpression}},
+	"Index":       {role: roleExpression, required: "value index", fields: map[string]nodeRole{"value": roleExpression, "index": roleExpression}},
+	"Slice":       {role: roleExpression, required: "value", fields: map[string]nodeRole{"value": roleExpression, "start": roleExpression, "stop": roleExpression, "step": roleExpression}},
+	"Call":        {role: roleExpression, required: "target", fields: map[string]nodeRole{"target": roleExpression}, lists: map[string]nodeRole{"args": roleArg | roleRaw}},
+	"Arg":         {role: roleArg, attrs: "name", required: "value", fields: map[string]nodeRole{"value": roleExpression}},
+	"AwaitCall":   {role: roleExpression, required: "call", fields: map[string]nodeRole{"call": roleExpression}},
+	"Await":       {role: roleExpression, required: "value", fields: map[string]nodeRole{"value": roleExpression}},
+	"FString":     {role: roleExpression, attrs: "type", lists: map[string]nodeRole{"parts": roleExpression | roleFormat}},
+	"Format":      {role: roleFormat, attrs: "conversion format debug", required: "value", fields: map[string]nodeRole{"value": roleExpression}},
+	"Unsupported": {role: roleStatement | roleExpression | roleRaw, attrs: "syntax", lists: map[string]nodeRole{"children": roleRaw}},
+}
+
+func wordIn(words, word string) bool {
+	for _, candidate := range strings.Fields(words) {
+		if word == candidate {
+			return true
+		}
+	}
+	return false
+}
+
+func validSpan(s, root model.Span) bool {
+	if s.Start < root.Start || s.End < s.Start || s.End > root.End || s.File != root.File || s.Line < 0 || s.Column < 0 || s.EndLine < 0 || s.EndColumn < 0 {
 		return false
 	}
-	var required []string
-	if n.Kind == "Function" || n.Kind == "Record" || n.Kind == "If" || n.Kind == "For" || n.Kind == "While" {
-		if len(n.Items("body")) == 0 {
+	if s.Line == 0 || s.Column == 0 || s.EndLine == 0 || s.EndColumn == 0 {
+		// Preserve the empty synthetic Module used by callers/tests; a span
+		// with real source coordinates must have all four coordinates.
+		return s.Line == 0 && s.Column == 0 && s.EndLine == 0 && s.EndColumn == 0
+	}
+	return s.EndLine > s.Line || s.EndLine == s.Line && s.EndColumn >= s.Column
+}
+
+func validSummary(s Summary) bool {
+	root := s.Tree
+	if root == nil || root.Span.Start < 0 || root.Span.End < root.Span.Start {
+		return false
+	}
+	remaining := maxNodes
+	if !validNode(root, 0, root.Span, roleModule, &remaining, len(s.Diagnostics) != 0) {
+		return false
+	}
+	for _, d := range s.Diagnostics {
+		if (d.Code != "PP002" && d.Code != "PP003") || d.Severity != "error" || d.Message == "" || !validSpan(d.Span, root.Span) {
+			return false
+		}
+		for _, at := range d.Related {
+			if !validSpan(at, root.Span) {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func validNode(n *model.Node, depth int, root model.Span, role nodeRole, remaining *int, hasDiagnostics bool) bool {
+	if n == nil || depth > maxNodeDepth || *remaining <= 0 || !validSpan(n.Span, root) {
+		return false
+	}
+	*remaining--
+	if !hasDiagnostics && (n.Kind == "Unsupported" || n.A("unsupported") != "") {
+		return false
+	}
+	shape, ok := nodeShapes[n.Kind]
+	if !ok || shape.role&role == 0 {
+		return false
+	}
+	for key := range n.Attr {
+		if key != "unsupported" && !wordIn(shape.attrs, key) {
 			return false
 		}
 	}
+	if wordIn("Function Record If For While", n.Kind) && len(n.Items("body")) == 0 {
+		return false
+	}
 	switch n.Kind {
-	case "Module", "Tuple", "FString", "Pass", "Break", "Continue", "Return", "Unsupported":
 	case "Function":
-		if n.A("name") == "" || (n.A("async") != "true" && n.A("async") != "false") {
+		if !wordIn("true false", n.A("async")) || n.A("name") == "" {
 			return false
 		}
-		required = []string{"returns"}
-	case "Record", "Name", "ImportName":
+	case "Record", "Name", "Param", "Attribute":
 		if n.A("name") == "" {
 			return false
 		}
-	case "Param":
-		if n.A("name") == "" {
-			return false
-		}
-		required = []string{"annotation"}
 	case "Import":
-		if n.A("module") == "" {
+		if n.A("module") == "" || len(n.Items("names")) == 0 {
 			return false
+		}
+		for _, name := range n.Items("names") {
+			if name == nil || name.Kind != "Name" {
+				return false
+			}
 		}
 	case "Literal":
-		if n.A("type") == "" {
+		if !wordIn("None bool int float str bytes ellipsis", n.A("type")) {
 			return false
 		}
+		for _, part := range n.Items("parts") {
+			if part == nil || part.Kind != "Literal" {
+				return false
+			}
+		}
 	case "Assign":
-		required = []string{"target"}
 		if n.Get("annotation") == nil && n.Get("value") == nil {
 			return false
 		}
-	case "If", "While":
-		required = []string{"test"}
-	case "For":
-		required = []string{"target", "iter"}
-	case "ExprStmt", "Arg", "Format", "Await":
-		required = []string{"value"}
-	case "Attribute":
-		required = []string{"value"}
-		if n.A("name") == "" {
-			return false
-		}
 	case "Unary":
-		required = []string{"operand"}
-		if n.A("op") == "" {
+		if !wordIn("+ - ~ not", n.A("op")) {
 			return false
 		}
-	case "Binary", "Bool":
-		required = []string{"left", "right"}
-		if n.A("op") == "" {
+	case "Binary":
+		if !wordIn("+ - * / // % ** << >> & | ^ @", n.A("op")) {
 			return false
 		}
-		if n.Kind == "Bool" && n.A("op") != "and" && n.A("op") != "or" {
+	case "Bool":
+		if !wordIn("and or", n.A("op")) {
 			return false
 		}
 	case "Compare":
-		if len(n.Items("operands")) < 2 || n.A("ops") == "" {
+		ops := strings.Split(n.A("ops"), "|")
+		if len(n.Items("operands")) != len(ops)+1 {
 			return false
 		}
-	case "Conditional":
-		required = []string{"test", "body", "else"}
-	case "Index":
-		required = []string{"value", "index"}
-	case "Slice":
-		required = []string{"value"}
-	case "Call":
-		required = []string{"target"}
+		for _, op := range ops {
+			switch op {
+			case "==", "!=", "<", "<=", ">", ">=", "is", "is not", "in", "not in":
+			default:
+				return false
+			}
+		}
 	case "AwaitCall":
-		required = []string{"call"}
 		if n.Get("call") == nil || n.Get("call").Kind != "Call" {
 			return false
 		}
-	default:
-		return false
+	case "FString":
+		if n.A("type") != "str" {
+			return false
+		}
+		for _, part := range n.Items("parts") {
+			if part == nil || part.Kind != "Literal" && part.Kind != "Format" {
+				return false
+			}
+		}
 	}
-	for _, key := range required {
+	for _, key := range strings.Fields(shape.required) {
 		if n.Get(key) == nil {
 			return false
 		}
 	}
-	for _, child := range n.Fields {
-		if child != nil && !validNode(child, depth+1, root) {
+	for key, child := range n.Fields {
+		childRole, ok := shape.fields[key]
+		if !ok || child != nil && !validNode(child, depth+1, root, childRole, remaining, hasDiagnostics) {
 			return false
 		}
 	}
-	for _, children := range n.Lists {
+	for key, children := range n.Lists {
+		childRole, ok := shape.lists[key]
+		if !ok {
+			return false
+		}
 		for _, child := range children {
-			if !validNode(child, depth+1, root) {
+			if !validNode(child, depth+1, root, childRole, remaining, hasDiagnostics) {
 				return false
 			}
 		}

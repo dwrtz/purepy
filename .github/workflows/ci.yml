@@ -16,6 +16,17 @@ jobs:
       - uses: astral-sh/setup-uv@v6
       - run: go test -race ./...
       - run: go vet ./...
+      - run: make fuzz-test
       - run: go build -trimpath -o bin/purepy ./cmd/purepy
-      - run: make python-test service-test syntax-test coverage-test
+      - run: make python-test service-test syntax-test differential-test unicode-test coverage-test
       - run: bin/purepy check examples/reference_service --no-cache
+      - name: Preserve failing fuzz inputs and differential cases
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verification-failures
+          path: |
+            internal/**/testdata/fuzz/**
+            build/differential-failures.json
+          if-no-files-found: ignore
+          retention-days: 14

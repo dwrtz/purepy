@@ -71,9 +71,12 @@ deterministic across worker counts and cache states.
 ```sh
 make test
 make race
+make fuzz-test
 make python-test
 make service-test
 make syntax-test
+make differential-test
+make unicode-test
 make coverage-test
 make loadtest
 make serve
@@ -84,6 +87,20 @@ keeps request parsing, routing, domain validation, rendering, and its SSE loop i
 verified source. A small excluded host owns asyncio scheduling, sockets, SQLite,
 atomic transactions, and cancellation. Its tests exercise real concurrent socket
 requests, rollback, repeated SSE events, and cleanup.
+
+`make differential-test` compares the verifier's operator and intrinsic types
+with CPython 3.14 on a reproducible generated corpus. See the
+[differential testing guide](docs/DIFFERENTIAL_TESTING.md) for case selection,
+larger seeded runs, and preserving mismatches as regression fixtures.
+
+`make unicode-test` verifies the pinned Unicode name data and compares character
+names and aliases with CPython 3.14. See the [Unicode data guide](docs/UNICODE.md)
+for offline regeneration. Building and running the verifier uses the checked-in
+Go tables and requires no Python interpreter.
+
+`make fuzz-test` runs short bounded campaigns over checker semantics, source,
+cache summaries and fallback, parsing, and manifest type syntax. See the
+[fuzzing guide](docs/FUZZING.md) for longer campaigns and regression replay.
 
 `make benchmark` measures cold, warm, edited, and parallel verification on generated
 corpora; `make package` prepares local binary/checksum and Python distribution

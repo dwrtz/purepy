@@ -35,9 +35,12 @@ dependencies, including on warm runs.
 
 ## Concrete closed-language choices
 
-- Only UTF-8 source is accepted. Named Unicode escapes (`\N{...}`) currently reject
-  with PP003; literal Unicode and numeric escapes work. This is a documented gap
-  from the broader primitive-literal wording in the draft spec.
+- Only UTF-8 source is accepted. Literal Unicode, numeric escapes, and named
+  Unicode escapes (`\N{...}`) work. Named escapes use pinned Unicode 16.0 character
+  names and aliases with ASCII case-insensitive matching, including algorithmic
+  names. Unknown/malformed names and named sequences produce PP002. Raw strings
+  and bytes retain Python's literal backslash behavior. See the
+  [Unicode data guide](UNICODE.md) for generation and validation.
 - Integer/float mixed arithmetic requires an explicit conversion. Power is rejected
   because its Python return category depends on operand values (`int`, `float`, or
   `complex`). Sequence repetition is outside the initial table.
@@ -71,6 +74,23 @@ Runtime tests cover immutability, nominal equality, field order, no inheritance,
 and deferred/external annotations. Service tests cover parallel reads, concurrent
 atomic writes, rollback, parsing, SSE events, cancellation, and host cleanup.
 Fuzz targets exercise parsing, manifest type syntax, and other data boundaries.
+
+`make fuzz-test` adds bounded semantic generation, arbitrary-source checking,
+cache decoding/IR mutation, and cache-fallback campaigns. The
+[fuzzing guide](FUZZING.md) records their properties, budgets, and replay commands.
+Seed corpora also run in ordinary Go and race tests; CI retains failing inputs.
+This work exposed malformed cached node roles that could reach internal-error
+paths. Cached IR now validates child roles, allowed fields and attributes,
+operator/type tags, comparison arity, source spans, and parser diagnostics before
+linking. Malformed summaries become misses and regenerate from source.
+
+The [semantic differential gate](DIFFERENTIAL_TESTING.md) checks documented
+operator/intrinsic acceptance and the verifier's inferred local types against
+CPython 3.14 outcomes. It includes Cartesian type matrices, bounded seeded values,
+typed empty tuples, numeric boundaries, explicit domain exceptions, and permanent
+regression fixtures. Python execution is confined to trusted development cases in
+a separate process. Production verification never invokes Python. This finite
+gate does not establish arbitrary-program soundness or host contract correctness.
 
 The [specification-to-test audit](CONFORMANCE.md) maps mandatory keyword-bearing
 rules and their attached list items, plus additional prose restrictions, to named

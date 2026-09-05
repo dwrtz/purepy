@@ -242,6 +242,10 @@
       {
         "path": "internal/app/cli_test.go",
         "test": "TestCacheColdWarmDisabledAndWorkersAreEquivalent"
+      },
+      {
+        "path": "internal/app/cache_fuzz_test.go",
+        "test": "TestMalformedCacheFallbackMatchesUncachedReport"
       }
     ],
     "negative": [
@@ -252,10 +256,18 @@
       {
         "path": "internal/app/cli_test.go",
         "test": "TestDependencySignatureChangeRelinksCachedCaller"
+      },
+      {
+        "path": "internal/app/cache_fuzz_test.go",
+        "test": "TestMalformedCacheFallbackMatchesUncachedReport"
+      },
+      {
+        "path": "internal/app/cache_fuzz_test.go",
+        "test": "FuzzCacheFallback"
       }
     ],
     "fixtures": [],
-    "notes": "JSON equivalence is checked for accepted projects plus parser, linker, local-call, and changed-signature rejections; text rejection output is also compared."
+    "notes": "JSON equivalence is checked for accepted projects plus parser, linker, local-call, and changed-signature rejections; text rejection output is also compared. New cache-fallback regressions and bounded fuzzing compare full accepted/rejected reports while corrupting both real module artifacts."
   },
   {
     "section": "31.6",
@@ -265,6 +277,14 @@
       {
         "path": "internal/cache/cache_test.go",
         "test": "TestRoundTripAndMalformedArtifactsAreMisses"
+      },
+      {
+        "path": "internal/app/cache_fuzz_test.go",
+        "test": "TestMalformedCacheFallbackMatchesUncachedReport"
+      },
+      {
+        "path": "internal/cache/fuzz_test.go",
+        "test": "TestMalformedCacheSummaryRegression"
       }
     ],
     "negative": [
@@ -279,10 +299,26 @@
       {
         "path": "internal/app/cli_test.go",
         "test": "TestTruncatedCacheRegeneratesEquivalentReport"
+      },
+      {
+        "path": "internal/app/cache_fuzz_test.go",
+        "test": "TestMalformedCacheFallbackMatchesUncachedReport"
+      },
+      {
+        "path": "internal/cache/fuzz_test.go",
+        "test": "TestMalformedCacheSummaryRegression"
+      },
+      {
+        "path": "internal/cache/fuzz_test.go",
+        "test": "FuzzCacheSummary"
+      },
+      {
+        "path": "internal/cache/fuzz_test.go",
+        "test": "FuzzCacheArtifact"
       }
     ],
     "fixtures": [],
-    "notes": "Valid artifacts round-trip; truncation, malformed payloads, checksums, and schema mismatch become misses. Integration tests reanalyze both accepted and rejected programs without changing their reports."
+    "notes": "Valid artifacts round-trip; truncation, malformed payloads, checksums, and schema mismatch become misses. Integration tests reanalyze both accepted and rejected programs without changing their reports. Correct-checksum structural/role/diagnostic mutations now exercise strict validation, with explicit hit/miss oracles and bounded node/depth tests. Application campaigns compare cold, warm, corrupted, repaired, and uncached reports. Checksums do not authenticate intentional valid semantic rewrites."
   },
   {
     "section": "31.7",
@@ -390,16 +426,36 @@
       {
         "path": "internal/frontend/parser_test.go",
         "test": "TestControlFlowAndExpressions"
+      },
+      {
+        "path": "internal/frontend/unicode_test.go",
+        "test": "TestNamedUnicodeEscapes"
+      },
+      {
+        "path": "internal/app/unicode_test.go",
+        "test": "TestNamedUnicodeEscapesAcrossCacheStates"
+      },
+      {
+        "path": "internal/unicodenames/names_test.go",
+        "test": "TestUnicodeDataNamesAndAliases"
       }
     ],
     "negative": [
       {
         "path": "internal/frontend/parser_test.go",
         "test": "TestUnsupportedSyntaxIsNeverDropped"
+      },
+      {
+        "path": "internal/frontend/unicode_test.go",
+        "test": "TestInvalidNamedUnicodeEscapesRetainRanges"
+      },
+      {
+        "path": "internal/unicodenames/names_test.go",
+        "test": "TestNameSpellingBoundaries"
       }
     ],
     "fixtures": [],
-    "notes": "The audit maps mandatory rules and feature families, but named Unicode escapes remain a documented primitive-literal gap, and finite fixtures do not exhaust the closed Python subset."
+    "notes": "The audit maps mandatory rules and feature families. Named Unicode escapes now cover pinned character names and aliases, raw/bytes behavior, malformed names, exact lexical ranges, and cache equivalence. Finite fixtures still do not exhaust the closed Python subset."
   },
   {
     "section": "32.1",
@@ -501,16 +557,24 @@
       {
         "path": "internal/app/conformance_test.go",
         "test": "TestConformance"
+      },
+      {
+        "path": "tools/tests/test_differential_semantics.py",
+        "test": "DifferentialTests.test_live_primitive_and_near_miss_cases"
       }
     ],
     "negative": [
       {
         "path": "internal/frontend/parser_test.go",
         "test": "TestUnsupportedSyntaxIsNeverDropped"
+      },
+      {
+        "path": "tools/tests/test_differential_semantics.py",
+        "test": "DifferentialTests.test_live_primitive_and_near_miss_cases"
       }
     ],
     "fixtures": [],
-    "notes": "The suite has positive and negative cases across required feature families; an exhaustive enumeration of statement/operator/type combinations remains open."
+    "notes": "The suite has positive and negative cases across required feature families; an exhaustive enumeration of statement/operator/type combinations remains open. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; nominal/optional combinations and arbitrary compositions remain outside this finite matrix."
   },
   {
     "section": "32.4",
@@ -520,12 +584,20 @@
       {
         "path": "internal/frontend/parser_test.go",
         "test": "TestControlFlowAndExpressions"
+      },
+      {
+        "path": "tools/tests/test_differential_semantics.py",
+        "test": "DifferentialTests.test_live_primitive_and_near_miss_cases"
       }
     ],
     "negative": [
       {
         "path": "internal/frontend/parser_test.go",
         "test": "TestUnsupportedSyntaxIsNeverDropped"
+      },
+      {
+        "path": "tools/tests/test_differential_semantics.py",
+        "test": "DifferentialTests.test_live_primitive_and_near_miss_cases"
       }
     ],
     "fixtures": [
@@ -536,7 +608,7 @@
       "unassigned_branch",
       "discarded_result"
     ],
-    "notes": "Fixtures span the supported statement/expression families, but all operator/type combinations and Python literal spellings are not yet exhaustive."
+    "notes": "Fixtures span the supported statement/expression families, but all operator/type combinations and Python literal spellings are not yet exhaustive. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; nominal/optional combinations and arbitrary compositions remain outside this finite matrix."
   },
   {
     "section": "32.4",
@@ -679,16 +751,24 @@
       {
         "path": "internal/app/conformance_test.go",
         "test": "TestConformance"
+      },
+      {
+        "path": "tools/tests/test_differential_semantics.py",
+        "test": "DifferentialTests.test_live_primitive_and_near_miss_cases"
       }
     ],
     "negative": [
       {
         "path": "internal/frontend/parser_test.go",
         "test": "TestUnsupportedSyntaxIsNeverDropped"
+      },
+      {
+        "path": "tools/tests/test_differential_semantics.py",
+        "test": "DifferentialTests.test_live_primitive_and_near_miss_cases"
       }
     ],
     "fixtures": [],
-    "notes": "The suite has positive and negative cases across required feature families; an exhaustive enumeration of statement/operator/type combinations remains open."
+    "notes": "The suite has positive and negative cases across required feature families; an exhaustive enumeration of statement/operator/type combinations remains open. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; nominal/optional combinations and arbitrary compositions remain outside this finite matrix."
   },
   {
     "section": "32.4",

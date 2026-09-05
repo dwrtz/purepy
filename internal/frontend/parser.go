@@ -14,13 +14,14 @@ import (
 
 	"github.com/dwrtz/purepy/internal/diag"
 	"github.com/dwrtz/purepy/internal/model"
+	"github.com/dwrtz/purepy/internal/unicodenames"
 	sitter "github.com/tree-sitter/go-tree-sitter"
 	python "github.com/tree-sitter/tree-sitter-python/bindings/go"
 	"golang.org/x/text/unicode/norm"
 )
 
 // Version is part of the cache identity; change it whenever lowering changes.
-const Version = "python-3.14/tree-sitter-python-26855eab/ir-2"
+const Version = "python-3.14/tree-sitter-python-26855eab/ir-3/unicode-" + unicodenames.UnicodeVersion
 
 type adapter struct {
 	path        string
@@ -66,7 +67,7 @@ func Parse(path string, source []byte) (*model.Node, []diag.Diagnostic) {
 		a.report("PP002", fmt.Sprintf("cannot initialize Python parser: %v", err), a.span(0, 0))
 		return nil, a.diagnostics
 	}
-	tree := p.Parse(source, nil)
+	tree := p.Parse(parserSource(source), nil)
 	if tree == nil {
 		a.report("PP002", "Python parser could not produce a syntax tree", a.span(0, 0))
 		return nil, a.diagnostics
@@ -99,6 +100,37 @@ func Parse(path string, source []byte) (*model.Node, []diag.Diagnostic) {
 		return x.Message < y.Message
 	})
 	return module, a.diagnostics
+}
+
+// parserSource makes bare bytes prefixes raw in the grammar's view. Python
+// bytes and raw strings have identical quote/backslash boundaries; the adapter
+// checks the original bytes' ASCII and escape rules independently. This avoids
+// the grammar's erroneous Unicode-escape recovery in bytes, including errors
+// above a string node. Never rewrite part of an identifier or a combined prefix
+// such as fb (invalid) or rb (already raw). Replacements inside comments or
+// literal text cannot alter their boundaries. All IR text, prefix classification,
+// and diagnostics still read the original source with identical byte offsets.
+func parserSource(source []byte) []byte {
+	var normalized []byte
+	for i := 0; i+1 < len(source); i++ {
+		if source[i] != 'b' && source[i] != 'B' || source[i+1] != '\'' && source[i+1] != '"' {
+			continue
+		}
+		if i > 0 {
+			prev := source[i-1]
+			if prev >= 0x80 || prev >= 'a' && prev <= 'z' || prev >= 'A' && prev <= 'Z' || prev >= '0' && prev <= '9' || prev == '_' {
+				continue
+			}
+		}
+		if normalized == nil {
+			normalized = bytes.Clone(source)
+		}
+		normalized[i] = 'r'
+	}
+	if normalized == nil {
+		return source
+	}
+	return normalized
 }
 
 func (a *adapter) span(start, end int) model.Span {
@@ -164,6 +196,12 @@ func manglePrivateNames(n *model.Node, class string) {
 }
 
 func (a *adapter) errors(n *sitter.Node) {
+	if _, _, isBytes, complete := a.bytesContent(n); isBytes {
+		if !complete {
+			a.report("PP002", "invalid bytes literal delimiter or unescaped newline", a.node("", n).Span)
+		}
+		return // Complete bytes content is checked during lowering.
+	}
 	if n.IsError() || n.IsMissing() {
 		message := "invalid Python syntax"
 		if n.IsMissing() {
@@ -195,7 +233,8 @@ func (a *adapter) trivia(root *sitter.Node) {
 	}
 	var walk func(*sitter.Node)
 	walk = func(n *sitter.Node) {
-		if n.ChildCount() == 0 || n.Kind() == "string_content" || n.Kind() == "format_specifier" {
+		_, _, bytesLiteral, _ := a.bytesContent(n)
+		if bytesLiteral || n.ChildCount() == 0 || n.Kind() == "string_content" || n.Kind() == "format_specifier" {
 			checkGap(int(n.StartByte()))
 			previous = int(n.EndByte())
 			return
@@ -305,6 +344,14 @@ func (a *adapter) layout(n *sitter.Node, children []*sitter.Node) {
 	if n == nil || len(children) == 0 {
 		return
 	}
+	// Recovery can also split a malformed same-line sequence into statements
+	// without marking an ERROR (notably after ignored bytes Unicode escapes).
+	for i := 1; i < len(children); i++ {
+		start, end := int(children[i-1].EndByte()), int(children[i].StartByte())
+		if !statementSeparator(a.source[start:end]) {
+			a.report("PP002", "statements require a newline or semicolon", a.span(end, end))
+		}
+	}
 	base, alternate := 0, 0
 	if n.Kind() == "block" {
 		var isLineStart bool
@@ -325,6 +372,30 @@ func (a *adapter) layout(n *sitter.Node, children []*sitter.Node) {
 			a.report("PP002", "inconsistent or unexpected indentation", a.node("", child).Span)
 		}
 	}
+}
+
+func statementSeparator(gap []byte) bool {
+	for i := 0; i < len(gap); i++ {
+		switch gap[i] {
+		case '\\':
+			if i+1 < len(gap) && gap[i+1] == '\r' {
+				i++
+			}
+			if i+1 < len(gap) && gap[i+1] == '\n' {
+				i++
+			}
+		case '#':
+			// A comment's newline terminates a statement even if its text ends
+			// with a backslash. Semicolons inside comments are not separators.
+			for i < len(gap) && gap[i] != '\n' && gap[i] != '\r' {
+				i++
+			}
+			return i < len(gap)
+		case ';', '\n', '\r':
+			return true
+		}
+	}
+	return false
 }
 
 func (a *adapter) indentation(offset int) (column, alternate int, isLineStart bool) {
@@ -774,6 +845,15 @@ func (a *adapter) string(n *sitter.Node) *model.Node {
 	if prefix != "" && prefix != "r" && prefix != "u" && prefix != "b" && prefix != "br" && prefix != "rb" && prefix != "f" && prefix != "fr" && prefix != "rf" && !strings.Contains(prefix, "t") {
 		a.report("PP002", "invalid Python string prefix", out.Span)
 	}
+	if start, end, _, complete := a.bytesContent(n); complete {
+		// Bytes have no interpolation. Keep their content contiguous: the grammar
+		// can split ignored Unicode escapes into recovery nodes and dangling
+		// backslashes, even though the actual bytes literal is well delimited.
+		part := &model.Node{Kind: "Literal", Text: string(a.source[start:end]), Span: a.span(start, end), Attr: map[string]string{"type": "bytes"}}
+		out.Lists["parts"] = append(out.Lists["parts"], part)
+		a.checkStringContent(part, strings.Contains(prefix, "r"))
+		return out
+	}
 	for _, c := range children[1 : len(children)-1] {
 		if c.Kind() == "interpolation" {
 			part := a.node("Format", c)
@@ -797,20 +877,67 @@ func (a *adapter) string(n *sitter.Node) *model.Node {
 			part := a.node("Literal", c)
 			part.Attr["type"] = out.A("type")
 			out.Lists["parts"] = append(out.Lists["parts"], part)
-			if !strings.Contains(prefix, "r") {
-				a.escapes(part, out.A("type") == "bytes")
-			}
-			if out.A("type") == "bytes" {
-				for _, r := range part.Text {
-					if r > 127 {
-						a.report("PP002", "bytes literals may contain only ASCII source characters", part.Span)
-						break
-					}
-				}
-			}
+			a.checkStringContent(part, strings.Contains(prefix, "r"))
 		}
 	}
 	return out
+}
+
+// bytesContent confirms the exact boundaries of a nonformatted bytes literal.
+// The grammar recognizes Unicode escapes inside bytes and can recover from a
+// valid ignored escape such as a second \\N{} by inserting ERROR nodes. Bytes
+// contain no expressions, so a complete lexical boundary check lets us treat
+// the body as one token and validate its actual escape/ASCII rules separately.
+// Never suppress errors for text beyond the first real closing delimiter.
+func (a *adapter) bytesContent(n *sitter.Node) (start, end int, isBytes, complete bool) {
+	if n.Kind() != "string" || n.ChildCount() < 2 {
+		return 0, 0, false, false
+	}
+	first := n.Child(0)
+	if first.Kind() != "string_start" {
+		return 0, 0, false, false
+	}
+	opening := strings.ToLower(a.text(first))
+	quote := strings.IndexAny(opening, "\"'")
+	if quote < 0 || opening[:quote] != "b" && opening[:quote] != "br" && opening[:quote] != "rb" {
+		return 0, 0, false, false
+	}
+	delimiter := opening[quote:]
+	if delimiter != "'" && delimiter != `"` && delimiter != "'''" && delimiter != `"""` {
+		return 0, 0, false, false
+	}
+	start, limit := int(first.EndByte()), int(n.EndByte())
+	for i := start; i < limit; i++ {
+		if a.source[i] == '\\' {
+			i++
+			if i+1 < limit && a.source[i] == '\r' && a.source[i+1] == '\n' {
+				i++
+			}
+			continue
+		}
+		if len(delimiter) == 1 && (a.source[i] == '\n' || a.source[i] == '\r') {
+			return 0, 0, true, false
+		}
+		if bytes.HasPrefix(a.source[i:limit], []byte(delimiter)) {
+			return start, i, true, i+len(delimiter) == limit
+		}
+	}
+	return 0, 0, true, false
+}
+
+func (a *adapter) checkStringContent(part *model.Node, raw bool) {
+	bytesLiteral := part.A("type") == "bytes"
+	if !raw {
+		a.escapes(part, bytesLiteral)
+	}
+	if bytesLiteral {
+		for _, r := range part.Text {
+			if r > 127 {
+				a.report("PP002", "bytes literals may contain only ASCII source characters", part.Span)
+				break
+			}
+		}
+	}
 }
 
 // The grammar deliberately accepts some lexical forms from older Python
@@ -842,7 +969,20 @@ func (a *adapter) escapes(part *model.Node, bytesLiteral bool) {
 			}
 		case 'N':
 			if !bytesLiteral {
-				a.report("PP003", "named Unicode string escapes are not supported; use the character or a numeric escape", a.span(part.Span.Start+start, part.Span.Start+i+1))
+				if i+1 >= len(s) || s[i+1] != '{' {
+					a.report("PP002", "named Unicode escape requires a name in braces", a.span(part.Span.Start+start, part.Span.Start+i+1))
+					continue
+				}
+				end := strings.IndexByte(s[i+2:], '}')
+				if end < 0 {
+					a.report("PP002", "unterminated named Unicode escape", a.span(part.Span.Start+start, part.Span.End))
+					return
+				}
+				end += i + 2
+				if !unicodenames.Valid(s[i+2 : end]) {
+					a.report("PP002", "unknown Unicode character name", a.span(part.Span.Start+start, part.Span.Start+end+1))
+				}
+				i = end
 			}
 		}
 		if n == 0 {

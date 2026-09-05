@@ -70,7 +70,7 @@ verifier; the label records a possible future design, not implicit permission.
 | Python family | Status | Rule |
 | --- | --- | --- |
 | `None`, Boolean, integer, float literals | accepted | Numeric spelling must be valid Python 3.14. `bool` is distinct from `int`. |
-| String and bytes literals | accepted with exact restriction | Ordinary/raw/triple-quoted and adjacent literals retain Python value semantics. Named Unicode escapes (`\\N{...}`) are currently rejected conservatively. |
+| String and bytes literals | accepted with exact restriction | Ordinary/raw/triple-quoted and adjacent literals retain Python value semantics. Named Unicode escapes (`\N{...}`) accept Unicode 16.0 character names and aliases, including algorithmic names; named sequences and malformed/unknown names reject. Raw strings and bytes preserve `\N` literally. |
 | Complex literals | deferred extension | Complex numbers have no 0.1 type. |
 | Ellipsis (`...`) value | rejected in 0.1 | Ellipsis appears only in `tuple[T, ...]` annotations. |
 | Tuple display | accepted with exact restriction | One exact Pure Value element type. Empty tuples require a contextual `tuple[T, ...]` annotation. |

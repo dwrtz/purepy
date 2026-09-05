@@ -256,7 +256,7 @@ func TestParallelParsingDeterministicAndDetached(t *testing.T) {
 }
 
 func FuzzParseNeverPanics(f *testing.F) {
-	for _, source := range []string{"", "# comment\n", "def f(x: int) -> int:\n    return x\n", "x = f'{a:{b}}'\n", "x = '\\u123'\n", "def f(:\n", "\xff\x00"} {
+	for _, source := range []string{"", "# comment\n", "def f(x: int) -> int:\n    return x\n", "x = f'{a:{b}}'\n", "x = '\\u123'\n", "x = '\\N{LATIN CAPITAL LETTER A}'\n", "x = b'\\N{UNKNOWN}\\N{}\\N'\n", "x = b'\\N''\n", "def f(:\n", "\xff\x00"} {
 		f.Add([]byte(source))
 	}
 	f.Fuzz(func(t *testing.T, source []byte) {

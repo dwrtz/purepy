@@ -35,6 +35,10 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreAccepted/primitive_intrinsics"
+      },
+      {
+        "path": "internal/check/semantic_fuzz_test.go",
+        "test": "FuzzCheckerSemantics"
       }
     ],
     "negative": [
@@ -49,10 +53,18 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreRejected/intrinsic_no_protocol_dispatch"
+      },
+      {
+        "path": "internal/check/semantic_fuzz_test.go",
+        "test": "FuzzCheckerSemantics"
+      },
+      {
+        "path": "internal/check/semantic_fuzz_test.go",
+        "test": "FuzzCheckerSource"
       }
     ],
     "fixtures": [],
-    "notes": "Exact supported operations and unknown-operation/suppression rejection have direct controls. Fail-closed behavior for every parser and semantic combination still requires independent soundness and fuzz testing."
+    "notes": "Exact operations and unknown-operation/suppression rejection have direct controls. Bounded generated semantic pairs require acceptance and specific rejection codes; arbitrary-source fuzzing checks parser-to-checker integrity, spans, and worker determinism. These short campaigns do not establish all syntax/semantic combinations or replace independent soundness review."
   },
   {
     "section": "3.2",
@@ -62,6 +74,10 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreAccepted/primitive_intrinsics"
+      },
+      {
+        "path": "internal/check/semantic_fuzz_test.go",
+        "test": "FuzzCheckerSemantics"
       }
     ],
     "negative": [
@@ -76,10 +92,18 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreRejected/intrinsic_no_protocol_dispatch"
+      },
+      {
+        "path": "internal/check/semantic_fuzz_test.go",
+        "test": "FuzzCheckerSemantics"
+      },
+      {
+        "path": "internal/check/semantic_fuzz_test.go",
+        "test": "FuzzCheckerSource"
       }
     ],
     "fixtures": [],
-    "notes": "Exact supported operations and unknown-operation/suppression rejection have direct controls. Fail-closed behavior for every parser and semantic combination still requires independent soundness and fuzz testing."
+    "notes": "Exact operations and unknown-operation/suppression rejection have direct controls. Bounded generated semantic pairs require acceptance and specific rejection codes; arbitrary-source fuzzing checks parser-to-checker integrity, spans, and worker determinism. These short campaigns do not establish all syntax/semantic combinations or replace independent soundness review."
   },
   {
     "section": "3.3",
@@ -3118,6 +3142,10 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreAccepted/float_sum_explicit_start"
+      },
+      {
+        "path": "tools/tests/test_differential_semantics.py",
+        "test": "DifferentialTests.test_live_primitive_and_near_miss_cases"
       }
     ],
     "negative": [
@@ -3128,12 +3156,16 @@
       {
         "path": "internal/check/spec_core_test.go",
         "test": "TestSpecCoreRejected/float_sum_requires_start"
+      },
+      {
+        "path": "tools/tests/test_differential_semantics.py",
+        "test": "DifferentialTests.test_live_primitive_and_near_miss_cases"
       }
     ],
     "fixtures": [
       "intrinsics"
     ],
-    "notes": "The intrinsic implementation is closed and coupled to verifier version/cache identity. Existing and added tables test individual signatures, but an independent explicit intrinsic-table version and exhaustive operand/result differential table are not yet release-frozen."
+    "notes": "The table is coupled to verifier version/cache identity. make differential-test now checks the documented operator/intrinsic verdict matrix and inferred exact types against CPython 3.14, including typed empty tuples, domain failures, and permanent regression controls. The finite matrix is not exhaustive, and an independent explicit intrinsic-table version is not yet release-frozen."
   },
   {
     "section": "16.1",

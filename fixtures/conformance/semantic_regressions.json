@@ -1,0 +1,56 @@
+{
+  "schema": 1,
+  "cases": [
+    {
+      "name": "regression/integer_true_division",
+      "family": "regression",
+      "expression": "3 / 2",
+      "expected_type": "float",
+      "check_value": true,
+      "expected_value": {"type": "float", "value": "0x1.8000000000000p+0"}
+    },
+    {
+      "name": "regression/boolean_is_not_integer",
+      "family": "regression",
+      "expression": "True + True",
+      "expected_type": null
+    },
+    {
+      "name": "regression/bytes_index_is_integer",
+      "family": "regression",
+      "expression": "b'abc'[0]",
+      "expected_type": "int",
+      "check_value": true,
+      "expected_value": {"type": "int", "value": "97"}
+    },
+    {
+      "name": "regression/empty_float_sum_with_start",
+      "family": "regression",
+      "expression": "sum(items, 0.0)",
+      "bindings": [["items", "tuple[float, ...]", "()"]],
+      "expected_type": "float",
+      "check_value": true,
+      "expected_value": {"type": "float", "value": "0x0.0p+0"}
+    },
+    {
+      "name": "regression/empty_float_sum_requires_start",
+      "family": "regression",
+      "expression": "sum(items)",
+      "bindings": [["items", "tuple[float, ...]", "()"]],
+      "expected_type": null
+    },
+    {
+      "name": "regression/negative_integer_power_changes_type",
+      "family": "regression",
+      "expression": "2 ** -1",
+      "expected_type": null
+    },
+    {
+      "name": "regression/invalid_byte_is_domain_failure",
+      "family": "regression",
+      "expression": "bytes((256,))",
+      "expected_type": "bytes",
+      "exception": "ValueError"
+    }
+  ]
+}

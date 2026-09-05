@@ -150,6 +150,15 @@ New versions MUST preserve guarantees.
             with self.assertRaises(ValueError):
                 coverage.test_location(root, {"path": "internal/check/example_test.go", "test": "ExampleHelper"})
 
+    def test_go_fuzz_evidence_requires_a_real_fuzz_signature(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = "internal/check/fuzz_test.go"
+            self.write(root, path, "package check\nimport \"testing\"\nfunc FuzzInput(f *testing.F) {}\nfunc FuzzWrong(t *testing.T) {}\n")
+            self.assertEqual(coverage.test_location(root, {"path": path, "test": "FuzzInput"}), 3)
+            with self.assertRaisesRegex(ValueError, "not found"):
+                coverage.test_location(root, {"path": path, "test": "FuzzWrong"})
+
 
 if __name__ == "__main__":
     unittest.main()

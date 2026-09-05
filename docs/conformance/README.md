@@ -31,7 +31,9 @@ marks a host/runtime assertion beyond static verification; `release` and
 Every row must explain its scope in `notes`.
 
 Evidence paths are relative to the repository. A Go reference names an existing
-`Test...` function, optionally followed by a literal table-case/subtest name.
+`Test...` function or a `Fuzz...` function taking `*testing.F`, optionally followed
+by a literal table-case/subtest name. Go fuzz seeds run during ordinary tests;
+`make fuzz-test` additionally runs bounded mutation campaigns.
 For dynamically generated subtests, reference the parent test and identify the
 case in the notes. Python references name a unique `test_...` function or a
 `TestClass.test_method`. Sources are parsed without importing them. The tool
