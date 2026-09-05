@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PurePy check result schema 1 (experimental)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "verifier_version", "language", "ok", "files", "diagnostics", "functions"],
+  "properties": {
+    "schema": {"const": 1},
+    "verifier_version": {"type": "string"},
+    "language": {"const": "0.1"},
+    "ok": {"type": "boolean"},
+    "files": {"type": "integer", "minimum": 0},
+    "diagnostics": {"type": "array", "items": {"$ref": "#/$defs/diagnostic"}},
+    "functions": {"type": "array", "items": {"$ref": "#/$defs/function"}}
+  },
+  "$defs": {
+    "span": {
+      "type": "object", "additionalProperties": false,
+      "required": ["file", "start", "end", "line", "column", "end_line", "end_column"],
+      "properties": {
+        "file": {"type": "string"},
+        "start": {"type": "integer", "minimum": 0},
+        "end": {"type": "integer", "minimum": 0},
+        "line": {"type": "integer", "minimum": 0},
+        "column": {"type": "integer", "minimum": 0},
+        "end_line": {"type": "integer", "minimum": 0},
+        "end_column": {"type": "integer", "minimum": 0}
+      }
+    },
+    "diagnostic": {
+      "type": "object", "additionalProperties": false,
+      "required": ["code", "severity", "message", "span", "notes", "related_locations"],
+      "properties": {
+        "code": {"type": "string", "pattern": "^PP[0-9]{3}$"},
+        "severity": {"const": "error"},
+        "message": {"type": "string"},
+        "span": {"$ref": "#/$defs/span"},
+        "symbol": {"type": "string"},
+        "notes": {"type": "array", "items": {"type": "string"}},
+        "related_locations": {"type": "array", "items": {"$ref": "#/$defs/span"}}
+      }
+    },
+    "type": {
+      "type": "object", "additionalProperties": false, "required": ["kind"],
+      "properties": {
+        "kind": {"enum": ["None", "bool", "int", "float", "str", "bytes", "tuple", "optional", "record", "value", "capability", "host_ref", "range", "invalid"]},
+        "name": {"type": "string"},
+        "element": {"$ref": "#/$defs/type"}
+      }
+    },
+    "parameter": {
+      "type": "object", "additionalProperties": false, "required": ["name", "type", "span"],
+      "properties": {
+        "name": {"type": "string"}, "type": {"$ref": "#/$defs/type"},
+        "span": {"$ref": "#/$defs/span"},
+        "labels": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "function": {
+      "type": "object", "additionalProperties": false,
+      "required": ["name", "kind", "classification", "parameters", "returns"],
+      "properties": {
+        "name": {"type": "string"}, "kind": {"enum": ["sync", "async"]},
+        "classification": {"enum": ["pure_sync", "pure_async", "effectful_sync", "effectful_async"]},
+        "parameters": {"type": "array", "items": {"$ref": "#/$defs/parameter"}},
+        "returns": {"$ref": "#/$defs/type"}
+      }
+    }
+  }
+}

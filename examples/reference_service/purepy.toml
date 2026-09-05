@@ -1,0 +1,6 @@
+[tool.purepy]
+language = "0.1"
+python_syntax = "3.14"
+source_root = "src"
+entrypoints = ["app.server.handle_connection"]
+manifests = ["manifests/host.purepy.toml"]

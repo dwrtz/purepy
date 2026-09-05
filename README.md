@@ -1,0 +1,104 @@
+# PurePy
+
+PurePy verifies a small, immutable subset of Python without importing or executing
+the project being checked. Calls resolve to exact top-level declarations, external
+authority requires explicit capability parameters, and async composition uses only
+direct `await` of known calls.
+
+This repository contains the experimental PurePy 0.1 verifier, the `@value` Python
+support package, conformance tests, and a working asynchronous reference service.
+The Go module is `github.com/dwrtz/purepy`.
+
+## Build and set up
+
+Prerequisites: Go 1.24 or later, a C compiler for the pinned tree-sitter parser,
+and `uv`. The Makefile creates a repository-local `.venv` with Python 3.14 and
+installs the support package through the checked-in `python/uv.lock`.
+
+```sh
+make setup
+make build
+bin/purepy version
+make example
+```
+
+`make setup` runs `uv sync`; rerunning it updates the existing environment. Override
+the executable or interpreter with `UV=...` or `PYTHON_VERSION=...` if needed.
+Building and running the Go verifier itself does not require Python.
+
+## Verify a project
+
+Create `purepy.toml` beside a `src` directory:
+
+```toml
+[tool.purepy]
+language = "0.1"
+python_syntax = "3.14"
+source_root = "src"
+entrypoints = ["app.total"]
+manifests = []
+```
+
+Then put this in `src/app.py`:
+
+```python
+from purepy import value
+
+@value
+class Line:
+    price: int
+    quantity: int
+
+def total(line: Line) -> int:
+    return line.price * line.quantity
+```
+
+```sh
+bin/purepy check /path/to/project
+bin/purepy check --config /path/to/project/purepy.toml --format json --jobs 4
+bin/purepy capabilities app.total --config /path/to/project/purepy.toml
+bin/purepy explain /path/to/project/src/app.py:10:12 --config /path/to/project/purepy.toml
+bin/purepy cache clean --config /path/to/project/purepy.toml
+```
+
+Use `--no-cache` to disable cache reads and writes, and `--timings` for stage timings
+on stderr. Exit status is 0 on success, 1 for rejected source, and 2 for usage,
+configuration, manifest-loading, or internal errors. JSON schema version 1 is
+deterministic across worker counts and cache states.
+
+## Test and run the service
+
+```sh
+make test
+make race
+make python-test
+make service-test
+make syntax-test
+make loadtest
+make serve
+```
+
+The Python targets use `.venv`, with `make setup` as a prerequisite. The service
+keeps request parsing, routing, domain validation, rendering, and its SSE loop in
+verified source. A small excluded host owns asyncio scheduling, sockets, SQLite,
+atomic transactions, and cancellation. Its tests exercise real concurrent socket
+requests, rollback, repeated SSE events, and cleanup.
+
+`make benchmark` measures cold, warm, edited, and parallel verification on generated
+corpora; `make package` prepares local binary/checksum and Python distribution
+artifacts in `dist`. Neither target publishes a release.
+
+## Design and status
+
+- [Language specification](docs/PUREPY_SPEC.md) and [implementation plan](docs/PUREPY_PLAN.md)
+- [Implemented syntax and intrinsic table](docs/SYNTAX_MATRIX.md)
+- [Manifest schema and examples](docs/MANIFESTS.md)
+- [Host-boundary guide](docs/HOST_BOUNDARY.md)
+- [Diagnostics](docs/DIAGNOSTICS.md)
+- [Implementation and conformance status](docs/IMPLEMENTATION.md)
+- [Measured verifier performance](docs/PERFORMANCE.md)
+- [Reference service](examples/reference_service/README.md)
+
+The implementation deliberately has no unsafe suppression, executable verifier
+plugins, per-file exclusions, mutable containers, higher-order calls, task creation,
+generators, context managers, or runtime effect framework.

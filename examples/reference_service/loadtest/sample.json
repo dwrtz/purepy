@@ -1,0 +1,32 @@
+{
+  "date": "2026-09-05",
+  "hardware": "Apple M4, 16 GiB RAM",
+  "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+  "python": "3.14.7",
+  "python_environment": "uv-managed repository .venv",
+  "verifier_version": "0.1.0-dev",
+  "requests": 100,
+  "concurrent_connections": 20,
+  "observed_max_invocations": 22,
+  "observed_overlapping_database_reads": 20,
+  "throughput_requests_per_second": 1293.46,
+  "latency_ms": {
+    "median": 13.464,
+    "p95": 17.545,
+    "max": 17.976
+  },
+  "sse_connections": 2,
+  "sse_events_received": 6,
+  "sse_poll_interval_ms": 50,
+  "sse_update_delivery_max_ms": 51.275,
+  "database": "SQLite :memory:, worker thread, serialized atomic transactions",
+  "simulated_database_latency_ms": 10.0,
+  "cpu_seconds": 0.0806,
+  "peak_resident_bytes": 37634048,
+  "peak_traced_python_bytes": 2583958,
+  "host_errors": [],
+  "verifier_milliseconds": {
+    "cold": 26.627,
+    "warm": 6.744
+  }
+}

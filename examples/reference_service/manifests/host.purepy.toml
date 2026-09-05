@@ -1,0 +1,100 @@
+schema = 1
+
+[[module]]
+name = "host.network"
+import_safe = true
+[[module]]
+name = "host.database"
+import_safe = true
+[[module]]
+name = "host.clock"
+import_safe = true
+[[module]]
+name = "host.text"
+import_safe = true
+
+[[type]]
+name = "host.network.NetworkRead"
+category = "capability"
+labels = ["network.read"]
+[[type]]
+name = "host.network.NetworkWrite"
+category = "capability"
+labels = ["network.write"]
+[[type]]
+name = "host.network.Connection"
+category = "host_ref"
+[[type]]
+name = "host.database.DatabaseRead"
+category = "capability"
+labels = ["database.read"]
+[[type]]
+name = "host.database.DatabaseWrite"
+category = "capability"
+labels = ["database.write"]
+[[type]]
+name = "host.clock.ClockWait"
+category = "capability"
+labels = ["clock.wait"]
+
+[[function]]
+name = "host.network.receive_bytes"
+kind = "async"
+trust = "host"
+parameters = [
+  { name = "network_read", type = "host.network.NetworkRead" },
+  { name = "connection", type = "host.network.Connection" },
+]
+returns = "bytes"
+[[function]]
+name = "host.network.send_bytes"
+kind = "async"
+trust = "host"
+parameters = [
+  { name = "network_write", type = "host.network.NetworkWrite" },
+  { name = "connection", type = "host.network.Connection" },
+  { name = "data", type = "bytes" },
+]
+returns = "bool"
+[[function]]
+name = "host.database.load_user"
+kind = "async"
+trust = "host"
+parameters = [
+  { name = "database_read", type = "host.database.DatabaseRead" },
+  { name = "user_id", type = "int" },
+]
+returns = "app.types.UserResult"
+[[function]]
+name = "host.database.execute_update"
+kind = "async"
+trust = "host"
+parameters = [
+  { name = "database_write", type = "host.database.DatabaseWrite" },
+  { name = "plan", type = "app.types.UpdatePlan" },
+]
+returns = "app.types.UpdateResult"
+[[function]]
+name = "host.database.load_event_page"
+kind = "async"
+trust = "host"
+parameters = [
+  { name = "database_read", type = "host.database.DatabaseRead" },
+  { name = "cursor", type = "int" },
+]
+returns = "app.types.EventPage"
+[[function]]
+name = "host.clock.sleep"
+kind = "async"
+trust = "host"
+parameters = [
+  { name = "clock_wait", type = "host.clock.ClockWait" },
+  { name = "seconds", type = "float" },
+]
+returns = "None"
+[[function]]
+name = "host.text.encode_utf8"
+kind = "sync"
+trust = "pure"
+parameters = [{ name = "text", type = "str" }]
+returns = "bytes"

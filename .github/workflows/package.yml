@@ -1,0 +1,39 @@
+name: package experimental artifacts
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  binary:
+    strategy:
+      matrix:
+        os: [ubuntu-24.04, macos-14]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - run: go test -race ./...
+      - run: make build
+      - run: python tools/package_binary.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: purepy-${{ runner.os }}-${{ runner.arch }}
+          path: dist/*
+  python:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: make python-test
+      - run: uv build python --out-dir dist
+        env:
+          SOURCE_DATE_EPOCH: '315532800'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: purepy-python
+          path: dist/*

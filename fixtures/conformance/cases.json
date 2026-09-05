@@ -1,0 +1,668 @@
+[
+  {
+    "name": "arithmetic",
+    "valid": true,
+    "codes": [],
+    "source": "def f(a: int, b: int) -> int:\n    return (a + b) * 2 // 3 % 4\n"
+  },
+  {
+    "name": "division_has_float_type",
+    "valid": true,
+    "codes": [],
+    "source": "def f(a: int, b: int) -> float:\n    return a / b\n"
+  },
+  {
+    "name": "float_and_unary",
+    "valid": true,
+    "codes": [],
+    "source": "def f(a: float) -> float:\n    return -abs(a) / 2.0\n"
+  },
+  {
+    "name": "integer_bitwise",
+    "valid": true,
+    "codes": [],
+    "source": "def f(a: int) -> int:\n    return (~a & 255) << 2 | 1\n"
+  },
+  {
+    "name": "tuples",
+    "valid": true,
+    "codes": [],
+    "source": "def f(a: tuple[int, ...]) -> tuple[int, ...]:\n    result: tuple[int, ...] = ()\n    for x in a:\n        result = result + (x,)\n    return result\n"
+  },
+  {
+    "name": "empty_tuple_return_context",
+    "valid": true,
+    "codes": [],
+    "source": "def f() -> tuple[int, ...]:\n    return ()\n"
+  },
+  {
+    "name": "slicing",
+    "valid": true,
+    "codes": [],
+    "source": "def f(data: bytes, stop: int | None) -> bytes:\n    return data[1:stop]\n"
+  },
+  {
+    "name": "string_index",
+    "valid": true,
+    "codes": [],
+    "source": "def f(text: str) -> str:\n    return text[0]\n"
+  },
+  {
+    "name": "bytes_index",
+    "valid": true,
+    "codes": [],
+    "source": "def f(data: bytes) -> int:\n    return data[0]\n"
+  },
+  {
+    "name": "bytes_membership",
+    "valid": true,
+    "codes": [],
+    "source": "def f(data: bytes) -> bool:\n    return 13 in data\n"
+  },
+  {
+    "name": "bool_operators",
+    "valid": true,
+    "codes": [],
+    "source": "def f(a: bool, b: bool) -> bool:\n    return not a or b and a\n"
+  },
+  {
+    "name": "numeric_comparison",
+    "valid": true,
+    "codes": [],
+    "source": "def f(a: int, b: int) -> bool:\n    return 0 <= a < b\n"
+  },
+  {
+    "name": "narrowing",
+    "valid": true,
+    "codes": [],
+    "source": "def f(x: int | None) -> int:\n    if x is None:\n        return 0\n    return x + 1\n"
+  },
+  {
+    "name": "short_circuit_narrowing",
+    "valid": true,
+    "codes": [],
+    "source": "def f(x: int | None) -> bool:\n    return x is not None and x > 0\n"
+  },
+  {
+    "name": "if_expression",
+    "valid": true,
+    "codes": [],
+    "source": "def f(b: bool) -> int:\n    return 1 if b else 2\n"
+  },
+  {
+    "name": "range_loop",
+    "valid": true,
+    "codes": [],
+    "source": "def f(n: int) -> int:\n    count = 0\n    for i in range(0, n, 2):\n        count = count + i\n    return count\n"
+  },
+  {
+    "name": "while_loop",
+    "valid": true,
+    "codes": [],
+    "source": "def f(n: int) -> int:\n    i = 0\n    while i < n:\n        i = i + 1\n    return i\n"
+  },
+  {
+    "name": "infinite_loop_no_return",
+    "valid": true,
+    "codes": [],
+    "source": "def f() -> int:\n    while True:\n        pass\n"
+  },
+  {
+    "name": "continue_and_break",
+    "valid": true,
+    "codes": [],
+    "source": "def f(n: int) -> int:\n    for i in range(n):\n        if i == 0:\n            continue\n        if i > 2:\n            break\n    return 0\n"
+  },
+  {
+    "name": "recursive_calls",
+    "valid": true,
+    "codes": [],
+    "source": "def f(n: int) -> int:\n    if n == 0:\n        return 0\n    return g(n - 1)\n\ndef g(n: int) -> int:\n    return f(n)\n"
+  },
+  {
+    "name": "keyword_binding",
+    "valid": true,
+    "codes": [],
+    "source": "def g(x: int, y: str) -> str:\n    return y\ndef f() -> str:\n    return g(y=\"x\", x=1)\n"
+  },
+  {
+    "name": "records",
+    "valid": true,
+    "codes": [],
+    "source": "from purepy import value\n@value\nclass Point:\n    x: int\n    y: int\ndef f() -> Point:\n    return Point(y=2, x=1)\n"
+  },
+  {
+    "name": "record_equality",
+    "valid": true,
+    "codes": [],
+    "source": "from purepy import value\n@value\nclass Item:\n    x: int\ndef f(a: Item, b: Item) -> bool:\n    return a == b\n"
+  },
+  {
+    "name": "constants",
+    "valid": true,
+    "codes": [],
+    "source": "from typing import Final\nN: Final[int] = 4\nVALUES: Final[tuple[int, ...]] = (N, 1)\ndef f() -> int:\n    return len(VALUES)\n"
+  },
+  {
+    "name": "constant_record",
+    "valid": true,
+    "codes": [],
+    "source": "from typing import Final\nfrom purepy import value\n@value\nclass Item:\n    x: int\nITEM: Final[Item] = Item(1)\ndef f() -> int:\n    return ITEM.x\n"
+  },
+  {
+    "name": "import_constant",
+    "valid": true,
+    "codes": [],
+    "source": "from other import N\ndef f() -> int:\n    return N\n",
+    "files": {
+      "other.py": "from typing import Final\nN: Final[int] = 1\n"
+    }
+  },
+  {
+    "name": "intrinsics",
+    "valid": true,
+    "codes": [],
+    "source": "def f(xs: tuple[int, ...]) -> int:\n    return sum(xs) + min(xs) + max(1, 2) + len(bytes(xs))\n"
+  },
+  {
+    "name": "float_sum_with_start",
+    "valid": true,
+    "codes": [],
+    "source": "def f(xs: tuple[float, ...]) -> float:\n    return sum(xs, 0.0)\n"
+  },
+  {
+    "name": "fstrings",
+    "valid": true,
+    "codes": [],
+    "source": "def f(x: int, y: str) -> str:\n    return f\"{x}: {y}\"\n"
+  },
+  {
+    "name": "pure_async",
+    "valid": true,
+    "codes": [],
+    "source": "async def g(x: int) -> int:\n    return x\nasync def f() -> int:\n    return await g(1)\n"
+  },
+  {
+    "name": "async_none_statement",
+    "valid": true,
+    "codes": [],
+    "source": "async def g() -> None:\n    return\nasync def f() -> None:\n    await g()\n"
+  },
+  {
+    "name": "none_calls",
+    "valid": true,
+    "codes": [],
+    "source": "def g() -> None:\n    pass\ndef f() -> None:\n    g()\n"
+  },
+  {
+    "name": "no_annotation",
+    "valid": false,
+    "codes": [
+      "PP203"
+    ],
+    "source": "def f(x) -> int:\n    return x\n"
+  },
+  {
+    "name": "missing_return_annotation",
+    "valid": false,
+    "codes": [
+      "PP203"
+    ],
+    "source": "def f():\n    return 1\n"
+  },
+  {
+    "name": "bool_is_not_int",
+    "valid": false,
+    "codes": [
+      "PP205"
+    ],
+    "source": "def f(x: bool) -> int:\n    return x\n"
+  },
+  {
+    "name": "mixed_arithmetic",
+    "valid": false,
+    "codes": [
+      "PP209"
+    ],
+    "source": "def f(x: int) -> float:\n    return x + 1.0\n"
+  },
+  {
+    "name": "power_not_monomorphic",
+    "valid": false,
+    "codes": [
+      "PP209"
+    ],
+    "source": "def f(x: int, y: int) -> int:\n    return x ** y\n"
+  },
+  {
+    "name": "truthiness",
+    "valid": false,
+    "codes": [
+      "PP205"
+    ],
+    "source": "def f(x: int) -> int:\n    if x:\n        return 1\n    return 0\n"
+  },
+  {
+    "name": "heterogeneous_tuple",
+    "valid": false,
+    "codes": [
+      "PP207"
+    ],
+    "source": "def f() -> tuple[int, ...]:\n    return (1, True)\n"
+  },
+  {
+    "name": "contextless_empty_tuple",
+    "valid": false,
+    "codes": [
+      "PP207"
+    ],
+    "source": "def f() -> int:\n    x = ()\n    return 1\n"
+  },
+  {
+    "name": "unassigned_branch",
+    "valid": false,
+    "codes": [
+      "PP206"
+    ],
+    "source": "def f(b: bool) -> int:\n    if b:\n        x = 1\n    return x\n"
+  },
+  {
+    "name": "unassigned_loop",
+    "valid": false,
+    "codes": [
+      "PP206"
+    ],
+    "source": "def f(n: int) -> int:\n    for i in range(n):\n        x = i\n    return x\n"
+  },
+  {
+    "name": "inconsistent_join",
+    "valid": false,
+    "codes": [
+      "PP205"
+    ],
+    "source": "def f(b: bool) -> int:\n    if b:\n        x = 1\n    else:\n        x = \"x\"\n    return 1\n"
+  },
+  {
+    "name": "inconsistent_rebinding",
+    "valid": false,
+    "codes": [
+      "PP205"
+    ],
+    "source": "def f() -> int:\n    x = 1\n    x = \"x\"\n    return 1\n"
+  },
+  {
+    "name": "missing_return",
+    "valid": false,
+    "codes": [
+      "PP213"
+    ],
+    "source": "def f(b: bool) -> int:\n    if b:\n        return 1\n"
+  },
+  {
+    "name": "break_may_fallthrough",
+    "valid": false,
+    "codes": [
+      "PP213"
+    ],
+    "source": "def f() -> int:\n    while True:\n        break\n"
+  },
+  {
+    "name": "discarded_result",
+    "valid": false,
+    "codes": [
+      "PP205"
+    ],
+    "source": "def g() -> int:\n    return 1\ndef f() -> None:\n    g()\n"
+  },
+  {
+    "name": "ordinary_expression_statement",
+    "valid": false,
+    "codes": [
+      "PP003"
+    ],
+    "source": "def f() -> None:\n    1 + 2\n"
+  },
+  {
+    "name": "record_method",
+    "valid": false,
+    "codes": [
+      "PP202"
+    ],
+    "source": "from purepy import value\n@value\nclass Item:\n    def f(self: int) -> int:\n        return 1\n"
+  },
+  {
+    "name": "record_default",
+    "valid": false,
+    "codes": [
+      "PP202"
+    ],
+    "source": "from purepy import value\n@value\nclass Item:\n    x: int = 1\n"
+  },
+  {
+    "name": "recursive_record",
+    "valid": false,
+    "codes": [
+      "PP204"
+    ],
+    "source": "from purepy import value\n@value\nclass Item:\n    next: Item | None\n"
+  },
+  {
+    "name": "ordinary_class",
+    "valid": false,
+    "codes": [
+      "PP202"
+    ],
+    "source": "class Item:\n    x: int\n"
+  },
+  {
+    "name": "module_rebinding",
+    "valid": false,
+    "codes": [
+      "PP501"
+    ],
+    "source": "X = 1\n"
+  },
+  {
+    "name": "constant_function_call",
+    "valid": false,
+    "codes": [
+      "PP502"
+    ],
+    "source": "from typing import Final\nX: Final[int] = len(\"x\")\n"
+  },
+  {
+    "name": "later_constant",
+    "valid": false,
+    "codes": [
+      "PP502"
+    ],
+    "source": "from typing import Final\nX: Final[int] = Y\nY: Final[int] = 1\n"
+  },
+  {
+    "name": "plain_import",
+    "valid": false,
+    "codes": [
+      "PP003"
+    ],
+    "source": "import os\n"
+  },
+  {
+    "name": "unknown_external",
+    "valid": false,
+    "codes": [
+      "PP102"
+    ],
+    "source": "from os import getpid\n"
+  },
+  {
+    "name": "import_cycle",
+    "valid": false,
+    "codes": [
+      "PP105"
+    ],
+    "source": "from other import g\ndef f() -> int:\n    return g()\n",
+    "files": {
+      "other.py": "from app import f\ndef g() -> int:\n    return f()\n"
+    }
+  },
+  {
+    "name": "import_reexport",
+    "valid": false,
+    "codes": [
+      "PP102"
+    ],
+    "source": "from other import N\n",
+    "files": {
+      "other.py": "from base import N\n",
+      "base.py": "from typing import Final\nN: Final[int] = 1\n"
+    }
+  },
+  {
+    "name": "function_as_value",
+    "valid": false,
+    "codes": [
+      "PP301"
+    ],
+    "source": "def g() -> int:\n    return 1\ndef f() -> int:\n    x = g\n    return 0\n"
+  },
+  {
+    "name": "unknown_call",
+    "valid": false,
+    "codes": [
+      "PP303"
+    ],
+    "source": "def f() -> int:\n    return eval(\"1\")\n"
+  },
+  {
+    "name": "method_call",
+    "valid": false,
+    "codes": [
+      "PP301"
+    ],
+    "source": "def f(x: str) -> str:\n    return x.lower()\n"
+  },
+  {
+    "name": "attribute_reflection",
+    "valid": false,
+    "codes": [
+      "PP104"
+    ],
+    "source": "def f(x: int) -> str:\n    return x.__class__\n"
+  },
+  {
+    "name": "range_storage",
+    "valid": false,
+    "codes": [
+      "PP304"
+    ],
+    "source": "def f() -> int:\n    x = range(3)\n    return 1\n"
+  },
+  {
+    "name": "argument_count",
+    "valid": false,
+    "codes": [
+      "PP302"
+    ],
+    "source": "def g(x: int) -> int:\n    return x\ndef f() -> int:\n    return g()\n"
+  },
+  {
+    "name": "keyword_duplicate",
+    "valid": false,
+    "codes": [
+      "PP302"
+    ],
+    "source": "def g(x: int) -> int:\n    return x\ndef f() -> int:\n    return g(1, x=2)\n"
+  },
+  {
+    "name": "stored_coroutine",
+    "valid": false,
+    "codes": [
+      "PP401"
+    ],
+    "source": "async def g() -> int:\n    return 1\nasync def f() -> int:\n    x = g()\n    return x\n"
+  },
+  {
+    "name": "await_sync",
+    "valid": false,
+    "codes": [
+      "PP403"
+    ],
+    "source": "def g() -> int:\n    return 1\nasync def f() -> int:\n    return await g()\n"
+  },
+  {
+    "name": "sync_await",
+    "valid": false,
+    "codes": [
+      "PP404"
+    ],
+    "source": "async def g() -> int:\n    return 1\ndef f() -> int:\n    return await g()\n"
+  },
+  {
+    "name": "await_variable",
+    "valid": false,
+    "codes": [
+      "PP003"
+    ],
+    "source": "async def f(x: int) -> int:\n    return await x\n"
+  },
+  {
+    "name": "fstring_repr",
+    "valid": false,
+    "codes": [
+      "PP003"
+    ],
+    "source": "def f(x: int) -> str:\n    return f\"{x!r}\"\n"
+  },
+  {
+    "name": "fstring_format",
+    "valid": false,
+    "codes": [
+      "PP211"
+    ],
+    "source": "def f(x: float) -> str:\n    return f\"{x:n}\"\n"
+  },
+  {
+    "name": "identity_non_none",
+    "valid": false,
+    "codes": [
+      "PP212"
+    ],
+    "source": "def f(x: bool) -> bool:\n    return x is True\n"
+  },
+  {
+    "name": "mutable_list",
+    "valid": false,
+    "codes": [
+      "PP003"
+    ],
+    "source": "def f() -> int:\n    xs = [1]\n    return 1\n"
+  },
+  {
+    "name": "exception_handling",
+    "valid": false,
+    "codes": [
+      "PP003"
+    ],
+    "source": "def f() -> int:\n    try:\n        return 1\n    except:\n        return 0\n"
+  },
+  {
+    "name": "mutation",
+    "valid": false,
+    "codes": [
+      "PP503"
+    ],
+    "source": "def f(x: tuple[int, ...]) -> int:\n    x[0] = 1\n    return 1\n"
+  },
+  {
+    "name": "extended_slice",
+    "valid": false,
+    "codes": [
+      "PP003"
+    ],
+    "source": "def f(x: bytes) -> bytes:\n    return x[::2]\n"
+  },
+  {
+    "name": "capability_host_call",
+    "valid": true,
+    "codes": [],
+    "source": "from host.io import Read, Ref, read\nasync def f(cap: Read, ref: Ref) -> bytes:\n    return await read(cap, ref)\n",
+    "manifest": "schema = 1\n[[module]]\nname = \"host.io\"\nimport_safe = true\n[[type]]\nname = \"host.io.Read\"\ncategory = \"capability\"\nlabels = [\"network.read\"]\n[[type]]\nname = \"host.io.Ref\"\ncategory = \"host_ref\"\n[[function]]\nname = \"host.io.read\"\nkind = \"async\"\ntrust = \"host\"\nparameters = [{name=\"cap\",type=\"host.io.Read\"},{name=\"ref\",type=\"host.io.Ref\"}]\nreturns = \"bytes\"\n"
+  },
+  {
+    "name": "capability_alias",
+    "valid": false,
+    "codes": [
+      "PP313"
+    ],
+    "source": "from host.io import Read, Ref, read\ndef f(cap: Read) -> int:\n    other = cap\n    return 0\n",
+    "manifest": "schema = 1\n[[module]]\nname = \"host.io\"\nimport_safe = true\n[[type]]\nname = \"host.io.Read\"\ncategory = \"capability\"\nlabels = [\"network.read\"]\n[[type]]\nname = \"host.io.Ref\"\ncategory = \"host_ref\"\n[[function]]\nname = \"host.io.read\"\nkind = \"async\"\ntrust = \"host\"\nparameters = [{name=\"cap\",type=\"host.io.Read\"},{name=\"ref\",type=\"host.io.Ref\"}]\nreturns = \"bytes\"\n"
+  },
+  {
+    "name": "reference_alias",
+    "valid": false,
+    "codes": [
+      "PP334"
+    ],
+    "source": "from host.io import Read, Ref, read\ndef f(ref: Ref) -> int:\n    other = ref\n    return 0\n",
+    "manifest": "schema = 1\n[[module]]\nname = \"host.io\"\nimport_safe = true\n[[type]]\nname = \"host.io.Read\"\ncategory = \"capability\"\nlabels = [\"network.read\"]\n[[type]]\nname = \"host.io.Ref\"\ncategory = \"host_ref\"\n[[function]]\nname = \"host.io.read\"\nkind = \"async\"\ntrust = \"host\"\nparameters = [{name=\"cap\",type=\"host.io.Read\"},{name=\"ref\",type=\"host.io.Ref\"}]\nreturns = \"bytes\"\n"
+  },
+  {
+    "name": "capability_return",
+    "valid": false,
+    "codes": [
+      "PP201"
+    ],
+    "source": "from host.io import Read, Ref, read\ndef f(cap: Read) -> Read:\n    return cap\n",
+    "manifest": "schema = 1\n[[module]]\nname = \"host.io\"\nimport_safe = true\n[[type]]\nname = \"host.io.Read\"\ncategory = \"capability\"\nlabels = [\"network.read\"]\n[[type]]\nname = \"host.io.Ref\"\ncategory = \"host_ref\"\n[[function]]\nname = \"host.io.read\"\nkind = \"async\"\ntrust = \"host\"\nparameters = [{name=\"cap\",type=\"host.io.Read\"},{name=\"ref\",type=\"host.io.Ref\"}]\nreturns = \"bytes\"\n"
+  },
+  {
+    "name": "capability_tuple",
+    "valid": false,
+    "codes": [
+      "PP313"
+    ],
+    "source": "from host.io import Read, Ref, read\ndef f(cap: Read) -> int:\n    x = (cap,)\n    return 0\n",
+    "manifest": "schema = 1\n[[module]]\nname = \"host.io\"\nimport_safe = true\n[[type]]\nname = \"host.io.Read\"\ncategory = \"capability\"\nlabels = [\"network.read\"]\n[[type]]\nname = \"host.io.Ref\"\ncategory = \"host_ref\"\n[[function]]\nname = \"host.io.read\"\nkind = \"async\"\ntrust = \"host\"\nparameters = [{name=\"cap\",type=\"host.io.Read\"},{name=\"ref\",type=\"host.io.Ref\"}]\nreturns = \"bytes\"\n"
+  },
+  {
+    "name": "capability_field",
+    "valid": false,
+    "codes": [
+      "PP201"
+    ],
+    "source": "from host.io import Read, Ref, read\nfrom purepy import value\n@value\nclass Item:\n    cap: Read\n",
+    "manifest": "schema = 1\n[[module]]\nname = \"host.io\"\nimport_safe = true\n[[type]]\nname = \"host.io.Read\"\ncategory = \"capability\"\nlabels = [\"network.read\"]\n[[type]]\nname = \"host.io.Ref\"\ncategory = \"host_ref\"\n[[function]]\nname = \"host.io.read\"\nkind = \"async\"\ntrust = \"host\"\nparameters = [{name=\"cap\",type=\"host.io.Read\"},{name=\"ref\",type=\"host.io.Ref\"}]\nreturns = \"bytes\"\n"
+  },
+  {
+    "name": "capability_missing",
+    "valid": false,
+    "codes": [
+      "PP312"
+    ],
+    "source": "from host.io import Read, Ref, read\nasync def f(ref: Ref) -> bytes:\n    return await read(ref=ref)\n",
+    "manifest": "schema = 1\n[[module]]\nname = \"host.io\"\nimport_safe = true\n[[type]]\nname = \"host.io.Read\"\ncategory = \"capability\"\nlabels = [\"network.read\"]\n[[type]]\nname = \"host.io.Ref\"\ncategory = \"host_ref\"\n[[function]]\nname = \"host.io.read\"\nkind = \"async\"\ntrust = \"host\"\nparameters = [{name=\"cap\",type=\"host.io.Read\"},{name=\"ref\",type=\"host.io.Ref\"}]\nreturns = \"bytes\"\n"
+  },
+  {
+    "name": "wrong_capability",
+    "valid": false,
+    "codes": [
+      "PP312"
+    ],
+    "source": "from host.io import Read, Ref, read\nasync def f(ref: Ref) -> bytes:\n    return await read(ref, ref)\n",
+    "manifest": "schema = 1\n[[module]]\nname = \"host.io\"\nimport_safe = true\n[[type]]\nname = \"host.io.Read\"\ncategory = \"capability\"\nlabels = [\"network.read\"]\n[[type]]\nname = \"host.io.Ref\"\ncategory = \"host_ref\"\n[[function]]\nname = \"host.io.read\"\nkind = \"async\"\ntrust = \"host\"\nparameters = [{name=\"cap\",type=\"host.io.Read\"},{name=\"ref\",type=\"host.io.Ref\"}]\nreturns = \"bytes\"\n"
+  },
+  {
+    "name": "capability_rebinding",
+    "valid": false,
+    "codes": [
+      "PP313"
+    ],
+    "source": "from host.io import Read, Ref, read\ndef f(cap: Read) -> int:\n    cap = 1\n    return 0\n",
+    "manifest": "schema = 1\n[[module]]\nname = \"host.io\"\nimport_safe = true\n[[type]]\nname = \"host.io.Read\"\ncategory = \"capability\"\nlabels = [\"network.read\"]\n[[type]]\nname = \"host.io.Ref\"\ncategory = \"host_ref\"\n[[function]]\nname = \"host.io.read\"\nkind = \"async\"\ntrust = \"host\"\nparameters = [{name=\"cap\",type=\"host.io.Read\"},{name=\"ref\",type=\"host.io.Ref\"}]\nreturns = \"bytes\"\n"
+  },
+  {
+    "name": "host_authority_required",
+    "valid": false,
+    "codes": [
+      "PP603"
+    ],
+    "source": "",
+    "manifest": "schema = 1\n[[module]]\nname=\"host.io\"\nimport_safe=true\n[[function]]\nname=\"host.io.read\"\nkind=\"sync\"\ntrust=\"host\"\nparameters=[]\nreturns=\"int\"\n"
+  },
+  {
+    "name": "pure_manifest_cannot_require_capability",
+    "valid": false,
+    "codes": [
+      "PP602"
+    ],
+    "source": "",
+    "manifest": "schema = 1\n[[module]]\nname = \"host.io\"\nimport_safe = true\n[[type]]\nname = \"host.io.Read\"\ncategory = \"capability\"\nlabels = [\"network.read\"]\n[[type]]\nname = \"host.io.Ref\"\ncategory = \"host_ref\"\n[[function]]\nname = \"host.io.read\"\nkind = \"async\"\ntrust = \"pure\"\nparameters = [{name=\"cap\",type=\"host.io.Read\"},{name=\"ref\",type=\"host.io.Ref\"}]\nreturns = \"bytes\"\n"
+  },
+  {
+    "name": "manifest_type_whitespace",
+    "valid": true,
+    "codes": [],
+    "source": "from host.data import values\ndef f() -> tuple[int | None, ...]:\n    return values()\n",
+    "manifest": "schema = 1\n[[module]]\nname=\"host.data\"\nimport_safe=true\n[[function]]\nname=\"host.data.values\"\nkind=\"sync\"\ntrust=\"pure\"\nparameters=[]\nreturns=\"tuple [ int|None , ... ]\"\n"
+  }
+]
