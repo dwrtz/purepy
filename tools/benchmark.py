@@ -26,7 +26,9 @@ import time
 REPOSITORY = Path(__file__).resolve().parents[1]
 BENCHMARK_SCHEMA = 2
 RUNTIME_VARIABLES = ("GOGC", "GOMEMLIMIT", "GOMAXPROCS", "GODEBUG")
-METHOD = "isolated verifier process; wait4 per-process resource usage; temporary input; no project execution"
+DIRECT_METHOD = "isolated verifier process; wait4 per-process resource usage; temporary input; no project execution"
+LINUX_METHOD = "isolated verifier process; clean -I -S supervisor fork/exec and wait4 resource usage; temporary input; no project execution"
+METHOD = LINUX_METHOD if platform.system() == "Linux" else DIRECT_METHOD
 CORPORA = ("tiny", "deep", "wide", "invalid", "manifest", "reference")
 GENERIC_PROCESSORS = {"", "unknown", "arm", "arm64", "aarch64", "x86_64", "amd64", "i386", "i686"}
 WALL_STAGES = {"configuration", "discovery", "manifests", "image_inputs", "frontend",
@@ -181,7 +183,7 @@ def build_settings(binary, timeout):
     return settings
 
 
-def run_process(arguments, timeout):
+def _direct_process(arguments, timeout, *, pass_fds=(), new_session=False):
     """Own and reap exactly one child, recording its wait4 CPU and peak RSS.
 
     Disk-backed output avoids pipe deadlocks. Popen.poll/wait/send_signal are not
@@ -192,7 +194,8 @@ def run_process(arguments, timeout):
         raise RuntimeError("benchmark resource measurement requires macOS or Linux wait4")
     with tempfile.TemporaryFile() as stdout, tempfile.TemporaryFile() as stderr:
         start = time.perf_counter()
-        process = subprocess.Popen(arguments, stdout=stdout, stderr=stderr)
+        process = subprocess.Popen(arguments, stdout=stdout, stderr=stderr,
+                                   pass_fds=pass_fds, start_new_session=new_session)
         try:
             while True:
                 child, status, usage = os.wait4(process.pid, os.WNOHANG)
@@ -205,7 +208,10 @@ def run_process(arguments, timeout):
                 time.sleep(min(0.001, remaining))
         except BaseException:
             try:
-                os.kill(process.pid, signal.SIGKILL)
+                if new_session:
+                    os.killpg(process.pid, signal.SIGKILL)
+                else:
+                    os.kill(process.pid, signal.SIGKILL)
             except ProcessLookupError:
                 pass
             _, status, _ = os.wait4(process.pid, 0)
@@ -221,6 +227,56 @@ def run_process(arguments, timeout):
     return completed, {"wall_ms": round(elapsed, 6), "process_cpu_ms": round(cpu_ms, 6),
                        "mean_cpu_percent": round(cpu_ms / elapsed * 100, 3),
                        "peak_rss_bytes": rss}
+
+
+def run_process(arguments, timeout):
+    """Measure one command without the main Python process's Linux RSS floor.
+
+    Linux retains pre-exec RSS in wait4's high-water mark. A fresh -I -S
+    supervisor forks the measured child from its clean address space and reaps
+    that exact child itself. Its small launch-memory floor remains; the large
+    benchmark parent's live allocations and allocation history do not. Darwin
+    continues to use the original direct collector and method identity.
+    """
+    if platform.system() != "Linux":
+        return _direct_process(arguments, timeout)
+    with tempfile.TemporaryFile() as metrics:
+        command = [sys.executable, "-I", "-S", str(Path(__file__).with_name("benchmark_process.py")),
+                   str(metrics.fileno()), str(timeout), *map(os.fspath, arguments)]
+        # The supervisor enforces the command timeout and reaps its child. This
+        # outer deadline handles a broken launcher; its whole process group is
+        # killed on timeout/interruption, so the verifier cannot keep running.
+        completed, _ = _direct_process(command, timeout + 5, pass_fds=(metrics.fileno(),), new_session=True)
+        if completed.returncode != 0:
+            raise RuntimeError(f"Linux measurement supervisor failed: {completed.stderr}")
+        metrics.seek(0)
+        payload = metrics.read(4097)
+    if len(payload) > 4096:
+        raise RuntimeError("Linux measurement supervisor returned oversized metrics")
+    try:
+        record = json.loads(payload)
+        fields = {"schema", "status", "wall_ms", "process_cpu_ms", "peak_rss_bytes", "timed_out", "exec_errno"}
+        if (not isinstance(record, dict) or set(record) != fields or type(record["schema"]) is not int
+                or record["schema"] != 1 or type(record["status"]) is not int
+                or not 0 <= record["status"] <= 65535 or type(record["timed_out"]) is not bool
+                or record["exec_errno"] is not None and (type(record["exec_errno"]) is not int or record["exec_errno"] <= 0)
+                or type(record["peak_rss_bytes"]) is not int or record["peak_rss_bytes"] <= 0
+                or any(type(record[key]) not in (int, float) or not math.isfinite(record[key])
+                       or record[key] < 0 for key in ("wall_ms", "process_cpu_ms"))
+                or record["wall_ms"] == 0):
+            raise ValueError("invalid metric fields")
+        returncode = os.waitstatus_to_exitcode(record["status"])
+    except (ValueError, TypeError) as error:
+        raise RuntimeError("Linux measurement supervisor returned malformed metrics") from error
+    if record["exec_errno"] is not None:
+        raise OSError(record["exec_errno"], os.strerror(record["exec_errno"]), arguments[0])
+    if record["timed_out"]:
+        raise subprocess.TimeoutExpired(arguments, timeout)
+    cpu, elapsed = record["process_cpu_ms"], record["wall_ms"]
+    sample = {"wall_ms": round(elapsed, 6), "process_cpu_ms": round(cpu, 6),
+              "mean_cpu_percent": round(cpu / elapsed * 100, 3),
+              "peak_rss_bytes": record["peak_rss_bytes"]}
+    return subprocess.CompletedProcess(arguments, returncode, completed.stdout, completed.stderr), sample
 
 
 def parse_timings(stderr):

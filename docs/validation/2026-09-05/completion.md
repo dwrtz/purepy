@@ -102,6 +102,32 @@ the controlled run remained within existing tolerances. No validation was
 removed and no regression threshold was increased. The controlled rerun is a
 focused diagnosis, not a claim to have repeated the entire matrix while idle.
 
+## Release candidate follow-up
+
+The first Linux CI run exposed inherited parent memory in the benchmark
+collector's peak RSS. The corrected Linux collector launches a small isolated
+supervisor before forking the measured process, retains the existing regression
+thresholds, and identifies its changed measurement method explicitly. Darwin's
+collector and the recorded measurements above are unchanged. The
+[memory contract](../../PERFORMANCE.md) documents the remaining launch-memory
+floor and comparison requirements.
+
+Release validation also found a wall-clock-dependent synthetic wheel fixture
+and an archive-verification gap: normalizing source-distribution metadata before
+checking raw checksums could conceal a modified gzip header. The fixture now
+uses fixed ZIP timestamps; verification checks original artifact bytes and sizes
+before normalization. Regression cases reproduce both failures and verify that
+rejected bundles remain unchanged.
+
+The combined tooling suite passes all 153 tests. All 17 focused collector tests
+also pass on macOS arm64 with CPython 3.14.7 and Linux arm64 with CPython 3.12.14;
+the remote release matrix additionally exercises Linux amd64.
+
+These follow-up changes use verifier identifier `0.1.0-dev.1`; the original
+`v0.1.0-dev` tag is preserved. The publication workflow requires fresh Linux
+amd64 and macOS arm64 tests, repeated artifact builds and agreement on shared
+source/Python artifacts before publishing the candidate.
+
 ## Reproduction
 
 ```sh

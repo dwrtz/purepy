@@ -389,15 +389,48 @@ def finalize(output, require_python=False):
 
 
 def verify_release(output, require_python=False):
+    for name in (INDEX, CHECKSUMS):
+        if not (output / name).is_file() or (output / name).is_symlink():
+            raise ValueError(f"release metadata must be a regular file: {name}")
     expected_index = (output / INDEX).read_bytes()
     expected_checksums = (output / CHECKSUMS).read_bytes()
+    index = json.loads(expected_index)
+    if not isinstance(index, dict) or not isinstance(index.get("artifacts"), list):
+        raise ValueError("invalid release index artifact inventory")
+    expected_artifacts = {}
+    for artifact in index["artifacts"]:
+        if not isinstance(artifact, dict) or not isinstance(artifact.get("file"), str):
+            raise ValueError("invalid release index artifact entry")
+        name = artifact["file"]
+        if len(safe_name(name).parts) != 1 or name in {INDEX, CHECKSUMS, ".gitignore"}:
+            raise ValueError("invalid release index artifact filename")
+        if name in expected_artifacts:
+            raise ValueError("duplicate release index artifact filename")
+        if (not isinstance(artifact.get("sha256"), str) or not re.fullmatch(r"[a-f0-9]{64}", artifact["sha256"])
+                or type(artifact.get("size")) is not int or artifact["size"] < 0):
+            raise ValueError("invalid release index artifact checksum or size")
+        expected_artifacts[name] = artifact
     with tempfile.TemporaryDirectory(prefix="purepy-release-verify-") as directory:
         temporary = Path(directory)
+        seen = set()
         for path in output.iterdir():
             if path.name not in {INDEX, CHECKSUMS}:
                 if not path.is_file() or path.is_symlink():
                     raise ValueError(f"unexpected output entry: {path.name}")
-                (temporary / path.name).write_bytes(path.read_bytes())
+                data = path.read_bytes()
+                if path.name == ".gitignore" and data == b"*":
+                    continue
+                if path.name not in expected_artifacts:
+                    raise ValueError(f"unexpected release artifact: {path.name}")
+                expected = expected_artifacts[path.name]
+                # Authenticate original bytes before finalize can normalize a
+                # copied sdist: canonicalization must never conceal corruption.
+                if len(data) != expected["size"] or digest(data) != expected["sha256"]:
+                    raise ValueError(f"raw artifact checksum or size differs from release index: {path.name}")
+                seen.add(path.name)
+                (temporary / path.name).write_bytes(data)
+        if seen != set(expected_artifacts):
+            raise ValueError("release index references missing artifacts")
         result = finalize(temporary, require_python)
         if expected_index != (temporary / INDEX).read_bytes() or expected_checksums != (temporary / CHECKSUMS).read_bytes():
             raise ValueError("release index/checksums disagree with artifact contents")

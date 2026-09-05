@@ -2,6 +2,7 @@
 
 from contextlib import redirect_stderr, redirect_stdout
 import argparse
+import errno
 import io
 import json
 import os
@@ -129,6 +130,63 @@ class BenchmarkTests(unittest.TestCase):
             os.kill(int(pid_file.read_text()), 0)
         with self.assertRaises(ChildProcessError):
             os.waitpid(int(pid_file.read_text()), os.WNOHANG)
+
+    def test_failed_exec_preserves_errno_and_command(self):
+        missing = self.root / "missing-command"
+        with self.assertRaises(FileNotFoundError) as raised:
+            benchmark.run_process([str(missing)], 10)
+        self.assertEqual(raised.exception.errno, errno.ENOENT)
+        self.assertEqual(raised.exception.filename, str(missing))
+        denied = self.root / "not-executable"
+        denied.write_text("not executable\n")
+        with self.assertRaises(PermissionError) as raised:
+            benchmark.run_process([str(denied)], 10)
+        self.assertEqual(raised.exception.errno, errno.EACCES)
+
+    def test_nonzero_and_signal_exits_preserve_child_status(self):
+        command = [sys.executable, "-c", "import sys; print('output'); print('error', file=sys.stderr); sys.exit(7)"]
+        completed, sample = benchmark.run_process(command, 10)
+        self.assertEqual((completed.returncode, completed.stdout, completed.stderr), (7, "output\n", "error\n"))
+        self.assertGreater(sample["peak_rss_bytes"], 0)
+        completed, _ = benchmark.run_process([sys.executable, "-c", "import os,signal; os.kill(os.getpid(), signal.SIGTERM)"], 10)
+        self.assertEqual(completed.returncode, -15)
+
+    def test_linux_supervisor_metrics_are_independent_and_fail_closed(self):
+        valid = {"schema": 1, "status": 0, "wall_ms": 20.0, "process_cpu_ms": 10.0,
+                 "peak_rss_bytes": 12 * 1024 * 1024, "timed_out": False, "exec_errno": None}
+
+        def collect(record):
+            def invoke(command, timeout, **options):
+                self.assertEqual(command[1:3], ["-I", "-S"])
+                self.assertEqual(timeout, 15)
+                self.assertTrue(options["new_session"])
+                os.write(options["pass_fds"][0], json.dumps(record).encode())
+                return subprocess.CompletedProcess(command, 0, "child stdout", "child stderr"), {
+                    "wall_ms": 999, "process_cpu_ms": 999, "peak_rss_bytes": 999 * 1024 * 1024}
+            return invoke
+
+        with patch.object(benchmark.platform, "system", return_value="Linux"), patch.object(
+                benchmark, "_direct_process", side_effect=collect(valid)):
+            result, sample = benchmark.run_process(["verifier"], 10)
+        self.assertEqual((result.args, result.stdout, result.stderr), (["verifier"], "child stdout", "child stderr"))
+        self.assertEqual(sample, {"wall_ms": 20.0, "process_cpu_ms": 10.0,
+                                  "peak_rss_bytes": 12 * 1024 * 1024, "mean_cpu_percent": 50.0})
+        for record in (None, {}, {**valid, "schema": True}, {**valid, "status": 65536},
+                       {**valid, "wall_ms": 0}, {**valid, "process_cpu_ms": float("nan")},
+                       {**valid, "peak_rss_bytes": 0}, {**valid, "exec_errno": True}):
+            with self.subTest(record=record), patch.object(benchmark.platform, "system", return_value="Linux"), patch.object(
+                    benchmark, "_direct_process", side_effect=collect(record)), self.assertRaisesRegex(RuntimeError, "malformed metrics"):
+                benchmark.run_process(["verifier"], 10)
+
+    def test_linux_and_darwin_collection_methods_are_distinct(self):
+        self.assertNotEqual(benchmark.LINUX_METHOD, benchmark.DIRECT_METHOD)
+        self.assertIn("clean -I -S supervisor", benchmark.LINUX_METHOD)
+        self.assertEqual(benchmark.DIRECT_METHOD,
+                         "isolated verifier process; wait4 per-process resource usage; temporary input; no project execution")
+        with patch.object(benchmark.platform, "system", return_value="Darwin"), patch.object(
+                benchmark, "_direct_process", return_value=("direct", {})) as direct:
+            self.assertEqual(benchmark.run_process(["verifier"], 10), ("direct", {}))
+        direct.assert_called_once_with(["verifier"], 10)
 
     def test_large_stdout_and_stderr_do_not_deadlock(self):
         result, _ = benchmark.run_process([sys.executable, "-c", "import sys; print('x' * 200000); print('y' * 200000, file=sys.stderr)"], 10)

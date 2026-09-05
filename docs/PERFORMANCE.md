@@ -94,12 +94,22 @@ separate parsing or rendering measurement. Child completion is observed with a
 1 ms polling interval, so very small timing differences are not meaningful.
 Version-only invocations provide separate startup samples.
 
-CPU and peak RSS come from `wait4` for the exact child PID. Output goes to temporary
-files to avoid pipe-buffer deadlocks; timeouts kill and reap that child. Each
-sample therefore has its own resident-memory peak, unaffected by the largest
-previous child. RSS is a peak, not cumulative allocation, and covers native parser
-memory as well as Go. Parent and sibling memory are excluded. Tests check both a
-large preceding child and a large live parent allocation on the current platform.
+CPU and peak RSS come from `wait4` for the exact measured child PID. Output goes to
+temporary files to avoid pipe-buffer deadlocks; timeouts kill and reap that child.
+Darwin uses direct collection. Linux starts a fresh minimal Python supervisor with
+`-I -S`, which forks, executes, and measures the verifier. This matters because
+Linux retains pre-exec memory peaks in `wait4` accounting: launching directly from
+the main benchmark process can include its live allocations or earlier memory
+peak. The supervisor's small resident footprint remains an OS launch-memory floor;
+the growing benchmark process and preceding children do not affect the sample.
+Verifier wall time starts at the supervisor's measured fork and excludes supervisor
+startup. Linux reports identify this corrected collection method explicitly, so
+the comparator rejects comparisons with older Linux reports. Darwin's method
+identity and historical reports remain unchanged.
+
+RSS is a peak, not cumulative allocation, and covers native parser memory as well
+as Go. Tests check a large preceding child, a large live parent allocation, failed
+exec, signal status, and timeout cleanup on both supported platforms.
 
 An empty PurePy cache does not mean flushed filesystem caches or a cold CPU. Warm
 runs still decode and validate cached syntax, relink declarations, and recheck all

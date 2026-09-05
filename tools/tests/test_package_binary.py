@@ -50,9 +50,12 @@ def python_packages(output, files=None, tamper=False):
     info = f"Name: {versions['python_distribution']}\nVersion: {versions['python_package']}\n".encode()
     runtime = {name.removeprefix("python/"): data for name, data in files.items() if name.startswith("python/purepy/")}
     with zipfile.ZipFile(output / f"{prefix}-py3-none-any.whl", "w") as archive:
-        for name, data in runtime.items():
-            archive.writestr(name, b"different implementation" if tamper and name == "purepy/value.py" else data)
-        archive.writestr(f"{prefix}.dist-info/METADATA", info)
+        # Match the fixed epoch used by the real wheel build; writestr with a
+        # plain filename otherwise injects the wall clock into test artifacts.
+        for name, data in sorted(runtime.items()):
+            entry = zipfile.ZipInfo(name, date_time=(1980, 1, 1, 0, 0, 0))
+            archive.writestr(entry, b"different implementation" if tamper and name == "purepy/value.py" else data)
+        archive.writestr(zipfile.ZipInfo(f"{prefix}.dist-info/METADATA", date_time=(1980, 1, 1, 0, 0, 0)), info)
     with tarfile.open(output / f"{prefix}.tar.gz", "w:gz") as archive:
         for name, data in {**runtime, "PKG-INFO": info, "pyproject.toml": files["python/pyproject.toml"]}.items():
             entry = tarfile.TarInfo(f"{prefix}/{name}")
@@ -174,9 +177,11 @@ class ReleaseArtifactTests(unittest.TestCase):
             root = Path(temp)
             left, right = root / "first", root / "second"
             left.mkdir(); right.mkdir()
-            for output in (left, right):
+            for output, second in ((left, 0), (right, 2)):
                 archives(output)
-                python_packages(output)
+                # Separate ZIP's two-second clock windows deterministically.
+                with patch("zipfile.time.localtime", return_value=(2026, 9, 5, 12, 0, second, 5, 248, -1)):
+                    python_packages(output)
             version_info = release.versions(sources())
             project = version_info["python_distribution"].replace("-", "_")
             sdist = right / f"{project}-{version_info['python_package']}.tar.gz"
@@ -210,6 +215,46 @@ class ReleaseArtifactTests(unittest.TestCase):
             binary.write_bytes(gzip.compress(raw, mtime=0))
             with self.assertRaisesRegex(ValueError, "content differs"):
                 release.verify_archive(binary)
+
+    def test_raw_sdist_gzip_header_tampering_fails_without_rewriting(self):
+        with tempfile.TemporaryDirectory() as temp:
+            output = Path(temp)
+            archives(output)
+            python_packages(output)
+            index = release.finalize(output, require_python=True)
+            artifact = next(item for item in index["artifacts"] if item["kind"] == "python_sdist")
+            sdist = output / artifact["file"]
+            changed = bytearray(sdist.read_bytes())
+            changed[4:8] = (12345).to_bytes(4, "little")
+            sdist.write_bytes(changed)
+            self.assertNotEqual(release.digest(changed), artifact["sha256"])
+            before = {path.name: path.read_bytes() for path in output.iterdir()}
+            with self.assertRaisesRegex(ValueError, "checksum"):
+                release.verify_release(output, require_python=True)
+            self.assertEqual(before, {path.name: path.read_bytes() for path in output.iterdir()})
+
+    def test_release_index_rejects_ambiguous_unsafe_and_incomplete_inventories(self):
+        for mutation in ("duplicate", "traversal", "boolean_size", "bad_digest", "missing"):
+            with self.subTest(mutation=mutation), tempfile.TemporaryDirectory() as temp:
+                output = Path(temp)
+                archives(output)
+                index = release.finalize(output)
+                artifact = index["artifacts"][0]
+                if mutation == "duplicate":
+                    index["artifacts"].append(deepcopy(artifact))
+                elif mutation == "traversal":
+                    artifact["file"] = "../outside.tar.gz"
+                elif mutation == "boolean_size":
+                    artifact["size"] = True
+                elif mutation == "bad_digest":
+                    artifact["sha256"] = "not a sha256 digest"
+                else:
+                    (output / artifact["file"]).unlink()
+                (output / release.INDEX).write_bytes(release.json_bytes(index))
+                before = {path.name: path.read_bytes() for path in output.iterdir()}
+                with self.assertRaises(ValueError):
+                    release.verify_release(output)
+                self.assertEqual(before, {path.name: path.read_bytes() for path in output.iterdir()})
 
     def test_duplicate_link_traversal_and_non_normalized_tar_members_fail(self):
         for kind in ("duplicate", "link", "traversal", "timestamp"):
