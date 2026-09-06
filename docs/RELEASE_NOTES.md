@@ -1,4 +1,12 @@
-# PurePy 0.1 release notes
+# PurePy v0.1.0-dev.4 release notes
+
+This development release adds an agent skill for writing and verifying PurePy
+projects, including CLI workflows and trusted host manifests. From a source
+checkout, `make install` installs the CLI to `~/.local/bin/purepy` and the skill
+to `~/.agents/skills/purepy`; `make uninstall` removes both while preserving
+unrelated files. Override destinations with `BINDIR` and `AGENTS_HOME`. Native
+archives also include `skills/purepy/SKILL.md`. The Python runtime remains at
+version 0.1.0.
 
 This release line implements the PurePy 0.1 language against specification
 `0.3-draft`. The verifier's authoritative version is in

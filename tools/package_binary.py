@@ -30,6 +30,7 @@ SUPPORTED_TARGETS = {"linux-amd64", "darwin-arm64"}
 EXCLUDED_PARTS = {".git", ".venv", ".purepy-cache", "__pycache__", "node_modules", "dist", "build", "bin"}
 REQUIRED_SOURCES = {
     "go.mod", "go.sum", "Makefile", "README.md", "internal/app/check.go",
+    "skills/purepy/SKILL.md",
     "python/pyproject.toml", "python/uv.lock", "python/purepy/value.py",
     "docs/PUREPY_SPEC.md", "docs/PUREPY_PLAN.md", "docs/IMPLEMENTATION.md",
     "docs/RELEASE.md", "docs/RELEASE_NOTES.md", "docs/SCHEMA_CONTRACT.md",
@@ -450,7 +451,7 @@ def package(root, output, additions=(), expected_binary=None):
     prefix = f"purepy-{version_info['verifier']}"
     write_archive(output / f"{prefix}-source.tar.gz", files, {**metadata, "kind": "source"})
     bundle = {name: data for name, data in files.items()
-              if name == "README.md" or name.startswith(("docs/", "manifests/schema/", "examples/reference_service/"))}
+              if name == "README.md" or name.startswith(("docs/", "skills/", "manifests/schema/", "examples/reference_service/"))}
     bundle.update(licenses)
     bundle["purepy"] = binary
     write_archive(output / f"{prefix}-{target}.tar.gz", bundle,

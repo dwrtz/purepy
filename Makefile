@@ -1,4 +1,7 @@
 .DEFAULT_GOAL := build
+AGENTS_HOME ?= $(HOME)/.agents
+BINDIR ?= $(HOME)/.local/bin
+PUREPY_SKILL := $(AGENTS_HOME)/skills/purepy
 UV ?= uv
 PYTHON_VERSION ?= 3.14
 VENV := $(CURDIR)/.venv
@@ -20,7 +23,14 @@ ACCEPTANCE_SERVICE ?= docs/validation/2026-09-05/completion-service.json
 RELEASE_OUTPUT ?= dist/candidate
 FUZZ_FLAGS = -run '^$$' -fuzztime "$(FUZZ_TIME)" -parallel "$(FUZZ_PARALLEL)" -timeout "$(FUZZ_TIMEOUT)" -fuzzminimizetime "$(FUZZ_MINIMIZE_TIME)"
 
-.PHONY: setup build test race fuzz-test robustness-test robustness-campaign python-test service-test syntax-test differential-test unicode-test unicode-generate coverage-test schema-test example serve loadtest benchmark benchmark-test benchmark-compare acceptance-test acceptance-check package-test package clean
+.PHONY: install uninstall setup build test race fuzz-test robustness-test robustness-campaign python-test service-test syntax-test differential-test unicode-test unicode-generate coverage-test schema-test example serve loadtest benchmark benchmark-test benchmark-compare acceptance-test acceptance-check package-test package clean
+install: build
+	install -d "$(BINDIR)" "$(PUREPY_SKILL)"
+	install -m 755 bin/purepy "$(BINDIR)/purepy"
+	install -m 644 skills/purepy/SKILL.md "$(PUREPY_SKILL)/SKILL.md"
+uninstall:
+	rm -f "$(BINDIR)/purepy" "$(PUREPY_SKILL)/SKILL.md"
+	@if test -d "$(PUREPY_SKILL)"; then rmdir "$(PUREPY_SKILL)" 2>/dev/null || test -d "$(PUREPY_SKILL)"; fi
 setup:
 	UV_PROJECT_ENVIRONMENT="$(VENV)" $(UV) sync --locked --project python --python $(PYTHON_VERSION)
 build:

@@ -39,6 +39,31 @@ make example
 the executable or interpreter with `UV=...` or `PYTHON_VERSION=...` if needed.
 Building and running the Go verifier itself does not require Python.
 
+## Install the CLI and agent skill
+
+From this checkout, with Go and a C compiler available:
+
+```sh
+make install
+export PATH="$HOME/.local/bin:$PATH"
+purepy version
+```
+
+This builds and installs the CLI at `~/.local/bin/purepy` and the bundled
+[agent skill](skills/purepy/SKILL.md) at `~/.agents/skills/purepy/SKILL.md`.
+Add the PATH export to your shell startup file to keep the command available.
+Rerun `make install` to update both. The separate Python `@value` runtime is
+installed through `make setup` for this checkout or `purepy-lang` for your project.
+
+```sh
+make uninstall
+```
+
+Uninstall removes the installed CLI and skill file, preserving other files in
+the installation directories. Override the destinations with
+`make install BINDIR=/path/to/bin AGENTS_HOME=/path/to/.agents` and use the same
+values when uninstalling.
+
 ## Verify a project
 
 Create `purepy.toml` beside a `src` directory:
