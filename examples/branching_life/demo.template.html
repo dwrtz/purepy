@@ -1,0 +1,65 @@
+<div id="purepy-worlds">
+  <style>
+    #purepy-worlds {font-family: system-ui, sans-serif; color:var(--foreground); padding:8px 0;}
+    #purepy-worlds .heading {display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; flex-wrap:wrap;}
+    #purepy-worlds h3 {margin:0; font-weight:500;}
+    #purepy-worlds .worlds {display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+    #purepy-worlds .label {display:flex; justify-content:space-between; gap:8px; margin-bottom:8px;}
+    #purepy-worlds canvas {display:block; width:100%; aspect-ratio:10/7; background:var(--background); border-radius:8px;}
+    #purepy-worlds .transport {display:flex; align-items:center; gap:12px; margin-top:18px;}
+    #purepy-worlds input {flex:1; min-width:40px; accent-color:var(--viz-series-1);}
+    #purepy-worlds output {font-variant-numeric:tabular-nums; min-width:62px;}
+    #purepy-worlds .detail {margin-top:12px; min-height:20px;}
+    @media(max-width:450px) {#purepy-worlds .worlds{grid-template-columns:1fr;} }
+  </style>
+  <div class="heading"><h3>One cell. Two futures.</h3><span class="text-small text-muted">PurePy 0.2 · Conway’s Life</span></div>
+  <div class="worlds">
+    <div><div class="label"><strong>Original</strong><span id="life-count-a"></span></div><canvas id="life-a" width="640" height="448" role="img" aria-label="Original cellular world"></canvas></div>
+    <div><div class="label"><strong>Alternate</strong><span id="life-count-b"></span></div><canvas id="life-b" width="640" height="448" role="img" aria-label="Alternate world with one cell flipped at generation 20"></canvas></div>
+  </div>
+  <div class="transport"><button id="life-play" class="btn" type="button">Play</button><label for="life-time" class="sr-only">Generation</label><input id="life-time" type="range" min="0" max="120" value="55"><output id="life-generation">Gen 55</output></div>
+  <div class="detail" id="life-detail" aria-live="polite"></div>
+  <script>
+    (() => {
+      const root = document.getElementById('purepy-worlds');
+      const data = __WORLD_DATA__;
+      const slider = root.querySelector('#life-time');
+      const play = root.querySelector('#life-play');
+      const detail = root.querySelector('#life-detail');
+      const contexts = [root.querySelector('#life-a').getContext('2d'),root.querySelector('#life-b').getContext('2d')];
+      let timer = null;
+      function draw() {
+        const css = getComputedStyle(root);
+        const color = name => css.getPropertyValue(name).trim();
+        const t = Number(slider.value);
+        const states = [data.original[t],data.alternate[t]];
+        let difference = 0;
+        for(let i=0;i<states[0].length;i++) if(states[0][i]!==states[1][i]) difference++;
+        contexts.forEach((ctx,k) => {
+          ctx.fillStyle=color('--background');ctx.clearRect(0,0,640,448);ctx.fillRect(0,0,640,448);
+          let alive = 0;
+          for(let i=0;i<states[k].length;i++) {
+            const x=(i%40)*16,y=Math.floor(i/40)*16;
+            if(states[k][i]==='1') {
+              alive++;ctx.fillStyle=color(k===0?'--viz-series-1':'--viz-series-2');ctx.fillRect(x+2,y+2,12,12);
+            } else {ctx.fillStyle=color('--border');ctx.fillRect(x+7,y+7,2,2);}
+            if(t===data.fork && i===data.cell) {ctx.strokeStyle=color('--foreground');ctx.lineWidth=2;ctx.strokeRect(x+1,y+1,14,14);}
+          }
+          root.querySelector(k===0?'#life-count-a':'#life-count-b').textContent=alive+' live cells';
+        });
+        root.querySelector('#life-generation').textContent='Gen '+t;
+        detail.textContent=t<20?'Shared past · identical worlds':difference+' cells differ · one cell flipped at generation 20';
+      }
+      function stop(){clearInterval(timer);timer=null;play.textContent='Play';}
+      slider.addEventListener('input',()=>{stop();draw();});
+      play.addEventListener('click',()=>{
+        if(timer!==null){stop();return;}
+        if(Number(slider.value)>=120) slider.value='0';
+        play.textContent='Pause';detail.setAttribute('aria-live','off');draw();
+        timer=setInterval(()=>{slider.value=String(Number(slider.value)+1);draw();if(Number(slider.value)>=120)stop();},110);
+      });
+      matchMedia('(prefers-color-scheme: dark)').addEventListener('change',draw);
+      draw();
+    })();
+  </script>
+</div>
