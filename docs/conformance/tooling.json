@@ -505,7 +505,7 @@
   },
   {
     "section": "32.1",
-    "quote": "A conforming PurePy 0.1 verifier MUST:",
+    "quote": "A conforming PurePy 0.2 verifier MUST:",
     "status": "partial",
     "positive": [
       {
@@ -703,7 +703,7 @@
       }
     ],
     "fixtures": [],
-    "notes": "CLI version and accepted/rejected JSON reports identify target specification 0.3-draft, language 0.1, and Python syntax 3.14. Invalid configuration versions reject; identifying the target does not assert complete conformance."
+    "notes": "CLI version and accepted/rejected JSON reports identify target specification 0.4-draft, language 0.2, and Python syntax 3.14. Invalid configuration versions reject; identifying the target does not assert complete conformance."
   },
   {
     "section": "32.4",
@@ -1049,7 +1049,7 @@
   },
   {
     "section": "32.5",
-    "quote": "Before PurePy 0.1 is considered complete, a reference workload MUST demonstrate:",
+    "quote": "Before PurePy 0.2 is considered complete, a reference workload MUST demonstrate:",
     "status": "tested",
     "positive": [
       {
@@ -1146,25 +1146,16 @@
   {
     "section": "32.5",
     "quote": "- immutable HTTP-like request parsing;",
-    "status": "tested",
+    "status": "partial",
     "positive": [
       {
-        "path": "examples/reference_service/tests/test_service.py",
-        "test": "test_parse_and_routes"
-      },
-      {
-        "path": "python/tests/test_value.py",
-        "test": "test_frozen_slots"
+        "path": "examples/functional_core/check_runtime.py",
+        "test": "test_runtime_fidelity"
       }
     ],
-    "negative": [
-      {
-        "path": "examples/reference_service/tests/test_service.py",
-        "test": "test_malformed_requests_are_values"
-      }
-    ],
+    "negative": [],
     "fixtures": [],
-    "notes": "The service parses immutable bytes into verified value records, routes well-formed requests, and represents malformed requests as values; runtime mutation tests enforce record immutability."
+    "notes": "Standard NamedTuple immutability and runtime operations are checked by the standalone example; no PurePy runtime is shipped."
   },
   {
     "section": "32.5",
@@ -1422,40 +1413,5 @@
     ],
     "fixtures": [],
     "notes": "Package diagnostics sort before child modules, and equal-message diagnostics compare their complete stable context."
-  },
-  {
-    "section": "30.11",
-    "quote": "Such rejection MUST produce an explicit error and MUST NOT produce successful verification by skipping analysis.",
-    "status": "tested",
-    "positive": [
-      {
-        "path": "internal/frontend/resource_audit_test.go",
-        "test": "TestNestedSourceTextAllocationAndOwnership"
-      },
-      {
-        "path": "internal/cache/resource_audit_test.go",
-        "test": "TestCacheJSONBudgetIgnoresQuotedStructuralCharacters"
-      }
-    ],
-    "negative": [
-      {
-        "path": "internal/frontend/resource_audit_test.go",
-        "test": "TestParserRejectsExcessiveSyntaxResources"
-      },
-      {
-        "path": "internal/frontend/resource_audit_test.go",
-        "test": "TestParserBoundsRepeatedLexicalDiagnostics"
-      },
-      {
-        "path": "internal/cache/resource_audit_test.go",
-        "test": "TestCacheRejectsDecodeAmplificationBeforeTypedAllocation"
-      },
-      {
-        "path": "internal/cache/resource_audit_test.go",
-        "test": "TestCacheRejectsStructureBeforeDecode"
-      }
-    ],
-    "fixtures": [],
-    "notes": "Native depth/node/overlapping-text excess returns PP003 with no semantic tree; diagnostic overflow emits an explicit final truncation error. Ordinary bounded nested syntax retains detached text. Malformed oversized cache structures are rejected before typed decoding; quoted punctuation does not spuriously exhaust structural budgets. These bounded controls do not establish a global parser/process resource bound."
   }
 ]

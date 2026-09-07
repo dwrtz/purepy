@@ -32,7 +32,7 @@ uninstall:
 	rm -f "$(BINDIR)/purepy" "$(PUREPY_SKILL)/SKILL.md"
 	@if test -d "$(PUREPY_SKILL)"; then rmdir "$(PUREPY_SKILL)" 2>/dev/null || test -d "$(PUREPY_SKILL)"; fi
 setup:
-	UV_PROJECT_ENVIRONMENT="$(VENV)" $(UV) sync --locked --project python --python $(PYTHON_VERSION)
+	$(UV) venv --allow-existing --python $(PYTHON_VERSION) "$(VENV)"
 build:
 	go build -trimpath -buildvcs=false -o bin/purepy ./cmd/purepy
 test:
@@ -42,6 +42,7 @@ race:
 fuzz-test:
 	GOMEMLIMIT=$(FUZZ_MEMORY) go test ./internal/check $(FUZZ_FLAGS) -fuzz '^FuzzCheckerSemantics$$'
 	GOMEMLIMIT=$(FUZZ_MEMORY) go test ./internal/check $(FUZZ_FLAGS) -fuzz '^FuzzCheckerSource$$'
+	GOMEMLIMIT=$(FUZZ_MEMORY) go test ./internal/check $(FUZZ_FLAGS) -fuzz '^FuzzFunctionalSource$$'
 	GOMEMLIMIT=$(FUZZ_MEMORY) go test ./internal/cache $(FUZZ_FLAGS) -fuzz '^FuzzCacheSummary$$'
 	GOMEMLIMIT=$(FUZZ_MEMORY) go test ./internal/cache $(FUZZ_FLAGS) -fuzz '^FuzzCacheArtifact$$'
 	GOMEMLIMIT=$(FUZZ_MEMORY) go test ./internal/app $(FUZZ_FLAGS) -fuzz '^FuzzCacheFallback$$'
@@ -53,7 +54,7 @@ robustness-test: setup
 robustness-campaign: setup
 	$(PYTHON) tools/robustness_campaign.py $(ROBUSTNESS_ARGS)
 python-test: setup
-	$(PYTHON) -m unittest discover -s python/tests -v
+	$(PYTHON) -I -S -B examples/functional_core/check_runtime.py
 service-test: setup
 	cd examples/reference_service && PYTHONPATH=src $(PYTHON) -m unittest discover -s tests -v
 syntax-test: setup
@@ -97,8 +98,7 @@ package-test: setup
 	$(PYTHON) -m unittest discover -s tools/tests -p 'test_package_binary.py' -v
 package: setup
 	$(PYTHON) tools/package_binary.py --output "$(RELEASE_OUTPUT)"
-	SOURCE_DATE_EPOCH=315532800 $(UV) build python --out-dir "$(RELEASE_OUTPUT)"
-	$(PYTHON) tools/package_binary.py --finalize --output "$(RELEASE_OUTPUT)" --require-python
-	$(PYTHON) tools/package_binary.py --verify --output "$(RELEASE_OUTPUT)" --require-python
+	$(PYTHON) tools/package_binary.py --finalize --output "$(RELEASE_OUTPUT)"
+	$(PYTHON) tools/package_binary.py --verify --output "$(RELEASE_OUTPUT)"
 clean:
 	go clean ./...

@@ -76,4 +76,5 @@ they do not flush operating-system caches or establish a performance guarantee.
 
 The trusted surface is listed in `manifests/host.purepy.toml`. The only trusted-pure
 external is exact UTF-8 encoding. No application framework is installed, and this
-example is not a dependency of the Python runtime package.
+example runs directly on Python 3.14 using standard NamedTuple records. It
+requires no PurePy runtime package.

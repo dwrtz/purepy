@@ -11,13 +11,13 @@ import (
 func TestEntrypointSpansFollowTOMLDeclarations(t *testing.T) {
 	for _, tc := range []struct{ name, source, literal string }{
 		{"table", "# app.main is only a comment\n" + validConfig, `"app.main"`},
-		{"dotted", `tool.purepy.language = "0.1"
+		{"dotted", `tool.purepy.language = "0.2"
 tool.purepy.python_syntax = "3.14"
 tool.purepy.source_root = "src"
 tool.purepy.entrypoints = ["app.ma\u0069n"]
 tool.purepy.manifests = []
 `, `"app.ma\u0069n"`},
-		{"inline", `tool = { purepy = { language = "0.1", python_syntax = "3.14", source_root = "src", entrypoints = ['app.main'], manifests = [] } }`, "'app.main'"},
+		{"inline", `tool = { purepy = { language = "0.2", python_syntax = "3.14", source_root = "src", entrypoints = ['app.main'], manifests = [] } }`, "'app.main'"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			root := project(t, tc.source)
@@ -38,7 +38,7 @@ func TestConfigurationErrorsHaveLocatedRanges(t *testing.T) {
 		name, source, selected string
 		line                   int
 	}{
-		{"language", strings.Replace(validConfig, `"0.1"`, `"0.2"`, 1), "language", 2},
+		{"language", strings.Replace(validConfig, `"0.2"`, `"9.9"`, 1), "language", 2},
 		{"syntax version", strings.Replace(validConfig, `"3.14"`, `"3.13"`, 1), "python_syntax", 3},
 		{"source root", strings.Replace(validConfig, `"src"`, `"absent"`, 1), "source_root", 4},
 		{"entrypoint", strings.Replace(validConfig, `"app.main"`, `"notqualified"`, 1), `"notqualified"`, 5},

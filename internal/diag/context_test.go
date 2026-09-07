@@ -110,7 +110,7 @@ func TestDiagnosticSortIncludesTypesNotesAndFullSpan(t *testing.T) {
 // Schema validator; the field's arbitrary role names reuse the existing type
 // definition instead of introducing a separate diagnostic type encoding.
 func TestDiagnosticContextSchemaCompatibility(t *testing.T) {
-	data, err := os.ReadFile("../../docs/schema/diagnostics-v1.json")
+	data, err := os.ReadFile("../../docs/schema/diagnostics-v2.json")
 	if err != nil {
 		t.Fatal(err)
 	}

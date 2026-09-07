@@ -12,9 +12,9 @@ func TestSpecCompletionReturnExpressions(t *testing.T) {
 		{"range", "", "range(3)", "PP304"},
 		{"nested_range", "", "(range(3),)", "PP304"},
 		{"conditional_range", "", "range(3) if True else range(4)", "PP304"},
-		{"function", "def helper() -> int:\n    return 1\n", "helper", "PP301"},
-		{"record_class", "from purepy import value\n@value\nclass Record:\n    value: int\n", "Record", "PP301"},
-		{"support_decorator", "from purepy import value\n", "value", "PP301"},
+		{"function", "def helper() -> int:\n    return 1\n", "helper", "PP205"},
+		{"record_class", "from typing import NamedTuple\n\nclass Record(NamedTuple):\n    value: int\n", "Record", "PP301"},
+		{"support_base", "from typing import NamedTuple\n", "NamedTuple", "PP301"},
 		{"suspended_call", "async def helper() -> int:\n    return 1\n", "helper()", "PP401"},
 		{"nested_suspended_call", "async def helper() -> int:\n    return 1\n", "(helper(),)", "PP401"},
 		{"generator_expression", "", "(item for item in (1,))", "PP003"},
@@ -52,7 +52,7 @@ func TestSpecCompletionReturnExpressions(t *testing.T) {
 }
 
 func TestSpecCompletionArgumentUnpacking(t *testing.T) {
-	prefix := "from purepy import value\n@value\nclass Record:\n    number: int\ndef helper(number: int) -> int:\n    return number\nasync def async_helper(number: int) -> int:\n    return number\n"
+	prefix := "from typing import NamedTuple\n\nclass Record(NamedTuple):\n    number: int\ndef helper(number: int) -> int:\n    return number\nasync def async_helper(number: int) -> int:\n    return number\n"
 	for _, tc := range []struct{ name, expression string }{
 		{"function_star", "helper(*items)"},
 		{"function_double_star", "helper(**items)"},
@@ -71,7 +71,7 @@ func TestSpecCompletionArgumentUnpacking(t *testing.T) {
 func TestSpecCompletionNestedUnsupportedTypes(t *testing.T) {
 	// A supported outer container cannot launder an unsupported inner type into
 	// the closed annotation grammar. Exercise both parameters and return types.
-	for _, forbidden := range []string{"Any", "object", "Callable", "list[int]", "dict[str, int]", "Iterator[int]", "Generator[int]", "Coroutine[int]", "Task[int]", "int | str", "tuple[int, str]", "\"int\""} {
+	for _, forbidden := range []string{"Any", "object", "Callable", "list[int]", "dict[str, int]", "Iterator[int]", "Generator[int]", "Coroutine[int]", "Task[int]", "int | str", "tuple[int, list[str]]", "\"int\""} {
 		for _, wrap := range []string{"tuple[%s, ...]", "(%s) | None", "tuple[(%s) | None, ...]"} {
 			annotation := fmt.Sprintf(wrap, forbidden)
 			t.Run(annotation, func(t *testing.T) {

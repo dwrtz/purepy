@@ -119,9 +119,12 @@ func Load(path string) (result *Config, failure error) {
 	if p == nil {
 		return nil, fmt.Errorf("configuration %s: missing [tool.purepy]", abs)
 	}
-	if p.Language != "0.1" {
+	if _, declared := fields["language"]; !declared {
+		p.Language = "0.2"
+	}
+	if p.Language != "0.2" {
 		field("language")
-		return nil, fmt.Errorf("configuration %s: language must be %q, got %q", abs, "0.1", p.Language)
+		return nil, fmt.Errorf("configuration %s: language must be %q, got %q", abs, "0.2", p.Language)
 	}
 	if p.PythonSyntax != "3.14" {
 		field("python_syntax")

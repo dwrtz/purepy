@@ -1,6 +1,6 @@
 # ADR 0007: No executable verifier plugins
 
-Status: accepted for PurePy 0.1.
+Status: accepted for PurePy 0.2.
 
 External semantics are supplied through strict versioned TOML manifests.
 Declarations describe modules, value categories and fixed function signatures.

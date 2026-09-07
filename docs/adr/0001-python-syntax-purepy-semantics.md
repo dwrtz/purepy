@@ -1,6 +1,6 @@
 # ADR 0001: Python syntax, PurePy semantics
 
-Status: accepted for PurePy 0.1.
+Status: accepted for PurePy 0.2.
 
 PurePy parses a Python 3.14 subset and assigns closed semantics only to explicitly
 admitted forms. The verifier never executes source. Parser-specific objects stay

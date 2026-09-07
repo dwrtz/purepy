@@ -1,0 +1,211 @@
+[
+  {
+    "section": "3.4",
+    "quote": "Every call target MUST resolve to a verified named function, a tracked pure",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/functional_test.go",
+        "test": "TestFunctionalAccepted"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/functional_test.go",
+        "test": "TestFunctionalRejected"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Functional-core acceptance and rejection fixtures exercise this rule. This evidence is not a complete proof or exhaustive coverage."
+  },
+  {
+    "section": "7.1",
+    "quote": "1. return equivalent immutable data or a pure function with equivalent behavior;",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/functional_test.go",
+        "test": "TestFunctionalAccepted"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/functional_test.go",
+        "test": "TestFunctionalRejected"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Functional-core acceptance and rejection fixtures exercise this rule. This evidence is not a complete proof or exhaustive coverage."
+  },
+  {
+    "section": "10.2",
+    "quote": "- decorators;",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/functional_test.go",
+        "test": "TestFunctionalAccepted"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/functional_test.go",
+        "test": "TestFunctionalRejected"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Functional-core acceptance and rejection fixtures exercise this rule. This evidence is not a complete proof or exhaustive coverage."
+  },
+  {
+    "section": "10.2",
+    "quote": "- additional bases or user-defined inheritance;",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/functional_test.go",
+        "test": "TestFunctionalAccepted"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/functional_test.go",
+        "test": "TestFunctionalRejected"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Functional-core acceptance and rejection fixtures exercise this rule. This evidence is not a complete proof or exhaustive coverage."
+  },
+  {
+    "section": "10.6",
+    "quote": "All behavior over records MUST be expressed as free functions:",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/functional_test.go",
+        "test": "TestFunctionalAccepted"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/functional_test.go",
+        "test": "TestFunctionalRejected"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Functional-core acceptance and rejection fixtures exercise this rule. This evidence is not a complete proof or exhaustive coverage."
+  },
+  {
+    "section": "11.4",
+    "quote": "Every verified function MUST return immutable data, `None`, or a pure synchronous callable. Async and effectful functions return data only.",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/functional_test.go",
+        "test": "TestFunctionalAccepted"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/functional_test.go",
+        "test": "TestFunctionalRejected"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Functional-core acceptance and rejection fixtures exercise this rule. This evidence is not a complete proof or exhaustive coverage."
+  },
+  {
+    "section": "16.1",
+    "quote": "Every call target MUST resolve to a known declaration or a pure callable whose provenance is tracked through the verified program.",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/functional_test.go",
+        "test": "TestFunctionalAccepted"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/functional_test.go",
+        "test": "TestFunctionalRejected"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Functional-core acceptance and rejection fixtures exercise this rule. This evidence is not a complete proof or exhaustive coverage."
+  },
+  {
+    "section": "30.11",
+    "quote": "The verifier MUST check every nested body and propagate callable provenance through parameters, returns, captures, and local aliases.",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/functional_test.go",
+        "test": "TestFunctionalAccepted"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/functional_test.go",
+        "test": "TestFunctionalRejected"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Functional-core acceptance and rejection fixtures exercise this rule. This evidence is not a complete proof or exhaustive coverage."
+  },
+  {
+    "section": "30.11",
+    "quote": "Generic recursion MUST preserve type parameters; expanding recursion and alias-only cycles are rejected.",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/functional_test.go",
+        "test": "TestFunctionalAccepted"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/functional_test.go",
+        "test": "TestFunctionalRejected"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Functional-core acceptance and rejection fixtures exercise this rule. This evidence is not a complete proof or exhaustive coverage."
+  },
+  {
+    "section": "30.11",
+    "quote": "Expanded types MUST stay within 4,096 nodes and 128 levels; exceeding an analysis budget is an error.",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/functional_test.go",
+        "test": "TestFunctionalAccepted"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/functional_test.go",
+        "test": "TestFunctionalRejected"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Functional-core acceptance and rejection fixtures exercise this rule. This evidence is not a complete proof or exhaustive coverage."
+  },
+  {
+    "section": "30.12",
+    "quote": "Such rejection MUST produce an explicit error and MUST NOT produce successful verification by skipping analysis.",
+    "status": "partial",
+    "positive": [
+      {
+        "path": "internal/check/functional_test.go",
+        "test": "TestFunctionalAccepted"
+      }
+    ],
+    "negative": [
+      {
+        "path": "internal/check/functional_test.go",
+        "test": "TestFunctionalRejected"
+      }
+    ],
+    "fixtures": [],
+    "notes": "Functional-core acceptance and rejection fixtures exercise this rule. This evidence is not a complete proof or exhaustive coverage."
+  }
+]

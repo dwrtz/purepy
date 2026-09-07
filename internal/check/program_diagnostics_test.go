@@ -56,7 +56,7 @@ func TestDeclarationConflictDiagnosticContext(t *testing.T) {
 		}
 	})
 	t.Run("record_fields", func(t *testing.T) {
-		ds := securityVerify(t, map[string]string{"app": "from purepy import value\n@value\nclass R:\n    x: int\n    x: str\n"}, nil)
+		ds := securityVerify(t, map[string]string{"app": "from typing import NamedTuple\n\nclass R(NamedTuple):\n    x: int\n    x: str\n"}, nil)
 		d := declarationDiagnostic(t, ds, "PP202", "app.R.x")
 		requireDiagnosticType(t, d, "previous", model.Int)
 		requireDiagnosticType(t, d, "declared", model.Str)
@@ -111,7 +111,7 @@ func TestAnnotationDiagnosticContext(t *testing.T) {
 		requireDiagnosticType(t, d, "annotation.right", model.Str)
 	})
 	t.Run("record_field_default_identifies_field", func(t *testing.T) {
-		ds := securityVerify(t, map[string]string{"app": "from purepy import value\n@value\nclass R:\n    x: int = 1\n"}, nil)
+		ds := securityVerify(t, map[string]string{"app": "from typing import NamedTuple\n\nclass R(NamedTuple):\n    x: int = 1\n"}, nil)
 		d := declarationDiagnostic(t, ds, "PP202", "app.R.x")
 		requireDiagnosticType(t, d, "annotation", model.Int)
 	})
@@ -131,14 +131,14 @@ func TestConstantDiagnosticContext(t *testing.T) {
 	})
 	t.Run("imported_final_spelling_retains_origin_and_type", func(t *testing.T) {
 		ds := securityVerify(t, map[string]string{
-			"origin": "from purepy import value\n@value\nclass Final:\n    item: int\n",
+			"origin": "from typing import NamedTuple\n\nclass Final(NamedTuple):\n    item: int\n",
 			"app":    "from origin import Final\nANSWER: Final[int] = 1\n",
 		}, nil)
 		d := declarationDiagnostic(t, ds, "PP501", "app.ANSWER")
 		requireDiagnosticType(t, d, "annotation.index", model.Int)
 		requireDiagnosticType(t, d, "annotation.value", model.Type{Kind: "record", Name: "origin.Final"})
 		requireDeclaration(t, d, "app.py", 1)
-		requireDeclaration(t, d, "origin.py", 2)
+		requireDeclaration(t, d, "origin.py", 3)
 	})
 	t.Run("initializer_type", func(t *testing.T) {
 		ds := securityVerify(t, map[string]string{"app": "from typing import Final\nANSWER: Final[int] = 'wrong'\n"}, nil)
@@ -187,20 +187,15 @@ func TestCycleDiagnosticDeclarationPaths(t *testing.T) {
 		requireDeclaration(t, d, "b.py", 1)
 	})
 	t.Run("record_fields", func(t *testing.T) {
-		ds := securityVerify(t, map[string]string{"app": "from purepy import value\n@value\nclass A:\n    b: B\n@value\nclass B:\n    a: tuple[A, ...]\n"}, nil)
-		d := declarationDiagnostic(t, ds, "PP204", "app.B.a")
-		if d.Span.Line != 7 || strings.Join(d.Notes, "; ") != "app.A.b has type app.B; app.B.a has type tuple[app.A, ...]" {
-			t.Fatalf("record cycle must expose each actual field edge: %+v", d)
+		ds := securityVerify(t, map[string]string{"app": "from typing import NamedTuple\n\nclass A(NamedTuple):\n    b: B\n\nclass B(NamedTuple):\n    a: tuple[A, ...]\n"}, nil)
+		if len(ds) != 0 {
+			t.Fatalf("regular recursive records rejected: %+v", ds)
 		}
-		requireDiagnosticType(t, d, "field", model.Tuple(model.Type{Kind: "record", Name: "app.A"}))
-		requireDeclaration(t, d, "app.py", 4)
-		requireDeclaration(t, d, "app.py", 2)
 	})
 	t.Run("self_reference", func(t *testing.T) {
-		ds := securityVerify(t, map[string]string{"app": "from purepy import value\n@value\nclass R:\n    child: R | None\n"}, nil)
-		d := declarationDiagnostic(t, ds, "PP204", "app.R.child")
-		if d.Span.Line != 4 || len(d.Notes) != 1 {
-			t.Fatalf("self cycle lost the recursive field: %+v", d)
+		ds := securityVerify(t, map[string]string{"app": "from typing import NamedTuple\n\nclass R(NamedTuple):\n    child: R | None\n"}, nil)
+		if len(ds) != 0 {
+			t.Fatalf("regular recursive records rejected: %+v", ds)
 		}
 	})
 }
@@ -246,10 +241,10 @@ func TestManifestLinkDiagnosticContext(t *testing.T) {
 }
 
 func TestRecordBaseDiagnosticContext(t *testing.T) {
-	library := "from purepy import value\n@value\nclass Base:\n    field: int\n"
-	source := "from purepy import value\nfrom library import Base\n@value\nclass Derived(Base):\n    field: int\n"
+	library := "from typing import NamedTuple\n\nclass Base(NamedTuple):\n    field: int\n"
+	source := "from typing import NamedTuple\nfrom library import Base\n\nclass Derived(Base):\n    field: int\n"
 	d := declarationDiagnostic(t, callDiagnostics(t, map[string]string{"app": source, "library": library}, nil), "PP202", "app.Derived")
 	requireDiagnosticType(t, d, "base.1", model.Type{Kind: "record", Name: "library.Base"})
 	callRelatedText(t, d, "app.py", source, "Base")
-	requireDeclaration(t, d, "library.py", 2)
+	requireDeclaration(t, d, "library.py", 3)
 }

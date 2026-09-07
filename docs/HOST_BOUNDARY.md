@@ -47,7 +47,7 @@ Long-lived SSE handlers can use explicit loops, immutable event pages, explicit
 network sends, and capability-authorized waits. Resource references stay owned by
 the host for the complete invocation and are closed by its finalization path.
 
-The Python package provides only frozen, slotted `@value` records. It has no effect
+The Python package provides only frozen, slotted `NamedTuple` records. It has no effect
 interpreter, registry, dependency injection, task API, or application abstractions.
 Its guards reject accidental methods, defaults, and inheritance. The verifier
 checks field types and deep immutability; the host supplies exact values, including

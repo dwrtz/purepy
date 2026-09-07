@@ -1,7 +1,7 @@
 # Implementation and conformance status
 
-The repository now implements the PurePy 0.1 design as an experimental Go verifier
-(`0.1.0-dev`). The normative source remains `PUREPY_SPEC.md`; this file records the
+The repository now implements the PurePy 0.2 design as an experimental Go verifier
+(`0.2.0`). The normative source remains `PUREPY_SPEC.md`; this file records the
 concrete choices and remaining release gates without silently changing that spec.
 
 ## Implemented pipeline
@@ -15,8 +15,8 @@ concrete choices and remaining release gates without silently changing that spec
 3. Stable qualified-name declaration identities, direct imports, import-cycle
    rejection, exact annotations and signatures, immutable records and constants,
    and initialization-order checks.
-4. Exact primitive operations, tuple/optional types, record construction and fields,
-   local flow and definite assignment, first-order recursion/calls, and explicit
+4. Exact primitive operations, tuple, product, callable, and optional types, record construction and fields,
+   local flow and definite assignment, generic functions, checked closures, and callable provenance, and explicit
    unsupported-node rejection. Both branches and unreachable source are checked.
 5. Schema-v1 manifests, import-safety assertions, deeply immutable opaque values,
    exact capability/host-reference forwarding, and trust/authority reports.
@@ -25,7 +25,7 @@ concrete choices and remaining release gates without silently changing that spec
 7. Bounded parallel parsing/checking, checksummed content-addressed module summaries,
    conservative image inputs, mandatory relinking/rechecking, deterministic text
    and JSON reports, source explanations, and safe artifact cleanup.
-8. The frozen/slotted `@value` support package, reference network/database/SSE
+8. Standard NamedTuple records, functional examples, reference network/database/SSE
    service, runtime and socket integration tests, load harness, CI, and packaging.
 
 Qualified names act as stable declaration IDs without an extra hash interner.
@@ -61,9 +61,8 @@ dependencies, including on warm runs.
   general object identity, or comparisons of authority-bearing values.
 - No broad standard-library manifest ships. The sealed intrinsic table and the
   explicit example host manifest are the initial interoperation surface.
-- The `@value` runtime trusts the verifier's annotations and the host's exact-value
-  obligations. It avoids evaluating deferred annotations during decoration, which
-  permits Python 3.14 forward record references and trusted opaque external fields.
+- Standard NamedTuple instances rely on the verifier's field annotations and
+  the host supplying exact immutable values. No PurePy support package is needed.
 
 ## Verification evidence
 
@@ -154,16 +153,14 @@ records the measurements and the tolerant same-run base/head CI gate.
 
 ## Release gates and trust limits
 
-The PurePy 0.1 implementation includes the enumerated verifier pipeline, runtime,
-reference service and release preparation tooling. The final completion checks
-and their precise source/measurement identities are recorded in the
-[completion report](validation/2026-09-05/completion.md). The specification,
-syntax matrix and implementation now explicitly agree on recursive equality,
-resource-limit rejection and sealed intrinsic version 1.
+The PurePy 0.2 release adds generic immutable records, pure composition, and
+bounded provenance analysis. Older validation reports describe their recorded
+source snapshots; they do not measure this release. The sealed intrinsic contract
+is version 2.
 
 The [schema contracts](SCHEMA_CONTRACT.md) define compatibility for manifest v1
 and machine-readable output. The [release guide](RELEASE.md) describes reproducible
-source/binary/Python artifacts and the publication procedure. A local release
+source and native binary artifacts and the publication procedure. A local release
 candidate is not evidence that GitHub or PyPI publication has occurred; that is
 reported separately after upload verification.
 
@@ -181,5 +178,5 @@ The runtime, Python platform, intrinsic semantics, and verifier are also part of
 the trusted computing base. Content-cache files are local disposable artifacts,
 not signed certificates or portable security proofs.
 
-Post-0.1 builders, parallel joins, lexical resources, memoization, streams, and
-general ownership/concurrency remain deliberately unimplemented as the plan requires.
+Mutable builders are outside the language. Balanced persistent maps, richer Unicode
+operations, parallel joins, lexical resources, and memoization remain design work.

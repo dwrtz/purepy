@@ -1,6 +1,6 @@
 # ADR 0003: Capability parameter authorization
 
-Status: accepted for PurePy 0.1.
+Status: accepted for PurePy 0.2.
 
 External authority enters a verified function through explicit nominal capability
 parameters. A known operation receives the original parameter directly at the

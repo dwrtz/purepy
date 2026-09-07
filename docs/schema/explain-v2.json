@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "PurePy explain result schema 1",
+  "title": "PurePy explain result schema 2",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -10,12 +10,12 @@
   ],
   "properties": {
     "schema": {
-      "const": 1
+      "const": 2
     },
     "diagnostics": {
       "type": "array",
       "items": {
-        "$ref": "diagnostics-v1.json#/$defs/diagnostic"
+        "$ref": "diagnostics-v2.json#/$defs/diagnostic"
       }
     },
     "facts": {
@@ -37,13 +37,13 @@
       ],
       "properties": {
         "span": {
-          "$ref": "diagnostics-v1.json#/$defs/span"
+          "$ref": "diagnostics-v2.json#/$defs/span"
         },
         "symbol": {
           "type": "string"
         },
         "type": {
-          "$ref": "diagnostics-v1.json#/$defs/type"
+          "$ref": "diagnostics-v2.json#/$defs/type"
         },
         "category": {
           "type": "string"

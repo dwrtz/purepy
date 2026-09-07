@@ -1,6 +1,6 @@
 # ADR 0004: Direct await only
 
-Status: accepted for PurePy 0.1.
+Status: accepted for PurePy 0.2.
 
 An await directly contains one statically resolved async call and is lowered as
 one semantic operation. Sync functions cannot await; sync calls cannot be awaited;

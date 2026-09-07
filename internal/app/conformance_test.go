@@ -48,7 +48,7 @@ func TestConformance(t *testing.T) {
 				write("host.toml", tc.Manifest)
 				manifests = `["host.toml"]`
 			}
-			write("purepy.toml", "[tool.purepy]\nlanguage = \"0.1\"\npython_syntax = \"3.14\"\nsource_root = \"src\"\nentrypoints = []\nmanifests = "+manifests+"\n")
+			write("purepy.toml", "[tool.purepy]\nlanguage = \"0.2\"\npython_syntax = \"3.14\"\nsource_root = \"src\"\nentrypoints = []\nmanifests = "+manifests+"\n")
 			write("src/app.py", tc.Source)
 			for path, body := range tc.Files {
 				write("src/"+path, body)

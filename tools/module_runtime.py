@@ -8,7 +8,6 @@ implemented here, outside every verified temporary source root.
 """
 
 from contextlib import contextmanager
-from dataclasses import fields, is_dataclass
 import hashlib
 import importlib
 import inspect
@@ -200,7 +199,7 @@ def observe(value, modules, depth=0):
             raise CorpusError("module result exceeds tuple budget")
         return {"type": "tuple", "value": [observe(item, modules, depth + 1) for item in value]}
     cls = type(value)
-    if is_dataclass(value) or cls.__module__ == "fixture":
+    if isinstance(value, tuple) and hasattr(cls, "_fields") or cls.__module__ == "fixture":
         module, name = cls.__module__, cls.__name__
         if module not in modules or getattr(modules[module], name, None) is not cls:
             raise CorpusError("record does not have the loaded module's exact class identity")
@@ -208,8 +207,8 @@ def observe(value, modules, depth=0):
         if cls.__module__ == "fixture":
             return {"type": "external", "name": qualified, "value": value.label}
         return {"type": "record", "name": qualified,
-                "fields": [[field.name, observe(getattr(value, field.name), modules, depth + 1)]
-                           for field in fields(value)]}
+                "fields": [[field, observe(getattr(value, field), modules, depth + 1)]
+                           for field in cls._fields]}
     _bounded_value(value)
     return encode_value(value)
 
@@ -231,7 +230,7 @@ def runtime_case(case):
         with tempfile.TemporaryDirectory(prefix="purepy-module-runtime-") as directory:
             root = Path(directory)
             write_sources(root, case)
-            sys.path[:0] = [str(root), str(ROOT / "python")]
+            sys.path[:0] = [str(root)]
             sys.modules["fixture"] = make_host(events)
             importlib.invalidate_caches()
             with execution_budget(str(root)):

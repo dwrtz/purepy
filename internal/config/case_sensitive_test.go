@@ -16,10 +16,10 @@ func TestLoadRejectsCaseInsensitiveConfigAliases(t *testing.T) {
 		{"source field", strings.Replace(validConfig, "source_root =", "Source_Root =", 1), "Source_Root", "tool.purepy.Source_Root"},
 		{"entrypoints field", strings.Replace(validConfig, "entrypoints =", "Entrypoints =", 1), "Entrypoints", "tool.purepy.Entrypoints"},
 		{"manifests field", strings.Replace(validConfig, "manifests =", "Manifests =", 1), "Manifests", "tool.purepy.Manifests"},
-		{"overwrite language", strings.Replace(validConfig, `language = "0.1"`, "language = \"0.2\"\nLanguage = \"0.1\"", 1), "Language", "tool.purepy.Language"},
+		{"overwrite language", strings.Replace(validConfig, `language = "0.2"`, "language = \"0.2\"\nLanguage = \"0.2\"", 1), "Language", "tool.purepy.Language"},
 		{"overwrite source root", validConfig + "Source_Root = \"manifests\"\n", "Source_Root", "tool.purepy.Source_Root"},
-		{"dotted", "tool.purepy.Language = \"0.1\"\ntool.purepy.python_syntax = \"3.14\"\ntool.purepy.source_root = \"src\"\ntool.purepy.entrypoints = []\ntool.purepy.manifests = []\n", "Language", "tool.purepy.Language"},
-		{"inline", "tool = { purepy = { Language = \"0.1\", python_syntax = \"3.14\", source_root = \"src\", entrypoints = [], manifests = [] } }", "Language", "tool.purepy.Language"},
+		{"dotted", "tool.purepy.Language = \"0.2\"\ntool.purepy.python_syntax = \"3.14\"\ntool.purepy.source_root = \"src\"\ntool.purepy.entrypoints = []\ntool.purepy.manifests = []\n", "Language", "tool.purepy.Language"},
+		{"inline", "tool = { purepy = { Language = \"0.2\", python_syntax = \"3.14\", source_root = \"src\", entrypoints = [], manifests = [] } }", "Language", "tool.purepy.Language"},
 		{"quoted escaped", strings.Replace(validConfig, "language =", `"Langu\u0061ge" =`, 1), `"Langu\u0061ge"`, "tool.purepy.Language"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -42,13 +42,13 @@ func TestLoadRejectsCaseInsensitiveConfigAliases(t *testing.T) {
 func TestLoadAcceptsQuotedCanonicalConfigKeys(t *testing.T) {
 	for _, source := range []string{
 		strings.ReplaceAll(strings.Replace(validConfig, "[tool.purepy]", `["to\u006fl".'purepy']`, 1), "language =", `"langu\u0061ge" =`),
-		`"tool".'purepy'."language" = "0.1"
+		`"tool".'purepy'."language" = "0.2"
 tool.purepy.python_syntax = "3.14"
 tool.purepy.source_root = "src"
 tool.purepy.entrypoints = []
 tool.purepy.manifests = []
 `,
-		`"tool" = { 'purepy' = { "langu\u0061ge" = "0.1", python_syntax = "3.14", source_root = "src", entrypoints = [], manifests = [] } }`,
+		`"tool" = { 'purepy' = { "langu\u0061ge" = "0.2", python_syntax = "3.14", source_root = "src", entrypoints = [], manifests = [] } }`,
 	} {
 		if _, err := Load(project(t, source)); err != nil {
 			t.Fatalf("canonical quoted/escaped config keys rejected: %v", err)

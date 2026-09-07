@@ -110,7 +110,7 @@ Configuration uses exactly these fields, with explicit empty arrays when needed:
 
 ```toml
 [tool.purepy]
-language = "0.1"
+language = "0.2"
 python_syntax = "3.14"
 source_root = "src"
 entrypoints = []

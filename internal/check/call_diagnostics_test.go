@@ -144,7 +144,7 @@ func TestCallDiagnosticArgumentBinding(t *testing.T) {
 		})
 	}
 
-	source := "from purepy import value\n@value\nclass Record:\n    count: int\ndef run() -> Record:\n    return Record(True)\n"
+	source := "from typing import NamedTuple\n\nclass Record(NamedTuple):\n    count: int\ndef run() -> Record:\n    return Record(True)\n"
 	d := callDiagnostic(t, callDiagnostics(t, map[string]string{"app": source}, nil), "PP205", "expected int")
 	if d.Symbol != "app.Record.count" {
 		t.Errorf("record constructor should identify its field: %+v", d)
@@ -269,7 +269,7 @@ returns = "bytes"
 }
 
 func TestCallDiagnosticConstantConstructorPath(t *testing.T) {
-	library := "from purepy import value\n@value\nclass Record:\n    count: int\n"
+	library := "from typing import NamedTuple\n\nclass Record(NamedTuple):\n    count: int\n"
 	source := "from typing import Final\nRECORD: Final[Record] = Record(1)\nfrom library import Record\n"
 	d := callDiagnostic(t, callDiagnostics(t, map[string]string{"library": library, "app": source}, nil), "PP502", "constructor used before its import")
 	if d.Symbol != "library.Record" {

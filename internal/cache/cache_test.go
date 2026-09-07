@@ -91,7 +91,7 @@ func TestMalformedSummaryNodesAreMisses(t *testing.T) {
 func TestCacheRejectsSemanticTypeContext(t *testing.T) {
 	dir := t.TempDir()
 	key := Key("parser-context")
-	tree, ds := frontend.Parse("app.py", []byte("def f(x: int) -> int:\n    return [x]\n"))
+	tree, ds := frontend.Parse("app.py", []byte("def f(x: int) -> int:\n    return {x}\n"))
 	if len(ds) == 0 {
 		t.Fatal("fixture must have a parser diagnostic")
 	}

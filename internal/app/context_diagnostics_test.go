@@ -178,7 +178,7 @@ func TestInvalidEntrypointLinksConfigurationToDeclaration(t *testing.T) {
 
 func TestConfigurationErrorsPreserveDeclarationContextInReports(t *testing.T) {
 	root := cliProject(t, map[string]string{"src/main.py": "def run() -> None:\n    pass\n"}, nil, nil)
-	const source = "[tool.purepy]\nlanguage = '0.1'\npython_syntax = '3.14'\nsource_root = 'src'\nentrypoints = ['main.run', 'main.run']\nmanifests = []\n"
+	const source = "[tool.purepy]\nlanguage = '0.2'\npython_syntax = '3.14'\nsource_root = 'src'\nentrypoints = ['main.run', 'main.run']\nmanifests = []\n"
 	cliWrite(t, root, "purepy.toml", source)
 	report := Check(Options{Path: root, Jobs: 1, NoCache: true})
 	if report.OK || len(report.Diagnostics) != 1 {

@@ -22,7 +22,7 @@ import (
 )
 
 // Version is part of the cache identity; change it whenever lowering changes.
-const Version = "python-3.14/tree-sitter-python-26855eab/ir-5/unicode-" + unicodenames.UnicodeVersion + "/identifiers-" + unicodeident.UnicodeVersion
+const Version = "python-3.14/tree-sitter-python-26855eab/ir-7/unicode-" + unicodenames.UnicodeVersion + "/identifiers-" + unicodeident.UnicodeVersion
 
 type adapter struct {
 	path   string
@@ -383,7 +383,8 @@ func (a *adapter) flag(out *model.Node, reason string, n *sitter.Node) {
 		out.Attr["unsupported"] += "; "
 	}
 	out.Attr["unsupported"] += reason
-	a.report("PP003", reason+" is not supported in PurePy 0.1", a.span(int(n.StartByte()), int(n.EndByte())))
+	language := "0.2"
+	a.report("PP003", reason+" is not supported in PurePy "+language, a.span(int(n.StartByte()), int(n.EndByte())))
 }
 
 func (a *adapter) unsupported(n *sitter.Node) *model.Node {
@@ -416,7 +417,7 @@ func (a *adapter) body(n *sitter.Node) []*model.Node {
 		// The grammar marks expression_statement as a hidden supertype. Some
 		// expressions therefore occur directly beneath module/block nodes.
 		switch item.Kind {
-		case "Function", "Record", "Import", "Assign", "If", "For", "While", "Return", "Break", "Continue", "Pass", "ExprStmt", "Unsupported":
+		case "Alias", "Function", "Record", "Import", "Assign", "If", "For", "While", "Return", "Break", "Continue", "Pass", "ExprStmt", "Unsupported":
 		default:
 			statement := a.node("ExprStmt", c)
 			statement.Fields["value"] = item
@@ -551,7 +552,10 @@ func (a *adapter) lower(n *sitter.Node) *model.Node {
 		out.Attr["name"] = a.text(n.ChildByFieldName("name"))
 		out.Lists["body"] = a.body(n.ChildByFieldName("body"))
 		if tp := n.ChildByFieldName("type_parameters"); tp != nil {
-			a.flag(out, "type parameters", tp)
+
+			for _, t := range named(tp) {
+				out.Lists["typeparams"] = append(out.Lists["typeparams"], a.lower(t))
+			}
 		}
 		if kind == "Function" {
 			out.Attr["async"] = "false"
@@ -604,10 +608,21 @@ func (a *adapter) lower(n *sitter.Node) *model.Node {
 			out.Lists["names"] = append(out.Lists["names"], name)
 		}
 		return out
+	case "type_alias_statement":
+		out := a.node("Alias", n)
+		out.Fields["left"] = f("left")
+		out.Fields["right"] = f("right")
+		return out
+	case "list":
+		out := a.node("TypeList", n)
+		for _, c := range children {
+			out.Lists["elements"] = append(out.Lists["elements"], a.lower(c))
+		}
+		return out
 	case "expression_statement":
 		if len(children) == 1 {
 			value := a.lower(children[0])
-			if children[0].Kind() == "assignment" {
+			if children[0].Kind() == "assignment" || value.Kind == "Alias" {
 				return value
 			}
 			out := a.node("ExprStmt", n)

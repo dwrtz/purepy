@@ -151,7 +151,7 @@ func Run(args []string, out, errOut io.Writer) (status int) {
 		} else {
 			diag.Text(out, r.Diagnostics)
 			if r.OK {
-				fmt.Fprintf(out, "Verified %d modules and %d functions (PurePy 0.1).\n", r.Files, len(r.Functions))
+				fmt.Fprintf(out, "Verified %d modules and %d functions (PurePy %s).\n", r.Files, len(r.Functions), r.Language)
 			}
 		}
 		if r.OK {

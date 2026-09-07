@@ -30,11 +30,11 @@ func TestExpressionDiagnosticTypesAndDeclarations(t *testing.T) {
 		})
 	}
 
-	source := "from purepy import value\n@value\nclass Record:\n    count: int\ndef run(record: Record) -> int:\n    return record.missing\n"
+	source := "from typing import NamedTuple\n\nclass Record(NamedTuple):\n    count: int\ndef run(record: Record) -> int:\n    return record.missing\n"
 	d := declarationDiagnostic(t, callDiagnostics(t, map[string]string{"app": source}, nil), "PP208", "app.Record.missing")
 	requireDiagnosticType(t, d, "receiver", model.Type{Kind: "record", Name: "app.Record"})
 	callRelatedText(t, d, "app.py", source, "record: Record")
-	requireDeclaration(t, d, "app.py", 2)
+	requireDeclaration(t, d, "app.py", 3)
 }
 
 func TestLocalDiagnosticDeclarationPaths(t *testing.T) {
@@ -92,7 +92,7 @@ func TestLocalDiagnosticDeclarationPaths(t *testing.T) {
 func TestImportedValueDiagnosticPaths(t *testing.T) {
 	library := "def operation() -> None:\n    return\n"
 	for _, tc := range []struct{ name, source, code, symbol string }{
-		{"read", "def run() -> None:\n    local = operation\n", "PP301", "library.operation"},
+		{"wrong_type", "def run() -> None:\n    local: int = operation\n", "PP205", "app.run.local"},
 		{"rebind", "def run() -> None:\n    operation = 1\n", "PP503", "library.operation"},
 		{"parameter_shadow", "def run(operation: int) -> None:\n    return\n", "PP503", "app.run.operation"},
 	} {
@@ -106,7 +106,7 @@ func TestImportedValueDiagnosticPaths(t *testing.T) {
 }
 
 func TestExpressionDiagnosticFieldAndCallOrigins(t *testing.T) {
-	source := "from purepy import value\n@value\nclass Inner:\n    flag: str\n@value\nclass Outer:\n    inner: Inner\ndef make() -> Outer:\n    return Outer(Inner('yes'))\ndef run() -> None:\n    if make().inner.flag:\n        pass\n"
+	source := "from typing import NamedTuple\n\nclass Inner(NamedTuple):\n    flag: str\n\nclass Outer(NamedTuple):\n    inner: Inner\ndef make() -> Outer:\n    return Outer(Inner('yes'))\ndef run() -> None:\n    if make().inner.flag:\n        pass\n"
 	d := declarationDiagnostic(t, callDiagnostics(t, map[string]string{"app": source}, nil), "PP205", "app.run")
 	callDiagnosticTypes(t, d, map[string]model.Type{"expected": model.Bool, "actual": model.Str})
 	callRelatedText(t, d, "app.py", source, "flag: str")

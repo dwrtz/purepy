@@ -89,7 +89,7 @@ def generate(project, kind, modules, functions):
     write(package / "entry.py", "\n".join(lines))
     manifests = '["manifests/host.purepy.toml"]' if kind == "manifest" else "[]"
     write(project / "purepy.toml", f'''[tool.purepy]
-language = "0.1"
+language = "0.2"
 python_syntax = "3.14"
 source_root = "src"
 entrypoints = ["bench.entry.run"]

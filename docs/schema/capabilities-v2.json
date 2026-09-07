@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "PurePy capabilities result schema 1",
+  "title": "PurePy capabilities result schema 2",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -9,7 +9,7 @@
   ],
   "properties": {
     "schema": {
-      "const": 1
+      "const": 2
     },
     "functions": {
       "type": "array",
@@ -58,22 +58,22 @@
         "parameters": {
           "type": "array",
           "items": {
-            "$ref": "diagnostics-v1.json#/$defs/parameter"
+            "$ref": "diagnostics-v2.json#/$defs/parameter"
           }
         },
         "returns": {
-          "$ref": "diagnostics-v1.json#/$defs/type"
+          "$ref": "diagnostics-v2.json#/$defs/type"
         },
         "capabilities": {
           "type": "array",
           "items": {
-            "$ref": "diagnostics-v1.json#/$defs/parameter"
+            "$ref": "diagnostics-v2.json#/$defs/parameter"
           }
         },
         "host_references": {
           "type": "array",
           "items": {
-            "$ref": "diagnostics-v1.json#/$defs/parameter"
+            "$ref": "diagnostics-v2.json#/$defs/parameter"
           }
         },
         "unused_capabilities": {
@@ -156,6 +156,15 @@
               }
             }
           }
+        },
+        "type_parameters": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "parent": {
+          "type": "string"
         }
       }
     },
@@ -178,10 +187,16 @@
           "type": "string"
         },
         "kind": {
-          "type": "string"
+          "enum": [
+            "sync",
+            "await",
+            "callback",
+            "function_value",
+            "closure"
+          ]
         },
         "span": {
-          "$ref": "diagnostics-v1.json#/$defs/span"
+          "$ref": "diagnostics-v2.json#/$defs/span"
         },
         "capability_arguments": {
           "type": "array",
@@ -222,11 +237,11 @@
         "parameters": {
           "type": "array",
           "items": {
-            "$ref": "diagnostics-v1.json#/$defs/parameter"
+            "$ref": "diagnostics-v2.json#/$defs/parameter"
           }
         },
         "returns": {
-          "$ref": "diagnostics-v1.json#/$defs/type"
+          "$ref": "diagnostics-v2.json#/$defs/type"
         },
         "origin": {
           "const": "manifest"
@@ -241,7 +256,16 @@
           "type": "string"
         },
         "span": {
-          "$ref": "diagnostics-v1.json#/$defs/span"
+          "$ref": "diagnostics-v2.json#/$defs/span"
+        },
+        "type_parameters": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "parent": {
+          "type": "string"
         }
       }
     }

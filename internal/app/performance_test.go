@@ -18,7 +18,7 @@ func BenchmarkCheckWarm(b *testing.B) {
 			if err := os.Mkdir(source, 0o755); err != nil {
 				b.Fatal(err)
 			}
-			config := "[tool.purepy]\nlanguage = '0.1'\npython_syntax = '3.14'\nsource_root = 'src'\nentrypoints = []\nmanifests = []\n"
+			config := "[tool.purepy]\nlanguage = '0.2'\npython_syntax = '3.14'\nsource_root = 'src'\nentrypoints = []\nmanifests = []\n"
 			if err := os.WriteFile(filepath.Join(root, "purepy.toml"), []byte(config), 0o644); err != nil {
 				b.Fatal(err)
 			}

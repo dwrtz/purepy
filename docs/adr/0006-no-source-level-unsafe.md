@@ -1,6 +1,6 @@
 # ADR 0006: No source-level unsafe escape
 
-Status: accepted for PurePy 0.1.
+Status: accepted for PurePy 0.2.
 
 Every source file under the configured root is verified under the same closed
 rules. There are no unsafe decorators, trusted-function bodies, suppression

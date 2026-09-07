@@ -129,13 +129,13 @@
     "name": "records",
     "valid": true,
     "codes": [],
-    "source": "from purepy import value\n@value\nclass Point:\n    x: int\n    y: int\ndef f() -> Point:\n    return Point(y=2, x=1)\n"
+    "source": "from typing import NamedTuple\n\nclass Point(NamedTuple):\n    x: int\n    y: int\ndef f() -> Point:\n    return Point(y=2, x=1)\n"
   },
   {
     "name": "record_equality",
     "valid": true,
     "codes": [],
-    "source": "from purepy import value\n@value\nclass Item:\n    x: int\ndef f(a: Item, b: Item) -> bool:\n    return a == b\n"
+    "source": "from typing import NamedTuple\n\nclass Item(NamedTuple):\n    x: int\ndef f(a: Item, b: Item) -> bool:\n    return a == b\n"
   },
   {
     "name": "constants",
@@ -147,7 +147,7 @@
     "name": "constant_record",
     "valid": true,
     "codes": [],
-    "source": "from typing import Final\nfrom purepy import value\n@value\nclass Item:\n    x: int\nITEM: Final[Item] = Item(1)\ndef f() -> int:\n    return ITEM.x\n"
+    "source": "from typing import Final\nfrom typing import NamedTuple\n\nclass Item(NamedTuple):\n    x: int\nITEM: Final[Item] = Item(1)\ndef f() -> int:\n    return ITEM.x\n"
   },
   {
     "name": "import_constant",
@@ -328,7 +328,7 @@
     "codes": [
       "PP202"
     ],
-    "source": "from purepy import value\n@value\nclass Item:\n    def f(self: int) -> int:\n        return 1\n"
+    "source": "from typing import NamedTuple\n\nclass Item(NamedTuple):\n    def f(self: int) -> int:\n        return 1\n"
   },
   {
     "name": "record_default",
@@ -336,15 +336,13 @@
     "codes": [
       "PP202"
     ],
-    "source": "from purepy import value\n@value\nclass Item:\n    x: int = 1\n"
+    "source": "from typing import NamedTuple\n\nclass Item(NamedTuple):\n    x: int = 1\n"
   },
   {
     "name": "recursive_record",
-    "valid": false,
-    "codes": [
-      "PP204"
-    ],
-    "source": "from purepy import value\n@value\nclass Item:\n    next: Item | None\n"
+    "valid": true,
+    "codes": [],
+    "source": "from typing import NamedTuple\n\nclass Item(NamedTuple):\n    next: Item | None\n"
   },
   {
     "name": "ordinary_class",
@@ -419,10 +417,8 @@
   },
   {
     "name": "function_as_value",
-    "valid": false,
-    "codes": [
-      "PP301"
-    ],
+    "valid": true,
+    "codes": [],
     "source": "def g() -> int:\n    return 1\ndef f() -> int:\n    x = g\n    return 0\n"
   },
   {
@@ -610,7 +606,7 @@
     "codes": [
       "PP201"
     ],
-    "source": "from host.io import Read, Ref, read\nfrom purepy import value\n@value\nclass Item:\n    cap: Read\n",
+    "source": "from host.io import Read, Ref, read\nfrom typing import NamedTuple\n\nclass Item(NamedTuple):\n    cap: Read\n",
     "manifest": "schema = 1\n[[module]]\nname = \"host.io\"\nimport_safe = true\n[[type]]\nname = \"host.io.Read\"\ncategory = \"capability\"\nlabels = [\"network.read\"]\n[[type]]\nname = \"host.io.Ref\"\ncategory = \"host_ref\"\n[[function]]\nname = \"host.io.read\"\nkind = \"async\"\ntrust = \"host\"\nparameters = [{name=\"cap\",type=\"host.io.Read\"},{name=\"ref\",type=\"host.io.Ref\"}]\nreturns = \"bytes\"\n"
   },
   {

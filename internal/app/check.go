@@ -21,11 +21,11 @@ import (
 	"github.com/dwrtz/purepy/internal/model"
 )
 
-const Version = "0.1.0-dev.4"
-const SpecificationVersion = "0.3-draft"
-const LanguageVersion = "0.1"
+const Version = "0.2.0"
+const SpecificationVersion = "0.4-draft"
+const LanguageVersion = "0.2"
 const PythonSyntaxVersion = "3.14"
-const JSONSchema = 1
+const JSONSchema = 2
 
 type Options struct {
 	Path, Config string
@@ -51,6 +51,8 @@ type Report struct {
 	CacheHits     int                `json:"-"`
 }
 type FunctionReport struct {
+	TypeParams     []string          `json:"type_parameters,omitempty"`
+	Parent         string            `json:"parent,omitempty"`
 	Name           string            `json:"name"`
 	Kind           string            `json:"kind"`
 	Classification string            `json:"classification"`
@@ -286,7 +288,7 @@ func Check(opts Options) *Report {
 	r.Facts = result.Facts
 	for _, f := range p.Functions {
 		if f.Origin == "project" {
-			r.Functions = append(r.Functions, FunctionReport{Name: f.Name, Kind: f.Kind, Classification: f.Classification(), Parameters: f.Parameters, Returns: f.Returns})
+			r.Functions = append(r.Functions, FunctionReport{TypeParams: f.TypeParams, Parent: f.Parent, Name: f.Name, Kind: f.Kind, Classification: f.Classification(), Parameters: f.Parameters, Returns: f.Returns})
 		}
 	}
 	sort.Slice(r.Functions, func(i, j int) bool { return r.Functions[i].Name < r.Functions[j].Name })

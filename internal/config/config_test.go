@@ -11,7 +11,7 @@ import (
 )
 
 const validConfig = `[tool.purepy]
-language = "0.1"
+language = "0.2"
 python_syntax = "3.14"
 source_root = "src"
 entrypoints = ["app.main"]
@@ -54,7 +54,7 @@ func TestLoadResolvesPathsAndPreservesOrder(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := &Config{Path: filepath.Join(canonical, "purepy.toml"), ProjectRoot: canonical, SourceRoot: filepath.Join(canonical, "src"), Language: "0.1", PythonSyntax: "3.14", Entrypoints: []string{"app.main"}, Manifests: []string{filepath.Join(canonical, "manifests/host.toml"), filepath.Join(canonical, "second.toml")}}
+	want := &Config{Path: filepath.Join(canonical, "purepy.toml"), ProjectRoot: canonical, SourceRoot: filepath.Join(canonical, "src"), Language: "0.2", PythonSyntax: "3.14", Entrypoints: []string{"app.main"}, Manifests: []string{filepath.Join(canonical, "manifests/host.toml"), filepath.Join(canonical, "second.toml")}}
 	want.FieldSpans, _ = declarationSpans(want.Path, []byte(strings.Replace(validConfig, `["manifests/host.toml"]`, `["manifests/host.toml", "second.toml"]`, 1)))
 	want.EntrypointSpans = map[string]model.Span{"app.main": {File: want.Path, Start: 89, End: 99, Line: 5, Column: 16, EndLine: 5, EndColumn: 26}}
 	if !reflect.DeepEqual(fromFile, want) {
@@ -65,10 +65,10 @@ func TestLoadResolvesPathsAndPreservesOrder(t *testing.T) {
 func TestLoadRejectsInvalidConfiguration(t *testing.T) {
 	tests := []struct{ name, content, want string }{
 		{"unknown", validConfig + "exclude = []\n", "fields"},
-		{"duplicate key", validConfig + "language = \"0.1\"\n", "already"},
-		{"missing table", "language = \"0.1\"\n", "fields"},
+		{"duplicate key", validConfig + "language = \"0.2\"\n", "already"},
+		{"missing table", "language = \"0.2\"\n", "fields"},
 		{"empty", "", "missing [tool.purepy]"},
-		{"language", strings.Replace(validConfig, `"0.1"`, `"0.2"`, 1), "language"},
+		{"language", strings.Replace(validConfig, `"0.2"`, `"9.9"`, 1), "language"},
 		{"syntax", strings.Replace(validConfig, `"3.14"`, `"3.13"`, 1), "python_syntax"},
 		{"source missing", strings.Replace(validConfig, "source_root = \"src\"\n", "", 1), "path is required"},
 		{"entrypoints missing", strings.Replace(validConfig, "entrypoints = [\"app.main\"]\n", "", 1), "required"},

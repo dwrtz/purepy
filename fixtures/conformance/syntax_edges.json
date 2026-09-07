@@ -1,7 +1,7 @@
 [
   {"name":"unicode_identifier", "python_valid":true, "frontend_valid":true, "source":"def ｆ(é: int) -> int:\n    return é + 1\n"},
   {"name":"unicode_literal", "python_valid":true, "frontend_valid":true, "source":"x = '\\u200b\u2060\ufeffé'\n"},
-  {"name":"private_record_field", "python_valid":true, "frontend_valid":true, "source":"@value\nclass R:\n    __field: int\n"},
+  {"name":"private_record_field", "python_valid":true, "frontend_valid":true, "source":"\nclass R(NamedTuple):\n    __field: int\n"},
   {"name":"semicolon_suite", "python_valid":true, "frontend_valid":true, "source":"def f() -> None: pass; return\n"},
   {"name":"multiline_signature", "python_valid":true, "frontend_valid":true, "source":"def f(\n    x: int,\n) -> int:\n    return x\n"},
   {"name":"crlf", "python_valid":true, "frontend_valid":true, "source":"def f() -> int:\r\n    return 1\r\n"},
@@ -101,7 +101,7 @@
   {"name":"pep701_nested_quotes", "python_valid":true, "frontend_valid":true, "source":"x = f\"{\"text\"}\"\n"},
   {"name":"pep701_interpolation_comment", "python_valid":true, "frontend_valid":true, "source":"x = f\"{(1 # comment\n)}\"\n"},
   {"name":"python314_template_string", "python_valid":true, "frontend_valid":false, "source":"x = t'answer {n}'\n"},
-  {"name":"generic_function_deferred", "python_valid":true, "frontend_valid":false, "source":"def f[T](x: T) -> T:\n    return x\n"},
+  {"name":"generic_function", "python_valid":true, "frontend_valid":true, "source":"def f[T](x: T) -> T:\n    return x\n"},
   {"name":"complex_literal_deferred", "python_valid":true, "frontend_valid":false, "source":"x = 1j\n"},
   {"name":"dynamic_format_deferred", "python_valid":true, "frontend_valid":false, "source":"x = f'{n:{width}}'\n"},
   {"name":"missing_parameter_delimiter", "python_valid":false, "frontend_valid":false, "source":"def f(:\n    pass\n"},

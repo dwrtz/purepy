@@ -148,7 +148,7 @@ func TestBoundaryExternalContracts(t *testing.T) {
 
 func TestBoundaryExpectedFailuresAreValues(t *testing.T) {
 	for _, tc := range []struct{ name, source, code string }{
-		{"explicit_result", "from purepy import value\n@value\nclass Result:\n    value: int | None\n    error: str | None\ndef run(n: int) -> Result:\n    if n < 0:\n        return Result(None, 'negative input')\n    return Result(n, None)\n", ""},
+		{"explicit_result", "from typing import NamedTuple\n\nclass Result(NamedTuple):\n    value: int | None\n    error: str | None\ndef run(n: int) -> Result:\n    if n < 0:\n        return Result(None, 'negative input')\n    return Result(n, None)\n", ""},
 		{"primitive_failure_allowed", "def run(n: int) -> int:\n    return 1 // n\n", ""},
 		{"raise_failure", "def run() -> None:\n    raise ValueError('expected failure')\n", "PP003"},
 		{"catch_failure", "def run(n: int) -> int:\n    try:\n        return 1 // n\n    except ZeroDivisionError:\n        return 0\n", "PP003"},
@@ -170,7 +170,7 @@ func TestBoundaryAuthorityCategoryRestrictions(t *testing.T) {
 		for _, tc := range []struct{ name, source string }{
 			{"returned", "def run(item: %s) -> %s:\n    return item\n"},
 			{"tuple", "def run(item: %s) -> None:\n    packed = (item,)\n"},
-			{"record_field", "from purepy import value\n@value\nclass Record:\n    field: %s\n"},
+			{"record_field", "from typing import NamedTuple\n\nclass Record(NamedTuple):\n    field: %s\n"},
 			{"module_constant", "from typing import Final\nCONSTANT: Final[%s] = None\n"},
 			{"compared", "def run(item: %s) -> bool:\n    return item == item\n"},
 			{"formatted", "def run(item: %s) -> str:\n    return f'{item}'\n"},

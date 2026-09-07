@@ -18,7 +18,7 @@ from package_binary import FROZEN_SCHEMAS, ROOT, SCHEMA_LOCK, check_schema_lock
 
 
 def validators(root):
-    documents = {name: json.loads((root / name).read_bytes()) for name in FROZEN_SCHEMAS}
+    documents = {name: json.loads((root / name).read_bytes()) for name in set(FROZEN_SCHEMAS) | {f"docs/schema/{kind}-v2.json" for kind in ("diagnostics", "capabilities", "explain")}}
     registry = Registry().with_resources((root.joinpath(name).as_uri(), Resource.from_contents(schema))
                                          for name, schema in documents.items())
     result = {}
@@ -42,7 +42,7 @@ def check(verifier, root=ROOT):
         if process.returncode != status:
             raise ValueError(f"unexpected status {process.returncode} for {arguments}: {process.stderr}")
         report = json.loads(process.stdout)
-        schemas[f"docs/schema/{schema}-v1.json"].validate(report)
+        schemas[f"docs/schema/{schema}-v{report["schema"]}.json"].validate(report)
         count += 1
         return report
 
@@ -53,6 +53,10 @@ def check(verifier, root=ROOT):
         raise ValueError("reference capability report unexpectedly empty")
     run(["explain", str(root / "examples/reference_service/src/app/server.py") + ":13",
          "--config", str(config)], "explain")
+    functional = root / "examples/functional_core/purepy.toml"
+    run(["check", "--config", str(functional)], "diagnostics")
+    run(["capabilities", "core.compose", "--config", str(functional)], "capabilities")
+    run(["explain", str(root / "examples/functional_core/src/core.py") + ":33", "--config", str(functional)], "explain")
     for name in root.glob("examples/**/manifests/*.toml"):
         schemas["manifests/schema/v1.json"].validate(tomllib.loads(name.read_text()))
         count += 1
@@ -62,7 +66,7 @@ def check(verifier, root=ROOT):
         source = project / "src/app.py"
         source.write_text('def convert(number: int) -> int:\n    return number\n\ndef bad() -> int:\n    return convert(True)\n')
         local_config = project / "purepy.toml"
-        local_config.write_text('[tool.purepy]\nlanguage = "0.1"\npython_syntax = "3.14"\nsource_root = "src"\nentrypoints = []\nmanifests = []\n')
+        local_config.write_text('[tool.purepy]\nlanguage = "0.2"\npython_syntax = "3.14"\nsource_root = "src"\nentrypoints = []\nmanifests = []\n')
         rejected = run(["check", "--config", str(local_config)], "diagnostics", status=1)
         if not any("types" in item for item in rejected["diagnostics"]):
             raise ValueError("rejection fixture failed to exercise structured diagnostic types")
@@ -77,7 +81,7 @@ def main():
     parser.add_argument("--verifier", type=Path, default=ROOT / "bin/purepy")
     args = parser.parse_args()
     count = check(args.verifier.resolve())
-    print(f"Validated {count} live reports/manifests against four frozen schemas")
+    print(f"Validated {count} live reports/manifests against the current schemas")
 
 
 if __name__ == "__main__":

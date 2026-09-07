@@ -88,9 +88,9 @@ def catalog():
                                 ("effectful_" if effectful else "pure_") + kind))
 
     pair_source = '''
-        from purepy import value
-        @value
-        class Pair:
+        from typing import NamedTuple
+
+        class Pair(NamedTuple):
             x: int
             label: str
     '''
@@ -121,9 +121,9 @@ def catalog():
                     Call((pair(1, "x"), (pair(2, "x"),)), False)], modules=models)
     add("records/nested_optional_tuple", '''
         from models import Pair
-        from purepy import value
-        @value
-        class Batch:
+        from typing import NamedTuple
+
+        class Batch(NamedTuple):
             entries: tuple[Pair | None, ...]
         def probe(left: Pair | None, right: Pair | None) -> Batch:
             entries: tuple[Pair | None, ...] = (left, right)
@@ -137,28 +137,6 @@ def catalog():
                 return Pair(0, 'default')
             return p
     ''', "models.Pair", [Call((None,), pair(0, "default")), Call((pair(8, "ok"),), pair(8, "ok"))], modules=models)
-    secret = '''
-        from purepy import value
-        @value
-        class Secret:
-            __key: int
-    '''
-    add("records/private_mangled_keyword", '''
-        from models import Secret
-        def probe(n: int) -> Secret:
-            return Secret(_Secret__key=n)
-    ''', "models.Secret", [Call((7,), Record("models.Secret", (("_Secret__key", 7),)))], modules=(("models", secret),))
-    add("records/private_mangled_read", '''
-        from models import Secret
-        def probe(n: int) -> int:
-            secret = Secret(n)
-            return secret._Secret__key
-    ''', "int", [Call((7,), 7)], modules=(("models", secret),))
-    add("records/private_source_keyword_rejected", '''
-        from models import Secret
-        def probe(n: int) -> Secret:
-            return Secret(__key=n)
-    ''', "models.Secret", [Call((7,), exception="TypeError")], modules=(("models", secret),), codes=("PP302",))
     add("records/exact_field_type", '''
         from models import Pair
         def probe(flag: bool) -> Pair:
@@ -221,7 +199,7 @@ def catalog():
 
     token_a, token_b = External("fixture.Token", "a"), External("fixture.Token", "b")
     box = lambda token: Record("main.Box", (("token", token),))
-    box_source = "from purepy import value\nfrom fixture import Token\n@value\nclass Box:\n    token: Token\n"
+    box_source = "from typing import NamedTuple\nfrom fixture import Token\n\nclass Box(NamedTuple):\n    token: Token\n"
     add("opaque/construct_and_forward", box_source + "def probe(token: Token) -> Box:\n    return Box(token)\n",
         "main.Box", [Call((token_a,), box(token_a))], host=True)
     add("opaque/record_equality_rejected", box_source + "def probe(a: Token, b: Token) -> bool:\n    return Box(a) == Box(b)\n",

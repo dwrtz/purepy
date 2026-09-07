@@ -15,24 +15,24 @@ sentence remain one inventory unit. Additional prose restrictions are
 mapped explicitly; keyword counting does not enumerate every possible
 Python program or prove the complete language contract.
 
-The map accounts for **188 mandatory inventory units** and
-**34 additional prose rules**. These counts describe traceability, not
+The map accounts for **186 mandatory inventory units** and
+**31 additional prose rules**. These counts describe traceability, not
 a percentage of semantic correctness.
 
 | Mandatory evidence status | Count | Meaning |
 | --- | ---: | --- |
-| tested | 135 | Focused positive and negative regression evidence exists; not a proof. |
-| partial | 45 | Some evidence exists; the notes identify uncovered behavior or a broad guarantee. |
-| trust | 7 | The obligation relies on a runtime/host contract the verifier cannot establish. |
+| tested | 123 | Focused positive and negative regression evidence exists; not a proof. |
+| partial | 57 | Some evidence exists; the notes identify uncovered behavior or a broad guarantee. |
+| trust | 6 | The obligation relies on a runtime/host contract the verifier cannot establish. |
 | release | 0 | A completion or publication gate remains open. |
-| deferred | 1 | An obligation for a later language version, outside the current implementation. |
+| deferred | 0 | An obligation for a later language version, outside the current implementation. |
 
 ## Open evidence and scope limits
 
-- [S1.2-d604ffbd](#s12-d604ffbd) (deferred): Future language evolution obligation. Only PurePy 0.1 is implemented; preserving prior semantics across future versions is not established by the present tests.
 - [S3.2-879ab30b](#s32-879ab30b) (partial): Exact operations and unknown-operation/suppression rejection have direct controls. Bounded generated semantic pairs require acceptance and specific rejection codes; arbitrary-source fuzzing checks parser-to-checker integrity, spans, and worker determinism. These short campaigns do not establish all syntax/semantic combinations or replace independent soundness review.
 - [S3.2-4bfca5fc](#s32-4bfca5fc) (partial): Exact operations and unknown-operation/suppression rejection have direct controls. Bounded generated semantic pairs require acceptance and specific rejection codes; arbitrary-source fuzzing checks parser-to-checker integrity, spans, and worker determinism. These short campaigns do not establish all syntax/semantic combinations or replace independent soundness review.
 - [S3.3-2c62bcf8](#s33-2c62bcf8) (partial): Tests establish direct parameter forwarding and representative construction/storage/ambient-call rejection. Host entrypoint argument provenance remains trusted.
+- [S3.4-dd576313](#s34-dd576313) (partial): Functional-core acceptance and rejection fixtures exercise this rule. This evidence is not a complete proof or exhaustive coverage.
 - [S3.9-b9af2dbd](#s39-b9af2dbd) (partial): The reference service statically verifies and the cited runtime test exercises this workload behavior. This workload evidence is not a general service-correctness or host-implementation proof; host scheduling/resources and integration environment remain trusted.
 - [S3.9-6ced6b54](#s39-6ced6b54) (partial): The reference service statically verifies and the cited runtime test exercises this workload behavior. This workload evidence is not a general service-correctness or host-implementation proof; host scheduling/resources and integration environment remain trusted.
 - [S3.9-66ff8aaf](#s39-66ff8aaf) (partial): The reference service statically verifies and the cited runtime test exercises this workload behavior. This workload evidence is not a general service-correctness or host-implementation proof; host scheduling/resources and integration environment remain trusted.
@@ -42,7 +42,7 @@ a percentage of semantic correctness.
 - [S3.9-1696a6e9](#s39-1696a6e9) (partial): The reference service statically verifies and the cited runtime test exercises this workload behavior. This workload evidence is not a general service-correctness or host-implementation proof; host scheduling/resources and integration environment remain trusted.
 - [S3.9-eaa28fd5](#s39-eaa28fd5) (partial): The reference service statically verifies and the cited runtime test exercises this workload behavior. This workload evidence is not a general service-correctness or host-implementation proof; host scheduling/resources and integration environment remain trusted.
 - [S7.1-d03277bc](#s71-d03277bc) (trust): Finite static tests cannot prove observational equivalence, exception determinism, or divergence for arbitrary programs. These guarantees additionally rely on Python/platform behavior, sealed operations, runtime support, and truthful trusted external declarations.
-- [S7.1-2d59fdaf](#s71-2d59fdaf) (trust): Finite static tests cannot prove observational equivalence, exception determinism, or divergence for arbitrary programs. These guarantees additionally rely on Python/platform behavior, sealed operations, runtime support, and truthful trusted external declarations.
+- [S7.1-b2d44939](#s71-b2d44939) (partial): Functional-core acceptance and rejection fixtures exercise this rule. This evidence is not a complete proof or exhaustive coverage.
 - [S7.1-bd6a4738](#s71-bd6a4738) (trust): Finite static tests cannot prove observational equivalence, exception determinism, or divergence for arbitrary programs. These guarantees additionally rely on Python/platform behavior, sealed operations, runtime support, and truthful trusted external declarations.
 - [S7.1-6d9e2def](#s71-6d9e2def) (trust): Finite static tests cannot prove observational equivalence, exception determinism, or divergence for arbitrary programs. These guarantees additionally rely on Python/platform behavior, sealed operations, runtime support, and truthful trusted external declarations.
 - [S7.1-1e388518](#s71-1e388518) (trust): Finite static tests cannot prove observational equivalence, exception determinism, or divergence for arbitrary programs. These guarantees additionally rely on Python/platform behavior, sealed operations, runtime support, and truthful trusted external declarations.
@@ -75,15 +75,25 @@ a percentage of semantic correctness.
 - [S7.4-6d80754c](#s74-6d80754c) (partial): Pure construction/rebinding controls and specific mutation syntax bans are tested. The whole observational-mutation guarantee also depends on trusted host inputs and external implementations and is not a theorem established by these fixtures.
 - [S7.4-81907134](#s74-81907134) (partial): Pure construction/rebinding controls and specific mutation syntax bans are tested. The whole observational-mutation guarantee also depends on trusted host inputs and external implementations and is not a theorem established by these fixtures.
 - [S7.4-dc9e53b6](#s74-dc9e53b6) (partial): Pure construction/rebinding controls and specific mutation syntax bans are tested. The whole observational-mutation guarantee also depends on trusted host inputs and external implementations and is not a theorem established by these fixtures.
-- [S9.3-92091b33](#s93-92091b33) (partial): The table rejects the named dynamic/mutable/iterator/coroutine/union/fixed-tuple annotation families. Focused nested controls also reject unsupported types inside tuple/optional combinations in both parameter and return positions; an admitted nested Pure Value counterpart passes. These finite examples do not enumerate every spelling or arbitrarily nested annotation.
+- [S9.3-74593088](#s93-74593088) (partial): The table rejects the named dynamic/mutable/iterator/coroutine/union/fixed-tuple annotation families. Focused nested controls also reject unsupported types inside tuple/optional combinations in both parameter and return positions; an admitted nested Pure Value counterpart passes. These finite examples do not enumerate every spelling or arbitrarily nested annotation.
+- [S10.2-c96a02cf](#s102-c96a02cf) (partial): Functional-core acceptance and rejection fixtures exercise this rule. This evidence is not a complete proof or exhaustive coverage.
+- [S10.2-f39bf114](#s102-f39bf114) (partial): Functional-core acceptance and rejection fixtures exercise this rule. This evidence is not a complete proof or exhaustive coverage.
+- [S10.6-7ffc2763](#s106-7ffc2763) (partial): Functional-core acceptance and rejection fixtures exercise this rule. This evidence is not a complete proof or exhaustive coverage.
+- [S11.4-8990a3c6](#s114-8990a3c6) (partial): Functional-core acceptance and rejection fixtures exercise this rule. This evidence is not a complete proof or exhaustive coverage.
+- [S16.1-5194d113](#s161-5194d113) (partial): Functional-core acceptance and rejection fixtures exercise this rule. This evidence is not a complete proof or exhaustive coverage.
 - [S16.4-4c852054](#s164-4c852054) (partial): Original parameters forward directly; aliases, tuples, comparisons, and formatting reject. Section 8.6 lists each category exclusion.
 - [S16.7-6d8d9b23](#s167-6d8d9b23) (partial): Direct resolution plus rejected computed targets, decorators, and mutation cover representative source-level ambient resolution mechanisms. Production verification does not execute project imports or runtime hooks. Behavior of Python import hooks or registries in the executing trusted host is a host-contract question; these finite static controls do not prove arbitrary-source soundness.
 - [S22.6-56f3c626](#s226-56f3c626) (trust): The verifier validates declared capability categories, exact forwarding, and reports labels. It cannot prove that native/host code discloses every effect or uses the granted authority correctly; effect completeness is explicitly part of the trusted host contract.
-- [S32.1-31bd3d2e](#s321-31bd3d2e) (partial): The required fixture runner and source-no-execution, unknown-operation, version-reporting, and determinism controls provide finite executable evidence for the conformance obligations. Full arbitrary-source soundness and truthful host contracts cannot be established by this regression inventory.
+- [S30.11-79208052](#s3011-79208052) (partial): Functional-core acceptance and rejection fixtures exercise this rule. This evidence is not a complete proof or exhaustive coverage.
+- [S30.11-86a8bed1](#s3011-86a8bed1) (partial): Functional-core acceptance and rejection fixtures exercise this rule. This evidence is not a complete proof or exhaustive coverage.
+- [S30.11-86ba08a2](#s3011-86ba08a2) (partial): Functional-core acceptance and rejection fixtures exercise this rule. This evidence is not a complete proof or exhaustive coverage.
+- [S30.12-a76d6df4](#s3012-a76d6df4) (partial): Functional-core acceptance and rejection fixtures exercise this rule. This evidence is not a complete proof or exhaustive coverage.
+- [S32.1-7852329f](#s321-7852329f) (partial): The required fixture runner and source-no-execution, unknown-operation, version-reporting, and determinism controls provide finite executable evidence for the conformance obligations. Full arbitrary-source soundness and truthful host contracts cannot be established by this regression inventory.
 - [S32.1-d4cb00a5](#s321-d4cb00a5) (partial): The audit maps mandatory rules and feature families. Named Unicode escapes now cover pinned character names and aliases, raw/bytes behavior, malformed names, exact lexical ranges, and cache equivalence. Finite fixtures still do not exhaust the closed Python subset.
 - [S32.4-018499f6](#s324-018499f6) (partial): The suite has positive and negative cases across required feature families; finite fixture inputs do not establish every possible statement/operator/type composition. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; the whole-function gate adds bounded optional/tuple flow compositions with exact returns and independently specified invocation outcomes. The multi-module gate adds 29 fixed projects (20 accepted, 9 rejected) and 48 invocations covering nominal and opaque values, absolute imports, rejected import forms, and direct async composition. It checks exact recursive result types, independently specified host-call/equality events, domain failures, and matching outcomes from two isolated hash-randomized CPython processes. Arbitrary programs and host-contract truth remain outside these finite matrices.
 - [S32.4-f5622679](#s324-f5622679) (partial): Fixtures span the supported statement/expression families, but the finite operator/type and literal cases do not constitute exhaustive enumeration of Python source. The semantic differential gate adds Cartesian matrices over representative primitive/tuple types and CPython runtime outcomes; the whole-function gate adds bounded optional/tuple flow compositions with exact returns and independently specified invocation outcomes. The multi-module gate adds 29 fixed projects (20 accepted, 9 rejected) and 48 invocations covering nominal and opaque values, absolute imports, rejected import forms, and direct async composition. It checks exact recursive result types, independently specified host-call/equality events, domain failures, and matching outcomes from two isolated hash-randomized CPython processes. Arbitrary programs and host-contract truth remain outside these finite matrices. Shared CPython syntax cases and frontend regressions distinguish valid logical-line joins and aligned clauses from malformed header newlines and clause indentation.
 - [S32.4-0449ecd2](#s324-0449ecd2) (partial): Full manifest loading, strict container shapes, source indexing and ordered merging have accepted/rejected seed controls plus a bounded mutation target. Generated near misses require specific rejection reasons; arbitrary inputs require deterministic outcomes and valid locations. This does not prove every TOML composition or linked host contract.
+- [S32.5-a8193e7b](#s325-a8193e7b) (partial): Standard NamedTuple immutability and runtime operations are checked by the standalone example; no PurePy runtime is shipped.
 
 ## Rule evidence
 
@@ -99,17 +109,9 @@ Negative: [TestVerificationNeverExecutesProjectOrHost](../internal/app/cli_test.
 
 Sentinel files prove that rejected project statements and accepted manifest-backed imports do not execute project or host code.
 
-### S1.2-d604ffbd
-
-Section 1.2; **deferred**; mandatory. [Specification](PUREPY_SPEC.md#L48)
-
-> Later language levels MAY add features, but they MUST preserve the guarantees of accepted PurePy 0.1 programs. New features MUST be independently specified and MUST NOT retroactively reinterpret unsupported PurePy 0.1 syntax as trusted behavior.
-
-Future language evolution obligation. Only PurePy 0.1 is implemented; preserving prior semantics across future versions is not established by the present tests.
-
 ### S3.2-879ab30b
 
-Section 3.2; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L125)
+Section 3.2; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L130)
 
 > When the verifier cannot establish the exact meaning of an operation, it MUST reject the operation.
 
@@ -121,7 +123,7 @@ Exact operations and unknown-operation/suppression rejection have direct control
 
 ### S3.2-4bfca5fc
 
-Section 3.2; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L127)
+Section 3.2; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L132)
 
 > Unknown behavior MUST NOT be downgraded to a warning, inferred as pure, or authorized by a broad suppression comment.
 
@@ -133,7 +135,7 @@ Exact operations and unknown-operation/suppression rejection have direct control
 
 ### S3.3-2c62bcf8
 
-Section 3.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L131)
+Section 3.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L136)
 
 > External authority MUST enter verified code as a capability parameter supplied by the host or by another verified caller that already possesses the capability.
 
@@ -143,63 +145,21 @@ Negative: [TestSecurityCategoryAndCallRejections](../internal/check/security_tes
 
 Tests establish direct parameter forwarding and representative construction/storage/ambient-call rejection. Host entrypoint argument provenance remains trusted.
 
-### S3.4-81235523
+### S3.4-dd576313
 
-Section 3.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L149)
+Section 3.4; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L152)
 
-> Every call target MUST resolve statically to:
+> Every call target MUST resolve to a verified named function, a tracked pure
 
-Positive: [TestSpecCoreAccepted/direct_recursive_call](../internal/check/spec_core_test.go#L30); [TestSpecCoreDirectProjectImports](../internal/check/spec_core_test.go#L222); [TestSpecCoreAccepted/primitive_intrinsics](../internal/check/spec_core_test.go#L30); [TestSecurityAuthorityForwardingAccepted](../internal/check/security_test.go#L112).
+Positive: [TestFunctionalAccepted](../internal/check/functional_test.go#L37).
 
-Negative: [TestSpecCoreRejected/dynamic_call_target](../internal/check/spec_core_test.go#L62); [TestSpecCoreRejected/unknown_import](../internal/check/spec_core_test.go#L62); [TestSecurityCategoryAndCallRejections/function_as_data](../internal/check/security_test.go#L52).
+Negative: [TestFunctionalRejected](../internal/check/functional_test.go#L54).
 
-Direct project, intrinsic, and manifest calls are accepted; local callable values, conditional targets, and unknown imports are rejected.
-
-### S3.4-9c5ae717
-
-Section 3.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L151)
-
-> - a top-level project function;
-
-List obligation introduced by S3.4-81235523.
-
-Positive: [TestSpecCoreAccepted/direct_recursive_call](../internal/check/spec_core_test.go#L30); [TestSpecCoreDirectProjectImports](../internal/check/spec_core_test.go#L222); [TestSpecCoreAccepted/primitive_intrinsics](../internal/check/spec_core_test.go#L30); [TestSecurityAuthorityForwardingAccepted](../internal/check/security_test.go#L112).
-
-Negative: [TestSpecCoreRejected/dynamic_call_target](../internal/check/spec_core_test.go#L62); [TestSpecCoreRejected/unknown_import](../internal/check/spec_core_test.go#L62); [TestSecurityCategoryAndCallRejections/function_as_data](../internal/check/security_test.go#L52).
-
-Direct project, intrinsic, and manifest calls are accepted; local callable values, conditional targets, and unknown imports are rejected.
-
-### S3.4-6e1a23b0
-
-Section 3.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L152)
-
-> - a top-level trusted external function declared in a manifest; or
-
-List obligation introduced by S3.4-81235523.
-
-Positive: [TestSpecCoreAccepted/direct_recursive_call](../internal/check/spec_core_test.go#L30); [TestSpecCoreDirectProjectImports](../internal/check/spec_core_test.go#L222); [TestSpecCoreAccepted/primitive_intrinsics](../internal/check/spec_core_test.go#L30); [TestSecurityAuthorityForwardingAccepted](../internal/check/security_test.go#L112).
-
-Negative: [TestSpecCoreRejected/dynamic_call_target](../internal/check/spec_core_test.go#L62); [TestSpecCoreRejected/unknown_import](../internal/check/spec_core_test.go#L62); [TestSecurityCategoryAndCallRejections/function_as_data](../internal/check/security_test.go#L52).
-
-Direct project, intrinsic, and manifest calls are accepted; local callable values, conditional targets, and unknown imports are rejected.
-
-### S3.4-b5c77109
-
-Section 3.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L153)
-
-> - a sealed PurePy intrinsic.
-
-List obligation introduced by S3.4-81235523.
-
-Positive: [TestSpecCoreAccepted/direct_recursive_call](../internal/check/spec_core_test.go#L30); [TestSpecCoreDirectProjectImports](../internal/check/spec_core_test.go#L222); [TestSpecCoreAccepted/primitive_intrinsics](../internal/check/spec_core_test.go#L30); [TestSecurityAuthorityForwardingAccepted](../internal/check/security_test.go#L112).
-
-Negative: [TestSpecCoreRejected/dynamic_call_target](../internal/check/spec_core_test.go#L62); [TestSpecCoreRejected/unknown_import](../internal/check/spec_core_test.go#L62); [TestSecurityCategoryAndCallRejections/function_as_data](../internal/check/security_test.go#L52).
-
-Direct project, intrinsic, and manifest calls are accepted; local callable values, conditional targets, and unknown imports are rejected.
+Functional-core acceptance and rejection fixtures exercise this rule. This evidence is not a complete proof or exhaustive coverage.
 
 ### S3.7-4a9d7061
 
-Section 3.7; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L171)
+Section 3.7; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L173)
 
 > `await` MUST directly contain a known async call. The verifier lowers the call and await as one semantic operation.
 
@@ -211,7 +171,7 @@ Direct awaited project/external calls are accepted, and stored/nested coroutine 
 
 ### S3.9-b9af2dbd
 
-Section 3.9; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L179)
+Section 3.9; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L181)
 
 > The initial language MUST be able to verify a useful nonblocking service above a narrow host boundary, including:
 
@@ -221,7 +181,7 @@ The reference service statically verifies and the cited runtime test exercises t
 
 ### S3.9-6ced6b54
 
-Section 3.9; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L181)
+Section 3.9; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L183)
 
 > - immutable request parsing;
 
@@ -233,7 +193,7 @@ The reference service statically verifies and the cited runtime test exercises t
 
 ### S3.9-66ff8aaf
 
-Section 3.9; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L182)
+Section 3.9; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L184)
 
 > - static routing;
 
@@ -245,7 +205,7 @@ The reference service statically verifies and the cited runtime test exercises t
 
 ### S3.9-e4c565a4
 
-Section 3.9; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L183)
+Section 3.9; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L185)
 
 > - database reads and atomic writes;
 
@@ -257,7 +217,7 @@ The reference service statically verifies and the cited runtime test exercises t
 
 ### S3.9-f029190b
 
-Section 3.9; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L184)
+Section 3.9; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L186)
 
 > - explicit network reads and writes;
 
@@ -269,7 +229,7 @@ The reference service statically verifies and the cited runtime test exercises t
 
 ### S3.9-3e777fcf
 
-Section 3.9; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L185)
+Section 3.9; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L187)
 
 > - server-sent-event loops;
 
@@ -281,7 +241,7 @@ The reference service statically verifies and the cited runtime test exercises t
 
 ### S3.9-1696a6e9
 
-Section 3.9; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L186)
+Section 3.9; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L188)
 
 > - pure business logic and rendering; and
 
@@ -293,7 +253,7 @@ The reference service statically verifies and the cited runtime test exercises t
 
 ### S3.9-eaa28fd5
 
-Section 3.9; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L187)
+Section 3.9; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L189)
 
 > - host-managed concurrent invocation.
 
@@ -305,7 +265,7 @@ The reference service statically verifies and the cited runtime test exercises t
 
 ### S6.2-6217bbba
 
-Section 6.2; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L292)
+Section 6.2; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L294)
 
 > Every imported symbol and every call target must resolve within the program image. Code loaded dynamically after verification is outside the guarantee.
 
@@ -317,7 +277,7 @@ Project symbols resolve without execution; unresolved imports and dynamic target
 
 ### S6.3-f3f88035
 
-Section 6.3; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L298)
+Section 6.3; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L300)
 
 > Each `.py` file beneath the source root maps deterministically to one module name. Namespace packages are not supported. Package directories MUST contain `__init__.py` files.
 
@@ -329,7 +289,7 @@ Tests assert deterministic file/module mapping, nested packages, and rejection o
 
 ### S6.5-84f2fc59
 
-Section 6.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L321)
+Section 6.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L323)
 
 > An entrypoint MAY be synchronous or asynchronous. Its parameters MAY include Pure Values, capabilities, and host references. Its return type MUST be a Pure Value type.
 
@@ -343,7 +303,7 @@ Configured entrypoints cover all eight combinations of Pure Value/capability/hos
 
 ### S7.1-d03277bc
 
-Section 7.1; **trust**; mandatory. [Specification](PUREPY_SPEC.md#L343)
+Section 7.1; **trust**; mandatory. [Specification](PUREPY_SPEC.md#L345)
 
 > For a fixed program image and equivalent Pure Value arguments, evaluating a pure synchronous function MUST have one of these outcomes:
 
@@ -355,25 +315,23 @@ Negative: [TestSpecCoreRejected/identity_exposes_object_identity](../internal/ch
 
 Finite static tests cannot prove observational equivalence, exception determinism, or divergence for arbitrary programs. These guarantees additionally rely on Python/platform behavior, sealed operations, runtime support, and truthful trusted external declarations.
 
-### S7.1-2d59fdaf
+### S7.1-b2d44939
 
-Section 7.1; **trust**; mandatory. [Specification](PUREPY_SPEC.md#L345)
+Section 7.1; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L347)
 
-> 1. return an equivalent Pure Value;
+> 1. return equivalent immutable data or a pure function with equivalent behavior;
 
 List obligation introduced by S7.1-d03277bc.
 
-Positive: [TestSpecCoreAccepted/explicit_numeric_conversions](../internal/check/spec_core_test.go#L30); [TestSpecCoreAccepted/same_record_equality](../internal/check/spec_core_test.go#L30).
+Positive: [TestFunctionalAccepted](../internal/check/functional_test.go#L37).
 
-Negative: [TestSpecCoreRejected/identity_exposes_object_identity](../internal/check/spec_core_test.go#L62); [TestSpecCoreRejected/mixed_numeric_arithmetic](../internal/check/spec_core_test.go#L62).
+Negative: [TestFunctionalRejected](../internal/check/functional_test.go#L54).
 
-[Conformance fixtures](../fixtures/conformance/cases.json): `arithmetic`, `pure_async`, `infinite_loop_no_return`.
-
-Finite static tests cannot prove observational equivalence, exception determinism, or divergence for arbitrary programs. These guarantees additionally rely on Python/platform behavior, sealed operations, runtime support, and truthful trusted external declarations.
+Functional-core acceptance and rejection fixtures exercise this rule. This evidence is not a complete proof or exhaustive coverage.
 
 ### S7.1-bd6a4738
 
-Section 7.1; **trust**; mandatory. [Specification](PUREPY_SPEC.md#L346)
+Section 7.1; **trust**; mandatory. [Specification](PUREPY_SPEC.md#L348)
 
 > 2. terminate through the same deterministic runtime exception class under the same operation and equivalent operands; or
 
@@ -389,7 +347,7 @@ Finite static tests cannot prove observational equivalence, exception determinis
 
 ### S7.1-6d9e2def
 
-Section 7.1; **trust**; mandatory. [Specification](PUREPY_SPEC.md#L347)
+Section 7.1; **trust**; mandatory. [Specification](PUREPY_SPEC.md#L349)
 
 > 3. fail to terminate.
 
@@ -405,7 +363,7 @@ Finite static tests cannot prove observational equivalence, exception determinis
 
 ### S7.1-1e388518
 
-Section 7.1; **trust**; mandatory. [Specification](PUREPY_SPEC.md#L349)
+Section 7.1; **trust**; mandatory. [Specification](PUREPY_SPEC.md#L351)
 
 > The outcome MUST NOT depend on ambient state.
 
@@ -419,7 +377,7 @@ Finite static tests cannot prove observational equivalence, exception determinis
 
 ### S7.2-c8930094
 
-Section 7.2; **trust**; mandatory. [Specification](PUREPY_SPEC.md#L355)
+Section 7.2; **trust**; mandatory. [Specification](PUREPY_SPEC.md#L357)
 
 > For equivalent inputs, if a conforming host drives the coroutine to completion without externally cancelling it, it MUST produce the same eventual Pure Value, the same deterministic runtime exception, or divergence.
 
@@ -433,7 +391,7 @@ Finite static tests cannot prove observational equivalence, exception determinis
 
 ### S7.3-55067672
 
-Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L361)
+Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L363)
 
 > Pure functions MUST NOT depend on:
 
@@ -445,7 +403,7 @@ Closed-world imports and syntax bans prevent representative ambient access paths
 
 ### S7.3-5ff5a0e1
 
-Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L363)
+Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L365)
 
 > - wall, monotonic, CPU, or process time;
 
@@ -459,7 +417,7 @@ Closed-world imports and syntax bans prevent representative ambient access paths
 
 ### S7.3-87bfc0ff
 
-Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L364)
+Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L366)
 
 > - entropy or nondeterministic randomness;
 
@@ -473,7 +431,7 @@ Closed-world imports and syntax bans prevent representative ambient access paths
 
 ### S7.3-1bc4ced4
 
-Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L365)
+Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L367)
 
 > - environment variables;
 
@@ -487,7 +445,7 @@ Closed-world imports and syntax bans prevent representative ambient access paths
 
 ### S7.3-b1313612
 
-Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L366)
+Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L368)
 
 > - filesystem contents or metadata;
 
@@ -501,7 +459,7 @@ Closed-world imports and syntax bans prevent representative ambient access paths
 
 ### S7.3-caaeeb4a
 
-Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L367)
+Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L369)
 
 > - network state;
 
@@ -515,7 +473,7 @@ Closed-world imports and syntax bans prevent representative ambient access paths
 
 ### S7.3-191f4ead
 
-Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L368)
+Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L370)
 
 > - database state;
 
@@ -529,7 +487,7 @@ Closed-world imports and syntax bans prevent representative ambient access paths
 
 ### S7.3-2d446565
 
-Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L369)
+Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L371)
 
 > - process identifiers, arguments, or working directory;
 
@@ -543,7 +501,7 @@ Closed-world imports and syntax bans prevent representative ambient access paths
 
 ### S7.3-e8dd5d70
 
-Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L370)
+Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L372)
 
 > - thread, task, or event-loop identity;
 
@@ -557,7 +515,7 @@ Closed-world imports and syntax bans prevent representative ambient access paths
 
 ### S7.3-db8f66c0
 
-Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L371)
+Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L373)
 
 > - mutable module state;
 
@@ -571,7 +529,7 @@ Closed-world imports and syntax bans prevent representative ambient access paths
 
 ### S7.3-2ff99726
 
-Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L372)
+Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L374)
 
 > - mutable closure state;
 
@@ -579,13 +537,13 @@ List obligation introduced by S7.3-55067672.
 
 Positive: [TestSpecCoreAccepted/module_docstring_and_constant_forms](../internal/check/spec_core_test.go#L30); [ModuleDifferentialTests.test_two_isolated_workers_must_agree_and_enable_hash_randomization](../tools/tests/test_differential_modules.py#L178).
 
-Negative: [TestSpecCoreProhibitedSyntax/nested_function](../internal/check/spec_core_test.go#L147); [TestSpecCoreProhibitedSyntax/nonlocal](../internal/check/spec_core_test.go#L147).
+Negative: [TestSpecCoreProhibitedSyntax/nested_generic_function](../internal/check/spec_core_test.go#L147); [TestSpecCoreProhibitedSyntax/nonlocal](../internal/check/spec_core_test.go#L147).
 
 Closed-world imports and syntax bans prevent representative ambient access paths. This does not verify the truth of external manifests or prove absence of every indirect ambient dependency; the multi-module runtime gate compares 48 invocation results and host events across two isolated CPython processes with independent hash randomization. This is finite runtime evidence, not exhaustive seed coverage or a proof about arbitrary trusted hosts.
 
 ### S7.3-d2edb857
 
-Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L373)
+Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L375)
 
 > - object identity;
 
@@ -599,7 +557,7 @@ Closed-world imports and syntax bans prevent representative ambient access paths
 
 ### S7.3-26676f91
 
-Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L374)
+Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L376)
 
 > - Python hash randomization;
 
@@ -613,7 +571,7 @@ Calling hash on a string is rejected by the sealed intrinsic table, removing the
 
 ### S7.3-c912997a
 
-Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L375)
+Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L377)
 
 > - locale or mutable numeric context;
 
@@ -627,7 +585,7 @@ Closed-world imports and syntax bans prevent representative ambient access paths
 
 ### S7.3-267632d7
 
-Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L376)
+Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L378)
 
 > - import-cache state;
 
@@ -641,7 +599,7 @@ Closed-world imports and syntax bans prevent representative ambient access paths
 
 ### S7.3-ce058000
 
-Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L377)
+Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L379)
 
 > - signal state;
 
@@ -655,7 +613,7 @@ Closed-world imports and syntax bans prevent representative ambient access paths
 
 ### S7.3-3d7c0f29
 
-Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L378)
+Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L380)
 
 > - tracing or debugger state;
 
@@ -669,7 +627,7 @@ Closed-world imports and syntax bans prevent representative ambient access paths
 
 ### S7.3-184d2596
 
-Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L379)
+Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L381)
 
 > - garbage-collector timing; or
 
@@ -683,7 +641,7 @@ Closed-world imports and syntax bans prevent representative ambient access paths
 
 ### S7.3-f7e341a2
 
-Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L380)
+Section 7.3; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L382)
 
 > - any other ambient value not represented by Pure Value arguments or immutable program constants.
 
@@ -697,7 +655,7 @@ Closed-world imports and syntax bans prevent representative ambient access paths
 
 ### S7.4-fe6555e1
 
-Section 7.4; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L384)
+Section 7.4; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L386)
 
 > Calling a pure function MUST NOT modify:
 
@@ -709,7 +667,7 @@ Pure construction/rebinding controls and specific mutation syntax bans are teste
 
 ### S7.4-05974832
 
-Section 7.4; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L386)
+Section 7.4; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L388)
 
 > - any object reachable before the call;
 
@@ -723,7 +681,7 @@ Pure construction/rebinding controls and specific mutation syntax bans are teste
 
 ### S7.4-c863ddbc
 
-Section 7.4; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L387)
+Section 7.4; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L389)
 
 > - a module namespace;
 
@@ -737,7 +695,7 @@ Pure construction/rebinding controls and specific mutation syntax bans are teste
 
 ### S7.4-51e5bd04
 
-Section 7.4; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L388)
+Section 7.4; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L390)
 
 > - a class namespace;
 
@@ -751,7 +709,7 @@ Pure construction/rebinding controls and specific mutation syntax bans are teste
 
 ### S7.4-1958064d
 
-Section 7.4; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L389)
+Section 7.4; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L391)
 
 > - a closure cell;
 
@@ -759,13 +717,13 @@ List obligation introduced by S7.4-fe6555e1.
 
 Positive: [TestSpecCoreAccepted/record_fields_and_top_level_behavior](../internal/check/spec_core_test.go#L30); [TestSpecCoreAccepted/local_annotation_then_assignment](../internal/check/spec_core_test.go#L30).
 
-Negative: [TestSpecCoreProhibitedSyntax/nonlocal](../internal/check/spec_core_test.go#L147); [TestSpecCoreProhibitedSyntax/nested_function](../internal/check/spec_core_test.go#L147).
+Negative: [TestSpecCoreProhibitedSyntax/nonlocal](../internal/check/spec_core_test.go#L147); [TestSpecCoreProhibitedSyntax/nested_generic_function](../internal/check/spec_core_test.go#L147).
 
 Pure construction/rebinding controls and specific mutation syntax bans are tested. The whole observational-mutation guarantee also depends on trusted host inputs and external implementations and is not a theorem established by these fixtures.
 
 ### S7.4-a59bb37f
 
-Section 7.4; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L390)
+Section 7.4; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L392)
 
 > - a host reference;
 
@@ -779,7 +737,7 @@ Pure construction/rebinding controls and specific mutation syntax bans are teste
 
 ### S7.4-6d80754c
 
-Section 7.4; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L391)
+Section 7.4; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L393)
 
 > - an external resource;
 
@@ -793,7 +751,7 @@ Pure construction/rebinding controls and specific mutation syntax bans are teste
 
 ### S7.4-81907134
 
-Section 7.4; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L392)
+Section 7.4; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L394)
 
 > - process-wide state; or
 
@@ -807,7 +765,7 @@ Pure construction/rebinding controls and specific mutation syntax bans are teste
 
 ### S7.4-dc9e53b6
 
-Section 7.4; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L393)
+Section 7.4; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L395)
 
 > - state observable by another PurePy function.
 
@@ -821,7 +779,7 @@ Pure construction/rebinding controls and specific mutation syntax bans are teste
 
 ### S8.4-1dd2dcd1
 
-Section 8.4; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L472)
+Section 8.4; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L474)
 
 > Ephemeral intrinsic values cannot be returned, stored, or passed to external functions.
 
@@ -833,7 +791,7 @@ Direct-loop range consumption is accepted. Local storage, call forwarding, direc
 
 ### S8.5-02cd119b
 
-Section 8.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L476)
+Section 8.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L478)
 
 > A value whose type or category cannot be established is an **Unknown Value** and MUST be rejected at its first attempted use.
 
@@ -845,7 +803,7 @@ Unknown identifiers, unassigned locals, and unknown calls reject at their use; o
 
 ### S8.6-86f59aef
 
-Section 8.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L480)
+Section 8.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L482)
 
 > Capability values and host references MUST NOT be:
 
@@ -857,7 +815,7 @@ Direct forwarding of both original authority categories passes. The negative tab
 
 ### S8.6-70cd3886
 
-Section 8.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L482)
+Section 8.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L484)
 
 > - returned from a verified function;
 
@@ -869,11 +827,11 @@ Negative: [TestBoundaryAuthorityCategoryRestrictions](../internal/check/spec_bou
 
 Direct forwarding of both original authority categories passes. The negative table independently checks capability and host-reference rejection for each listed operation; no host implementation behavior is executed or trusted as evidence. Targeted dynamically generated subtests: Read_returned, Connection_returned.
 
-### S8.6-6b6ad815
+### S8.6-1ab74722
 
-Section 8.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L483)
+Section 8.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L485)
 
-> - stored in a tuple or `@value` record;
+> - stored in a tuple or `NamedTuple` record;
 
 List obligation introduced by S8.6-86f59aef.
 
@@ -885,7 +843,7 @@ Direct forwarding of both original authority categories passes. The negative tab
 
 ### S8.6-da96e692
 
-Section 8.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L484)
+Section 8.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L486)
 
 > - assigned to a module constant;
 
@@ -899,7 +857,7 @@ Direct forwarding of both original authority categories passes. The negative tab
 
 ### S8.6-a0e3dd51
 
-Section 8.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L485)
+Section 8.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L487)
 
 > - compared;
 
@@ -913,7 +871,7 @@ Direct forwarding of both original authority categories passes. The negative tab
 
 ### S8.6-4d933fa1
 
-Section 8.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L486)
+Section 8.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L488)
 
 > - formatted;
 
@@ -927,7 +885,7 @@ Direct forwarding of both original authority categories passes. The negative tab
 
 ### S8.6-53a7fbc6
 
-Section 8.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L487)
+Section 8.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L489)
 
 > - hashed;
 
@@ -941,7 +899,7 @@ Direct forwarding of both original authority categories passes. The negative tab
 
 ### S8.6-dc70e0f6
 
-Section 8.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L488)
+Section 8.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L490)
 
 > - indexed;
 
@@ -955,7 +913,7 @@ Direct forwarding of both original authority categories passes. The negative tab
 
 ### S8.6-45475d7c
 
-Section 8.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L489)
+Section 8.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L491)
 
 > - inspected through attributes;
 
@@ -969,7 +927,7 @@ Direct forwarding of both original authority categories passes. The negative tab
 
 ### S8.6-408ef151
 
-Section 8.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L490)
+Section 8.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L492)
 
 > - converted to a Pure Value;
 
@@ -983,7 +941,7 @@ Direct forwarding of both original authority categories passes. The negative tab
 
 ### S8.6-cc006a34
 
-Section 8.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L491)
+Section 8.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L493)
 
 > - passed to a pure function;
 
@@ -997,7 +955,7 @@ Direct forwarding of both original authority categories passes. The negative tab
 
 ### S8.6-2dc7c372
 
-Section 8.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L492)
+Section 8.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L494)
 
 > - passed to an unknown function; or
 
@@ -1011,7 +969,7 @@ Direct forwarding of both original authority categories passes. The negative tab
 
 ### S8.6-32ac009b
 
-Section 8.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L493)
+Section 8.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L495)
 
 > - aliased through local assignment.
 
@@ -1025,7 +983,7 @@ Direct forwarding of both original authority categories passes. The negative tab
 
 ### S9.1-1d7be85c
 
-Section 9.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L503)
+Section 9.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L505)
 
 > Every function parameter and return value MUST have an explicit type annotation.
 
@@ -1035,11 +993,11 @@ Negative: [TestSpecCoreRejected/missing_parameter_annotation](../internal/check/
 
 Explicit primitive annotations are accepted; independently missing parameter and return annotations are rejected.
 
-### S9.1-591dba09
+### S9.1-0f5ea27f
 
-Section 9.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L505)
+Section 9.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L507)
 
-> Every `@value` field MUST have an explicit type annotation.
+> Every `NamedTuple` field MUST have an explicit type annotation.
 
 Positive: [TestSpecCoreAccepted/record_fields_and_top_level_behavior](../internal/check/spec_core_test.go#L30).
 
@@ -1049,7 +1007,7 @@ Annotated record fields are accepted; a bare class-body field name cannot substi
 
 ### S9.1-fd85ebd6
 
-Section 9.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L507)
+Section 9.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L509)
 
 > Module constants MUST have an explicit `Final[T]` annotation.
 
@@ -1059,11 +1017,11 @@ Negative: [TestSpecCoreRejected/missing_final_annotation](../internal/check/spec
 
 Final constants with constant initializers are accepted; plain annotations and missing initializers reject.
 
-### S9.3-92091b33
+### S9.3-74593088
 
-Section 9.3; **partial**; additional prose rule. [Specification](PUREPY_SPEC.md#L532)
+Section 9.3; **partial**; additional prose rule. [Specification](PUREPY_SPEC.md#L537)
 
-> PurePy 0.1 rejects:
+> PurePy 0.2 rejects:
 
 Positive: [TestSpecCoreAccepted/annotated_primitives](../internal/check/spec_core_test.go#L30); [TestSpecCompletionNestedUnsupportedTypes](../internal/check/spec_completion_test.go#L71).
 
@@ -1071,11 +1029,11 @@ Negative: [TestSpecCoreProhibitedTypes](../internal/check/spec_core_test.go#L214
 
 The table rejects the named dynamic/mutable/iterator/coroutine/union/fixed-tuple annotation families. Focused nested controls also reject unsupported types inside tuple/optional combinations in both parameter and return positions; an admitted nested Pure Value counterpart passes. These finite examples do not enumerate every spelling or arbitrarily nested annotation.
 
-### S9.4-fdc251c5
+### S9.4-0fcfd3d2
 
-Section 9.4; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L551)
+Section 9.4; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L556)
 
-> PurePy 0.1 uses exact nominal type matching, except for the explicit optional form `T | None` and the ordinary relation that a value of type `T` may be used where `T | None` is expected.
+> PurePy 0.2 uses exact nominal type matching, except for the explicit optional form `T | None` and the ordinary relation that a value of type `T` may be used where `T | None` is expected.
 
 Positive: [TestSpecCoreAccepted/optional_argument_and_return](../internal/check/spec_core_test.go#L30).
 
@@ -1085,7 +1043,7 @@ Distinct structurally identical records and bool/int arguments do not subtype; t
 
 ### S9.5-5befe459
 
-Section 9.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L559)
+Section 9.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L564)
 
 > Every later assignment to the same name MUST have the same exact type.
 
@@ -1097,7 +1055,7 @@ Includes regression for declared types lost after a returning branch. Flow joins
 
 ### S9.5-ffe58154
 
-Section 9.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L561)
+Section 9.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L566)
 
 > A local MUST be definitely assigned on every path before use.
 
@@ -1109,7 +1067,7 @@ Tests cover both-branch assignment, annotated-but-unassigned locals, use before 
 
 ### S9.5-811b264d
 
-Section 9.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L563)
+Section 9.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L568)
 
 > Branch joins MUST agree on the exact type of every live local.
 
@@ -1121,7 +1079,7 @@ Same-type branch assignments pass; conflicting declared types fail, including a 
 
 ### S10.2-1a664dd1
 
-Section 10.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L604)
+Section 10.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L608)
 
 > It MUST NOT contain:
 
@@ -1133,7 +1091,7 @@ Valid data-only records provide the positive control; the rejected record-body f
 
 ### S10.2-154861b6
 
-Section 10.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L606)
+Section 10.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L610)
 
 > - methods;
 
@@ -1147,7 +1105,7 @@ Valid data-only records provide the positive control; the rejected record-body f
 
 ### S10.2-2a43f910
 
-Section 10.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L607)
+Section 10.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L611)
 
 > - properties;
 
@@ -1161,7 +1119,7 @@ Valid data-only records provide the positive control; the rejected record-body f
 
 ### S10.2-b75ee81e
 
-Section 10.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L608)
+Section 10.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L612)
 
 > - constructors;
 
@@ -1175,7 +1133,7 @@ Valid data-only records provide the positive control; the rejected record-body f
 
 ### S10.2-6a546994
 
-Section 10.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L609)
+Section 10.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L613)
 
 > - static or class methods;
 
@@ -1189,7 +1147,7 @@ Valid data-only records provide the positive control; the rejected record-body f
 
 ### S10.2-bad37fab
 
-Section 10.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L610)
+Section 10.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L614)
 
 > - class constants;
 
@@ -1203,7 +1161,7 @@ Valid data-only records provide the positive control; the rejected record-body f
 
 ### S10.2-e5425a88
 
-Section 10.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L611)
+Section 10.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L615)
 
 > - computed fields;
 
@@ -1217,7 +1175,7 @@ Valid data-only records provide the positive control; the rejected record-body f
 
 ### S10.2-6af5ed35
 
-Section 10.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L612)
+Section 10.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L616)
 
 > - descriptors;
 
@@ -1231,7 +1189,7 @@ Valid data-only records provide the positive control; the rejected record-body f
 
 ### S10.2-9c9a930d
 
-Section 10.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L613)
+Section 10.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L617)
 
 > - nested classes;
 
@@ -1243,37 +1201,37 @@ Negative: [TestSpecCoreRejected/record_nested_class](../internal/check/spec_core
 
 Valid data-only records provide the positive control; the rejected record-body form is named directly by the cited case.
 
-### S10.2-46bb3ae3
+### S10.2-c96a02cf
 
-Section 10.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L614)
+Section 10.2; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L618)
 
-> - decorators other than the exact `@value` decorator;
-
-List obligation introduced by S10.2-1a664dd1.
-
-Positive: [TestSpecCoreAccepted/record_fields_and_top_level_behavior](../internal/check/spec_core_test.go#L30).
-
-Negative: [TestSpecCoreRejected/record_extra_decorator](../internal/check/spec_core_test.go#L62); [TestSpecCoreRejected/record_missing_decorator](../internal/check/spec_core_test.go#L62).
-
-Valid data-only records provide the positive control; the rejected record-body form is named directly by the cited case.
-
-### S10.2-059f6b78
-
-Section 10.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L615)
-
-> - inheritance;
+> - decorators;
 
 List obligation introduced by S10.2-1a664dd1.
 
-Positive: [TestSpecCoreAccepted/record_fields_and_top_level_behavior](../internal/check/spec_core_test.go#L30).
+Positive: [TestFunctionalAccepted](../internal/check/functional_test.go#L37).
 
-Negative: [TestSpecCoreRejected/record_inheritance](../internal/check/spec_core_test.go#L62).
+Negative: [TestFunctionalRejected](../internal/check/functional_test.go#L54).
 
-Valid data-only records provide the positive control; the rejected record-body form is named directly by the cited case.
+Functional-core acceptance and rejection fixtures exercise this rule. This evidence is not a complete proof or exhaustive coverage.
+
+### S10.2-f39bf114
+
+Section 10.2; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L619)
+
+> - additional bases or user-defined inheritance;
+
+List obligation introduced by S10.2-1a664dd1.
+
+Positive: [TestFunctionalAccepted](../internal/check/functional_test.go#L37).
+
+Negative: [TestFunctionalRejected](../internal/check/functional_test.go#L54).
+
+Functional-core acceptance and rejection fixtures exercise this rule. This evidence is not a complete proof or exhaustive coverage.
 
 ### S10.2-e11a74a0
 
-Section 10.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L616)
+Section 10.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L620)
 
 > - metaclass declarations; or
 
@@ -1287,7 +1245,7 @@ Valid data-only records provide the positive control; the rejected record-body f
 
 ### S10.2-66bafb2f
 
-Section 10.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L617)
+Section 10.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L621)
 
 > - executable statements.
 
@@ -1299,21 +1257,9 @@ Negative: [TestSpecCoreRejected/record_non_field_statement](../internal/check/sp
 
 Valid data-only records provide the positive control; the rejected record-body form is named directly by the cited case.
 
-### S10.2-6da211d7
-
-Section 10.2; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L619)
-
-> Identifiers in a record class body follow Python private-name mangling after Unicode NFKC normalization.
-
-Positive: [ModuleDifferentialTests.test_live_fixed_catalog](../tools/tests/test_differential_modules.py#L236); [TestPrivateRecordNamesMatchPythonMangling](../internal/frontend/parser_test.go#L81).
-
-Negative: [TestSecurityCategoryAndCallRejections/private_field_source_spelling](../internal/check/security_test.go#L52); [ModuleDifferentialTests.test_live_fixed_catalog](../tools/tests/test_differential_modules.py#L236).
-
-The fixed multi-module runtime catalog constructs and reads _Secret__key after declaring __key in class Secret, and validates the effective runtime record fields. A separate __key keyword near miss rejects with PP302 and produces the independently expected CPython TypeError. This is a name-normalization rule, not permission for reflection.
-
 ### S10.3-71e52619
 
-Section 10.3; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L630)
+Section 10.3; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L627)
 
 > Every field type MUST be a Pure Value type.
 
@@ -1327,7 +1273,7 @@ Deep tuple, optional, and nested-record Pure Value fields pass; fields of both c
 
 ### S10.4-f23644ff
 
-Section 10.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L638)
+Section 10.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L635)
 
 > Arguments MUST exactly match the declared fields. Positional arguments in field order and explicit keyword arguments are permitted. Argument unpacking is prohibited.
 
@@ -1339,7 +1285,7 @@ Positional field order and explicit keyword construction pass; missing, wrong-ty
 
 ### S10.5-2adeb258
 
-Section 10.5; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L646)
+Section 10.5; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L643)
 
 > - equality and inequality with the same exact record type when every field is recursively equality-comparable under section 14.6; and
 
@@ -1349,45 +1295,33 @@ Negative: [TestSecurityOpaqueEqualityCannotHideInsideValues](../internal/check/s
 
 Same exact records with recursively sealed primitive/tuple/optional/record fields compare. Opaque fields reject equality, inequality, tuple membership, and optional equality even through shared nested record layouts; construction and field forwarding remain valid. The multi-module CPython gate checks nominal field/result identity and records hidden opaque __eq__ dispatch for rejected equality witnesses; accepted absence checks produce no such event.
 
-### S10.6-6d9f6001
+### S10.6-7ffc2763
 
-Section 10.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L657)
+Section 10.6; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L654)
 
-> All behavior over records MUST be expressed as top-level functions:
+> All behavior over records MUST be expressed as free functions:
 
-Positive: [TestSpecCoreAccepted/record_fields_and_top_level_behavior](../internal/check/spec_core_test.go#L30).
+Positive: [TestFunctionalAccepted](../internal/check/functional_test.go#L37).
 
-Negative: [TestSpecCoreRejected/record_method](../internal/check/spec_core_test.go#L62); [TestSpecCoreRecordBodies](../internal/check/spec_core_test.go#L197).
+Negative: [TestFunctionalRejected](../internal/check/functional_test.go#L54).
 
-Top-level functions can construct new immutable records from field reads; record-local behaviors and descriptors reject.
-
-### S11.1-30b71387
-
-Section 11.1; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L676)
-
-> Nested functions and lambdas are prohibited.
-
-Positive: [TestSpecCoreAccepted/direct_recursive_call](../internal/check/spec_core_test.go#L30).
-
-Negative: [TestSpecCoreProhibitedSyntax/nested_function](../internal/check/spec_core_test.go#L147); [TestSpecCoreProhibitedSyntax/lambda](../internal/check/spec_core_test.go#L147).
-
-Only top-level direct-call behavior remains accepted.
+Functional-core acceptance and rejection fixtures exercise this rule. This evidence is not a complete proof or exhaustive coverage.
 
 ### S11.2-2275fdfd
 
-Section 11.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L680)
+Section 11.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L676)
 
 > A function signature MUST have:
 
 Positive: [TestSpecCoreAccepted/annotated_primitives](../internal/check/spec_core_test.go#L30).
 
-Negative: [TestSpecCoreProhibitedSyntax/default_parameter](../internal/check/spec_core_test.go#L147); [TestSpecCoreProhibitedSyntax/positional_only](../internal/check/spec_core_test.go#L147); [TestSpecCoreProhibitedSyntax/keyword_only](../internal/check/spec_core_test.go#L147); [TestSpecCoreProhibitedSyntax/variadic_positional](../internal/check/spec_core_test.go#L147); [TestSpecCoreProhibitedSyntax/variadic_keyword](../internal/check/spec_core_test.go#L147); [TestSpecCoreProhibitedSyntax/generic_function](../internal/check/spec_core_test.go#L147); [TestSpecCoreProhibitedSyntax/function_decorator](../internal/check/spec_core_test.go#L147).
+Negative: [TestSpecCoreProhibitedSyntax/default_parameter](../internal/check/spec_core_test.go#L147); [TestSpecCoreProhibitedSyntax/positional_only](../internal/check/spec_core_test.go#L147); [TestSpecCoreProhibitedSyntax/keyword_only](../internal/check/spec_core_test.go#L147); [TestSpecCoreProhibitedSyntax/variadic_positional](../internal/check/spec_core_test.go#L147); [TestSpecCoreProhibitedSyntax/variadic_keyword](../internal/check/spec_core_test.go#L147); [TestSpecCoreProhibitedSyntax/bounded_generic_function](../internal/check/spec_core_test.go#L147); [TestSpecCoreProhibitedSyntax/function_decorator](../internal/check/spec_core_test.go#L147).
 
 The fixed annotated signature is the positive control. Rejections cover defaults, positional/keyword markers, variadics, type parameters, and decorators; mandatory annotation cases are mapped separately.
 
 ### S11.2-aa3bbb04
 
-Section 11.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L682)
+Section 11.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L678)
 
 > - a fixed ordered parameter list;
 
@@ -1395,13 +1329,13 @@ List obligation introduced by S11.2-2275fdfd.
 
 Positive: [TestSpecCoreAccepted/annotated_primitives](../internal/check/spec_core_test.go#L30).
 
-Negative: [TestSpecCoreProhibitedSyntax/default_parameter](../internal/check/spec_core_test.go#L147); [TestSpecCoreProhibitedSyntax/positional_only](../internal/check/spec_core_test.go#L147); [TestSpecCoreProhibitedSyntax/keyword_only](../internal/check/spec_core_test.go#L147); [TestSpecCoreProhibitedSyntax/variadic_positional](../internal/check/spec_core_test.go#L147); [TestSpecCoreProhibitedSyntax/variadic_keyword](../internal/check/spec_core_test.go#L147); [TestSpecCoreProhibitedSyntax/generic_function](../internal/check/spec_core_test.go#L147); [TestSpecCoreProhibitedSyntax/function_decorator](../internal/check/spec_core_test.go#L147).
+Negative: [TestSpecCoreProhibitedSyntax/default_parameter](../internal/check/spec_core_test.go#L147); [TestSpecCoreProhibitedSyntax/positional_only](../internal/check/spec_core_test.go#L147); [TestSpecCoreProhibitedSyntax/keyword_only](../internal/check/spec_core_test.go#L147); [TestSpecCoreProhibitedSyntax/variadic_positional](../internal/check/spec_core_test.go#L147); [TestSpecCoreProhibitedSyntax/variadic_keyword](../internal/check/spec_core_test.go#L147); [TestSpecCoreProhibitedSyntax/bounded_generic_function](../internal/check/spec_core_test.go#L147); [TestSpecCoreProhibitedSyntax/function_decorator](../internal/check/spec_core_test.go#L147).
 
 The fixed annotated signature is the positive control. Rejections cover defaults, positional/keyword markers, variadics, type parameters, and decorators; mandatory annotation cases are mapped separately.
 
 ### S11.2-7c29cc39
 
-Section 11.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L683)
+Section 11.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L679)
 
 > - an annotation on every parameter;
 
@@ -1415,7 +1349,7 @@ The fixed annotated signature is the positive control. Rejections cover defaults
 
 ### S11.2-2815d78a
 
-Section 11.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L684)
+Section 11.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L680)
 
 > - an explicit return annotation; and
 
@@ -1429,7 +1363,7 @@ The fixed annotated signature is the positive control. Rejections cover defaults
 
 ### S11.2-5d07314e
 
-Section 11.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L685)
+Section 11.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L681)
 
 > - no default values.
 
@@ -1443,7 +1377,7 @@ The fixed annotated signature is the positive control. Rejections cover defaults
 
 ### S11.3-88a05e36
 
-Section 11.3; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L708)
+Section 11.3; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L704)
 
 > Capability and host-reference parameters MUST retain their original names and MUST NOT be rebound.
 
@@ -1453,33 +1387,33 @@ Negative: [TestSecurityCategoryAndCallRejections/capability_rebinding](../intern
 
 Original parameter names forward directly; rebinding and aliases of both capability and host-reference parameters reject. Targeted dynamically generated subtests: Connection_rebound.
 
-### S11.4-9c04b506
+### S11.4-8990a3c6
 
-Section 11.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L712)
+Section 11.4; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L708)
 
-> Every verified function MUST return a Pure Value type or `None`.
+> Every verified function MUST return immutable data, `None`, or a pure synchronous callable. Async and effectful functions return data only.
 
-Positive: [TestSpecCoreAccepted/annotated_primitives](../internal/check/spec_core_test.go#L30); [TestSpecCoreAccepted/none_returns_and_fallthrough](../internal/check/spec_core_test.go#L30); [TestSpecCompletionReturnExpressions](../internal/check/spec_completion_test.go#L10).
+Positive: [TestFunctionalAccepted](../internal/check/functional_test.go#L37).
 
-Negative: [TestSecurityCategoryAndCallRejections/authority_return](../internal/check/security_test.go#L52); [TestSpecCoreRejected/range_stored](../internal/check/spec_core_test.go#L62); [TestBoundaryAuthorityCategoryRestrictions](../internal/check/spec_boundary_test.go#L168); [TestSpecCompletionReturnExpressions](../internal/check/spec_completion_test.go#L10).
+Negative: [TestFunctionalRejected](../internal/check/functional_test.go#L54).
 
-Pure Value/None results pass. Valid Pure Value signatures independently reject return expressions containing capabilities, host references, ranges, function/decorator/record declarations, unawaited async calls, and generator expressions. Both plain-module imports and module-symbol imports are prohibited before a module can become a return value. Range and coroutine nesting are also checked; the table covers the enumerated categories, not arbitrary compositions.
+Functional-core acceptance and rejection fixtures exercise this rule. This evidence is not a complete proof or exhaustive coverage.
 
 ### S11.6-f768cd2a
 
-Section 11.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L740)
+Section 11.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L736)
 
 > A call expression MUST name its target directly through a statically resolved imported or local symbol.
 
 Positive: [TestSpecCoreAccepted/direct_recursive_call](../internal/check/spec_core_test.go#L30); [TestSpecCoreDirectProjectImports](../internal/check/spec_core_test.go#L222).
 
-Negative: [TestSpecCoreRejected/dynamic_call_target](../internal/check/spec_core_test.go#L62); [TestSecurityCategoryAndCallRejections/function_as_data](../internal/check/security_test.go#L52); [TestSecurityCategoryAndCallRejections/method_dispatch](../internal/check/security_test.go#L52).
+Negative: [TestSpecCoreRejected/dynamic_call_target](../internal/check/spec_core_test.go#L62); [TestSecurityCategoryAndCallRejections/function_as_integer](../internal/check/security_test.go#L52); [TestSecurityCategoryAndCallRejections/method_dispatch](../internal/check/security_test.go#L52).
 
 Direct same-module/imported calls pass. Call-through-local, conditional target selection, and instance method calls reject.
 
 ### S12.1-268f3445
 
-Section 12.1; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L776)
+Section 12.1; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L772)
 
 > No other module-level statement is permitted.
 
@@ -1491,7 +1425,7 @@ Accepted static declarations are contrasted with executable bootstrap and condit
 
 ### S12.2-c1fc49da
 
-Section 12.2; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L798)
+Section 12.2; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L794)
 
 > The verifier resolves imports without executing them.
 
@@ -1503,7 +1437,7 @@ A sentinel host module remains unexecuted when its manifest-backed import is acc
 
 ### S12.5-2f9e979c
 
-Section 12.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L826)
+Section 12.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L822)
 
 > The initializer MUST be a constant expression consisting only of:
 
@@ -1515,7 +1449,7 @@ Accepted source exercises primitive/tuple/earlier/imported/record constant forms
 
 ### S12.5-487ad571
 
-Section 12.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L828)
+Section 12.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L824)
 
 > - primitive literals;
 
@@ -1529,7 +1463,7 @@ Accepted source exercises primitive/tuple/earlier/imported/record constant forms
 
 ### S12.5-a2ef226f
 
-Section 12.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L829)
+Section 12.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L825)
 
 > - tuple displays of constant expressions;
 
@@ -1543,7 +1477,7 @@ Accepted source exercises primitive/tuple/earlier/imported/record constant forms
 
 ### S12.5-3866b7c6
 
-Section 12.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L830)
+Section 12.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L826)
 
 > - references to earlier constants in the same module;
 
@@ -1557,7 +1491,7 @@ Accepted source exercises primitive/tuple/earlier/imported/record constant forms
 
 ### S12.5-2a222045
 
-Section 12.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L831)
+Section 12.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L827)
 
 > - references to imported verified constants; and
 
@@ -1569,11 +1503,11 @@ Negative: [TestSecurityInitializationOrder/constant_before_import](../internal/c
 
 Accepted source exercises primitive/tuple/earlier/imported/record constant forms. Ordinary calls, computed initializers, and use-before-initialization references are rejected by explicit cases.
 
-### S12.5-b252afcd
+### S12.5-4f120e6a
 
-Section 12.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L832)
+Section 12.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L828)
 
-> - direct construction of a `@value` record from constant expressions.
+> - direct construction of a `NamedTuple` record from constant expressions.
 
 List obligation introduced by S12.5-2f9e979c.
 
@@ -1585,7 +1519,7 @@ Accepted source exercises primitive/tuple/earlier/imported/record constant forms
 
 ### S12.5-3268ea91
 
-Section 12.5; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L834)
+Section 12.5; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L830)
 
 > No ordinary function call is permitted during module initialization.
 
@@ -1597,7 +1531,7 @@ Record constant construction passes while ordinary project/intrinsic initializer
 
 ### S12.6-ab281cfa
 
-Section 12.6; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L838)
+Section 12.6; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L834)
 
 > Module rebinding, caches, registries, counters, and mutable containers are prohibited.
 
@@ -1609,7 +1543,7 @@ Static immutable constants pass; module-name writes and mutable displays reject.
 
 ### S13.2-3ba06bac
 
-Section 13.2; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L883)
+Section 13.2; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L879)
 
 > Augmented assignment such as `+=` is prohibited because Python may dispatch to in-place mutation.
 
@@ -1621,7 +1555,7 @@ Explicit same-type local rebinding passes; += rejects.
 
 ### S13.3-10c6f562
 
-Section 13.3; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L887)
+Section 13.3; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L883)
 
 > Conditions MUST have exact type `bool`.
 
@@ -1633,7 +1567,7 @@ Exact boolean conditions pass; primitive/tuple truthiness rejects in if, conditi
 
 ### S13.4-6cbc6439
 
-Section 13.4; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L906)
+Section 13.4; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L902)
 
 > `for ... else` is prohibited.
 
@@ -1645,7 +1579,7 @@ Ordinary approved for loops pass while loop else clauses reject.
 
 ### S13.5-66054b03
 
-Section 13.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L910)
+Section 13.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L906)
 
 > A `while` condition MUST have exact type `bool`.
 
@@ -1659,7 +1593,7 @@ The while_loop fixture supplies the bool-loop positive control; an integer while
 
 ### S13.5-555d0fae
 
-Section 13.5; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L912)
+Section 13.5; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L908)
 
 > `while ... else` is prohibited.
 
@@ -1673,7 +1607,7 @@ While loop rejection has a dedicated control; positive bool while behavior is al
 
 ### S13.6-bbe04051
 
-Section 13.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L916)
+Section 13.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L912)
 
 > Every reachable return expression MUST match the exact declared return type.
 
@@ -1685,7 +1619,7 @@ Returns preserve exact primitive types and the explicitly allowed T-to-optional 
 
 ### S13.6-a490fe05
 
-Section 13.6; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L920)
+Section 13.6; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L916)
 
 > Falling off the end is permitted only for a function declared to return `None`.
 
@@ -1697,7 +1631,7 @@ None fallthrough is accepted; a possible int fallthrough rejects. The whole-func
 
 ### S13.7-6864497f
 
-Section 13.7; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L929)
+Section 13.7; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L925)
 
 > Discarding a non-`None` result is prohibited.
 
@@ -1707,21 +1641,9 @@ Negative: [TestSpecCoreRejected/discard_non_none_call](../internal/check/spec_co
 
 Both sync and awaited non-None results must be consumed; None calls can be expression statements.
 
-### S14.2-08741dc8
-
-Section 14.2; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L979)
-
-> Heterogeneous tuples are prohibited. Use a `@value` record instead.
-
-Positive: [TestSpecCoreAccepted/tuple_nested_context](../internal/check/spec_core_test.go#L30); [TestSpecCoreAccepted/record_fields_and_top_level_behavior](../internal/check/spec_core_test.go#L30).
-
-Negative: [TestSpecCoreRejected/heterogeneous_tuple](../internal/check/spec_core_test.go#L62).
-
-Homogeneous nested tuples and records pass; int/bool heterogeneous tuple rejects.
-
 ### S14.2-18427c7e
 
-Section 14.2; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L981)
+Section 14.2; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L977)
 
 > The empty tuple has no standalone inferred element type. It is permitted only when an explicit contextual type supplies `tuple[T, ...]`, for example `items: tuple[int, ...] = ()`.
 
@@ -1733,7 +1655,7 @@ Return/call/nested tuple context supplies the exact element type; contextless as
 
 ### S14.3-4d2c08f3
 
-Section 14.3; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L985)
+Section 14.3; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L981)
 
 > List, dictionary, set, and mutable-container displays are prohibited.
 
@@ -1745,7 +1667,7 @@ Immutable tuple displays pass; mutable display forms reject.
 
 ### S14.5-c3c58fef
 
-Section 14.5; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L1005)
+Section 14.5; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L1001)
 
 > `and`, `or`, and `not` operate only on exact `bool` operands and produce `bool`.
 
@@ -1757,7 +1679,7 @@ All three boolean operators reject non-bool operands; bool-producing expressions
 
 ### S14.6-9824df93
 
-Section 14.6; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L1018)
+Section 14.6; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L1014)
 
 > - comparison of an optional value to `None` when its non-`None` element type is recursively equality-comparable.
 
@@ -1769,7 +1691,7 @@ Comparable optional records admit == None. Opaque optionals and nested opaque re
 
 ### S14.6-15be7d3a
 
-Section 14.6; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L1029)
+Section 14.6; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L1025)
 
 > Identity operators `is` and `is not` are permitted only with `None`.
 
@@ -1781,7 +1703,7 @@ Identity requires exact None on one side and any Pure Value on the other, checke
 
 ### S14.8-2d331137
 
-Section 14.8; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L1061)
+Section 14.8; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L1057)
 
 > Indices must be `int`. Slice bounds must be `int | None`. Extended slicing and user-defined `__getitem__` dispatch are prohibited.
 
@@ -1793,7 +1715,7 @@ Optional int slice bounds pass; bool indices, float bounds, and explicit stride 
 
 ### S14.9-4b260281
 
-Section 14.9; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L1067)
+Section 14.9; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L1063)
 
 > No other instance attribute access is permitted in project code.
 
@@ -1805,7 +1727,7 @@ Declared record field reads pass; nonrecord attributes and undeclared record fie
 
 ### S14.10-6fd2f044
 
-Section 14.10; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L1073)
+Section 14.10; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L1069)
 
 > Argument unpacking with `*` or `**` is prohibited.
 
@@ -1817,7 +1739,7 @@ Positional and keyword binding pass. Independent * and ** controls reject functi
 
 ### S14.12-6f0f29d6
 
-Section 14.12; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L1094)
+Section 14.12; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L1090)
 
 > Dynamic format specifications, locale-sensitive formatting, arbitrary `__format__`, `repr`, and object formatting are prohibited.
 
@@ -1827,11 +1749,11 @@ Negative: [TestSpecCoreRejected/format_dynamic_spec](../internal/check/spec_core
 
 Primitive formatting passes; dynamic format spec, locale format, repr conversion, and unconverted bytes reject. Arbitrary object-format dispatch is also excluded by exact inserted-expression types.
 
-### S14.13-4783aa38
+### S14.13-88590ab7
 
-Section 14.13; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L1098)
+Section 14.13; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L1094)
 
-> List, dictionary, set, and generator comprehensions are prohibited in PurePy 0.1.
+> List, dictionary, set, and generator comprehensions are prohibited in PurePy 0.2.
 
 Positive: [TestSpecCoreAccepted/loop_keeps_preassigned_local](../internal/check/spec_core_test.go#L30).
 
@@ -1841,7 +1763,7 @@ Explicit approved loops pass; all four comprehension families reject.
 
 ### S15.3-ae9730e0
 
-Section 15.3; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L1157)
+Section 15.3; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L1153)
 
 > For example, `len(value)` is accepted only when `value` is exactly `str`, `bytes`, or `tuple[T, ...]`.
 
@@ -1853,7 +1775,7 @@ Tuple/string len calls pass while a record operand rejects; bytes len is also co
 
 ### S15.4-7d2ae611
 
-Section 15.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1161)
+Section 15.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1157)
 
 > The verifier MUST version and test the intrinsic table. Adding an intrinsic is a language change.
 
@@ -1865,21 +1787,21 @@ Negative: [TestSpecCoreRejected/intrinsic_no_protocol_dispatch](../internal/chec
 
 The sealed intrinsic contract is explicitly version 1, independently declared in check.IntrinsicVersion, identified by the exact CLI version regression, and included in program-image cache identity. The differential gate checks accepted/rejected exact call forms and inferred result types against CPython 3.14, including empty tuples and domain failures. Versioning plus finite table regression evidence does not prove all possible runtime inputs.
 
-### S16.1-5af8aa5d
+### S16.1-5194d113
 
-Section 16.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1176)
+Section 16.1; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L1172)
 
-> Every call target MUST resolve to exactly one callable declaration.
+> Every call target MUST resolve to a known declaration or a pure callable whose provenance is tracked through the verified program.
 
-Positive: [TestSpecCoreAccepted/direct_recursive_call](../internal/check/spec_core_test.go#L30); [TestSpecCoreDirectProjectImports](../internal/check/spec_core_test.go#L222); [TestSpecCoreAccepted/primitive_intrinsics](../internal/check/spec_core_test.go#L30).
+Positive: [TestFunctionalAccepted](../internal/check/functional_test.go#L37).
 
-Negative: [TestSpecCoreRejected/duplicate_callable](../internal/check/spec_core_test.go#L62); [TestSpecCoreRejected/unknown_import](../internal/check/spec_core_test.go#L62); [TestSpecCoreRejected/dynamic_call_target](../internal/check/spec_core_test.go#L62).
+Negative: [TestFunctionalRejected](../internal/check/functional_test.go#L54).
 
-Unique direct declarations resolve; duplicate top-level callables, unknown imported symbols, and computed targets reject.
+Functional-core acceptance and rejection fixtures exercise this rule. This evidence is not a complete proof or exhaustive coverage.
 
 ### S16.3-e1c2356e
 
-Section 16.3; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1203)
+Section 16.3; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1200)
 
 > Every argument MUST match the exact declared parameter type and category.
 
@@ -1891,7 +1813,7 @@ Explicit optional widening and exact direct capability/reference forwarding pass
 
 ### S16.4-4c852054
 
-Section 16.4; **partial**; additional prose rule. [Specification](PUREPY_SPEC.md#L1211)
+Section 16.4; **partial**; additional prose rule. [Specification](PUREPY_SPEC.md#L1208)
 
 > Capability and host-reference values may only appear as direct call arguments.
 
@@ -1903,7 +1825,7 @@ Original parameters forward directly; aliases, tuples, comparisons, and formatti
 
 ### S16.5-c2877789
 
-Section 16.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1238)
+Section 16.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1235)
 
 > A verifier MUST reject any attempt by a pure function to call an effectful function, even if dead-code analysis would suggest that the call is unreachable.
 
@@ -1915,7 +1837,7 @@ The checker visits calls even after return. A pure caller cannot manufacture the
 
 ### S16.7-6d8d9b23
 
-Section 16.7; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L1248)
+Section 16.7; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L1245)
 
 > The verifier MUST NOT resolve call targets through runtime registries, dependency-injection containers, decorators, route tables, import hooks, module `__getattr__`, or monkey-patched names.
 
@@ -1927,7 +1849,7 @@ Direct resolution plus rejected computed targets, decorators, and mutation cover
 
 ### S17.7-12336ec0
 
-Section 17.7; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1326)
+Section 17.7; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1323)
 
 > For each function, the verifier MUST report the set of capability labels present in its signature.
 
@@ -1939,7 +1861,7 @@ Every verified helper is queried, including functions outside the entrypoint lis
 
 ### S19.2-3ba438b7
 
-Section 19.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1406)
+Section 19.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1403)
 
 > An `await` expression MUST directly contain a call to a statically known async function:
 
@@ -1953,7 +1875,7 @@ Matrix covers local and trusted sync/async calls, direct nested awaits, ordinary
 
 ### S21.1-c54395bb
 
-Section 21.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1541)
+Section 21.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1538)
 
 > Expected application failures MUST be represented as Pure Values.
 
@@ -1967,7 +1889,7 @@ An immutable result record represents expected application failures; explicit ex
 
 ### S22.4-4e1b66a7
 
-Section 22.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1621)
+Section 22.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1616)
 
 > A function declaration MUST provide:
 
@@ -1979,7 +1901,7 @@ Loader tests validate every required signature field and preserve parameter orde
 
 ### S22.4-6c02b481
 
-Section 22.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1623)
+Section 22.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1618)
 
 > - one exact qualified name;
 
@@ -1993,7 +1915,7 @@ Loader requires a canonical qualified function name and retains it exactly.
 
 ### S22.4-26ac538b
 
-Section 22.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1624)
+Section 22.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1619)
 
 > - sync or async kind;
 
@@ -2007,7 +1929,7 @@ Both declared kinds are exercised; missing and unsupported kinds are rejected.
 
 ### S22.4-aa3bbb04
 
-Section 22.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1625)
+Section 22.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1620)
 
 > - a fixed ordered parameter list;
 
@@ -2021,7 +1943,7 @@ Ordered named parameters and explicitly empty lists survive loading. Missing par
 
 ### S22.4-73e449f7
 
-Section 22.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1626)
+Section 22.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1621)
 
 > - exact parameter types and categories;
 
@@ -2035,7 +1957,7 @@ Manifest names and types are required and resolved to exact categories; forwardi
 
 ### S22.4-48ab13b7
 
-Section 22.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1627)
+Section 22.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1622)
 
 > - one exact Pure Value return type; and
 
@@ -2049,7 +1971,7 @@ Declared return types must be Pure Values, recursively through tuple/optional co
 
 ### S22.4-772e77ce
 
-Section 22.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1628)
+Section 22.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1623)
 
 > - a trust classification.
 
@@ -2063,7 +1985,7 @@ Only explicit pure/host trust classifications are admitted; trusted-pure declara
 
 ### S22.6-d054fcc3
 
-Section 22.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1638)
+Section 22.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1633)
 
 > A host operation MUST require at least one capability parameter unless it is a pure external operation.
 
@@ -2077,7 +1999,7 @@ A host declaration needs at least one capability; an opaque reference alone gran
 
 ### S22.6-56f3c626
 
-Section 22.6; **trust**; mandatory. [Specification](PUREPY_SPEC.md#L1640)
+Section 22.6; **trust**; mandatory. [Specification](PUREPY_SPEC.md#L1635)
 
 > Every externally observable effect of the host operation MUST be represented by the labels of one or more capability parameters in its declared signature. An operation that reads a database and a clock, for example, must require capabilities authorizing both categories. The host implementation is trusted to obey this declaration.
 
@@ -2085,7 +2007,7 @@ The verifier validates declared capability categories, exact forwarding, and rep
 
 ### S22.7-37914a94
 
-Section 22.7; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1646)
+Section 22.7; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1641)
 
 > A manifest module imported by verified source MUST be marked `import_safe`.
 
@@ -2097,7 +2019,7 @@ An imported manifest module must explicitly assert import_safe, including unused
 
 ### S22.8-18aa94d9
 
-Section 22.8; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1654)
+Section 22.8; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1649)
 
 > Manifests are declarative data. Unknown fields MUST be rejected unless the schema version explicitly permits them.
 
@@ -2109,7 +2031,7 @@ Schema 1 rejects unknown keys at root, module, type, function, and parameter lev
 
 ### S22.9-5c54941b
 
-Section 22.9; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1658)
+Section 22.9; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1653)
 
 > The verifier MUST use a deterministic manifest search order defined by configuration.
 
@@ -2121,7 +2043,7 @@ Both configured orders load cross-file declarations deterministically, preserve 
 
 ### S22.9-0602e4d6
 
-Section 22.9; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1660)
+Section 22.9; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1655)
 
 > Conflicting declarations are errors. Later manifests MUST NOT silently override earlier ones.
 
@@ -2133,7 +2055,7 @@ Nonconflicting declarations may span manifests in either configured order. Ident
 
 ### S22.10-2b47ac86
 
-Section 22.10; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1664)
+Section 22.10; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1659)
 
 > The verifier MUST be able to report every trusted external declaration reachable from a configured entrypoint.
 
@@ -2143,11 +2065,11 @@ Negative: [TestBoundaryTransitiveTrustReports](../internal/app/spec_boundary_tes
 
 Reports follow verified calls through recursion and collect external function signatures, type contracts in signatures/records/expressions/local annotations, and import-safe module contracts with their own manifest provenance. Tests exclude disconnected modules, uncalled external functions/types, and invalid claims; repeated cached/uncached worker configurations are equivalent. Explicitly declared parent package contracts are reported; undeclared parent behavior remains within the imported module trust assertion.
 
-### S25.2-356fe0f3
+### S25.2-a9b9e68b
 
-Section 25.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1776)
+Section 25.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1771)
 
-> PurePy 0.1 configuration MUST identify:
+> PurePy 0.2 configuration MUST identify:
 
 Positive: [TestLoadResolvesPathsAndPreservesOrder](../internal/config/config_test.go#L37); [TestLoadAllowsExplicitEmptyLists](../internal/config/config_test.go#L95); [TestLoadAcceptsQuotedCanonicalConfigKeys](../internal/config/case_sensitive_test.go#L42).
 
@@ -2155,27 +2077,13 @@ Negative: [TestLoadRejectsInvalidConfiguration](../internal/config/config_test.g
 
 Configuration tests cover all five required fields, explicit empty lists, supported versions, one contained source root, manifest order, invalid values, and missing fields. Exact decoded configuration keys now reject case-folded table/setting aliases and prevent language or source-root values from being overwritten under differently cased keys; errors identify the offending key.
 
-### S25.2-5cd8a8d8
-
-Section 25.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1778)
-
-> - language version;
-
-List obligation introduced by S25.2-356fe0f3.
-
-Positive: [TestLoadResolvesPathsAndPreservesOrder](../internal/config/config_test.go#L37).
-
-Negative: [TestBoundaryRequiredVersions/language_missing](../internal/config/spec_boundary_test.go#L8); [TestLoadRejectsInvalidConfiguration/language](../internal/config/config_test.go#L65).
-
-Language version is explicit and must be supported.
-
 ### S25.2-50422f2a
 
-Section 25.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1779)
+Section 25.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1773)
 
 > - target Python syntax version;
 
-List obligation introduced by S25.2-356fe0f3.
+List obligation introduced by S25.2-a9b9e68b.
 
 Positive: [TestLoadResolvesPathsAndPreservesOrder](../internal/config/config_test.go#L37).
 
@@ -2185,11 +2093,11 @@ Target Python syntax version is explicit and must be supported.
 
 ### S25.2-ebc6686a
 
-Section 25.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1780)
+Section 25.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1774)
 
 > - one source root;
 
-List obligation introduced by S25.2-356fe0f3.
+List obligation introduced by S25.2-a9b9e68b.
 
 Positive: [TestLoadResolvesPathsAndPreservesOrder](../internal/config/config_test.go#L37).
 
@@ -2199,11 +2107,11 @@ A single explicit source_root is resolved relative to the configuration; missing
 
 ### S25.2-225eb0c0
 
-Section 25.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1781)
+Section 25.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1775)
 
 > - zero or more entrypoints; and
 
-List obligation introduced by S25.2-356fe0f3.
+List obligation introduced by S25.2-a9b9e68b.
 
 Positive: [TestLoadAllowsExplicitEmptyLists](../internal/config/config_test.go#L95); [TestBoundaryAuthorityAndEntrypointReports](../internal/app/spec_boundary_test.go#L84).
 
@@ -2213,11 +2121,11 @@ An explicit empty list is allowed; omitted, malformed, and duplicate entries are
 
 ### S25.2-8e949831
 
-Section 25.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1782)
+Section 25.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1776)
 
 > - an ordered manifest list.
 
-List obligation introduced by S25.2-356fe0f3.
+List obligation introduced by S25.2-a9b9e68b.
 
 Positive: [TestLoadResolvesPathsAndPreservesOrder](../internal/config/config_test.go#L37); [TestLoadAllowsExplicitEmptyLists](../internal/config/config_test.go#L95).
 
@@ -2227,7 +2135,7 @@ The manifest list is explicit, may be empty, and retains order; omitted/duplicat
 
 ### S25.4-369a5f8d
 
-Section 25.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1792)
+Section 25.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1788)
 
 > Every configured entrypoint MUST resolve to one top-level verified function.
 
@@ -2239,7 +2147,7 @@ Both sync pure and async effectful entrypoints report exact signatures, pure arg
 
 ### S25.4-831a9b65
 
-Section 25.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1794)
+Section 25.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1790)
 
 > The verifier MUST report:
 
@@ -2251,7 +2159,7 @@ Both sync pure and async effectful entrypoints report exact signatures, pure arg
 
 ### S25.4-26ac538b
 
-Section 25.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1796)
+Section 25.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1792)
 
 > - sync or async kind;
 
@@ -2265,7 +2173,7 @@ Both sync pure and async effectful entrypoints report exact signatures, pure arg
 
 ### S25.4-def9af8b
 
-Section 25.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1797)
+Section 25.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1793)
 
 > - Pure Value parameters;
 
@@ -2279,7 +2187,7 @@ Both sync pure and async effectful entrypoints report exact signatures, pure arg
 
 ### S25.4-b1e74f50
 
-Section 25.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1798)
+Section 25.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1794)
 
 > - capability parameters and labels;
 
@@ -2293,7 +2201,7 @@ Both sync pure and async effectful entrypoints report exact signatures, pure arg
 
 ### S25.4-79cc1eb1
 
-Section 25.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1799)
+Section 25.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1795)
 
 > - host-reference parameters; and
 
@@ -2307,7 +2215,7 @@ Both sync pure and async effectful entrypoints report exact signatures, pure arg
 
 ### S25.4-b8f71e00
 
-Section 25.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1800)
+Section 25.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1796)
 
 > - return type.
 
@@ -2321,7 +2229,7 @@ Both sync pure and async effectful entrypoints report exact signatures, pure arg
 
 ### S26.3-efa323f5
 
-Section 26.3; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1845)
+Section 26.3; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1841)
 
 > Database rows and operation results MUST cross into verified code as Pure Values.
 
@@ -2333,19 +2241,19 @@ The static boundary admits database result declarations only as Pure Value types
 
 ### S28.1-129494e2
 
-Section 28.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1938)
+Section 28.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1934)
 
 > A diagnostic MUST include:
 
 Positive: [TestDiagnosticContextBuilders](../internal/diag/context_test.go#L14); [TestDiagnosticDeclarationPathsAcrossCacheAndWorkers](../internal/app/context_diagnostics_test.go#L54).
 
-Negative: [TestDiagnosticDeclarationPathsAcrossCacheAndWorkers](../internal/app/context_diagnostics_test.go#L54); [TestCallDiagnosticParameterContext](../internal/check/call_diagnostics_test.go#L81); [TestCallDiagnosticArgumentOrigin](../internal/check/call_diagnostics_test.go#L94); [TestExpressionDiagnosticTypesAndDeclarations](../internal/check/expression_diagnostics_test.go#L9); [TestLocalDiagnosticDeclarationPaths](../internal/check/expression_diagnostics_test.go#L40); [TestExpressionDiagnosticFieldAndCallOrigins](../internal/check/expression_diagnostics_test.go#L108); [TestDeclarationConflictDiagnosticContext](../internal/check/program_diagnostics_test.go#L40); [TestAnnotationDiagnosticContext](../internal/check/program_diagnostics_test.go#L76); [TestConstantDiagnosticContext](../internal/check/program_diagnostics_test.go#L120); [TestCycleDiagnosticDeclarationPaths](../internal/check/program_diagnostics_test.go#L173); [TestManifestLinkDiagnosticContext](../internal/check/program_diagnostics_test.go#L208); [TestManifestDuplicateDeclarationContext](../internal/manifest/diagnostic_source_test.go#L117); [TestConfigurationDuplicateDeclarationPaths](../internal/config/spec_source_test.go#L92).
+Negative: [TestDiagnosticDeclarationPathsAcrossCacheAndWorkers](../internal/app/context_diagnostics_test.go#L54); [TestCallDiagnosticParameterContext](../internal/check/call_diagnostics_test.go#L81); [TestCallDiagnosticArgumentOrigin](../internal/check/call_diagnostics_test.go#L94); [TestExpressionDiagnosticTypesAndDeclarations](../internal/check/expression_diagnostics_test.go#L9); [TestLocalDiagnosticDeclarationPaths](../internal/check/expression_diagnostics_test.go#L40); [TestExpressionDiagnosticFieldAndCallOrigins](../internal/check/expression_diagnostics_test.go#L108); [TestDeclarationConflictDiagnosticContext](../internal/check/program_diagnostics_test.go#L40); [TestAnnotationDiagnosticContext](../internal/check/program_diagnostics_test.go#L76); [TestConstantDiagnosticContext](../internal/check/program_diagnostics_test.go#L120); [TestCycleDiagnosticDeclarationPaths](../internal/check/program_diagnostics_test.go#L173); [TestManifestLinkDiagnosticContext](../internal/check/program_diagnostics_test.go#L203); [TestManifestDuplicateDeclarationContext](../internal/manifest/diagnostic_source_test.go#L117); [TestConfigurationDuplicateDeclarationPaths](../internal/config/spec_source_test.go#L92).
 
 Diagnostic metadata, structured known types, qualified symbols, and declaration paths are covered across expressions, flow, calls, imports, signatures, constants, cycles, manifests, and configuration. End-to-end JSON/text reports preserve complete context across cold/warm/disabled caches and worker counts. Syntax-only errors omit unavailable semantic context.
 
 ### S28.1-d84350e4
 
-Section 28.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1940)
+Section 28.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1936)
 
 > - stable code;
 
@@ -2361,7 +2269,7 @@ Negative fixtures assert stable diagnostic codes; repeated cached and uncached r
 
 ### S28.1-19faa703
 
-Section 28.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1941)
+Section 28.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1937)
 
 > - severity;
 
@@ -2375,7 +2283,7 @@ The error reports assert severity=error; a valid program reports no diagnostics.
 
 ### S28.1-ec41c6d2
 
-Section 28.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1942)
+Section 28.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1938)
 
 > - file and source range;
 
@@ -2389,7 +2297,7 @@ Source diagnostics retain exact byte/Unicode ranges, including multiline unsuppo
 
 ### S28.1-d2eb1b4a
 
-Section 28.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1943)
+Section 28.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1939)
 
 > - concise explanation;
 
@@ -2403,7 +2311,7 @@ Tests require a nonempty explanation and exercise representative human-readable 
 
 ### S28.1-7bfbac9d
 
-Section 28.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1944)
+Section 28.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1940)
 
 > - relevant symbol and type information; and
 
@@ -2411,7 +2319,7 @@ List obligation introduced by S28.1-129494e2.
 
 Positive: [TestDiagnosticContextBuilders](../internal/diag/context_test.go#L14); [TestDiagnosticDeclarationPathsAcrossCacheAndWorkers](../internal/app/context_diagnostics_test.go#L54).
 
-Negative: [TestDiagnosticDeclarationPathsAcrossCacheAndWorkers](../internal/app/context_diagnostics_test.go#L54); [TestCallDiagnosticParameterContext](../internal/check/call_diagnostics_test.go#L81); [TestCallDiagnosticArgumentOrigin](../internal/check/call_diagnostics_test.go#L94); [TestExpressionDiagnosticTypesAndDeclarations](../internal/check/expression_diagnostics_test.go#L9); [TestLocalDiagnosticDeclarationPaths](../internal/check/expression_diagnostics_test.go#L40); [TestExpressionDiagnosticFieldAndCallOrigins](../internal/check/expression_diagnostics_test.go#L108); [TestDeclarationConflictDiagnosticContext](../internal/check/program_diagnostics_test.go#L40); [TestAnnotationDiagnosticContext](../internal/check/program_diagnostics_test.go#L76); [TestConstantDiagnosticContext](../internal/check/program_diagnostics_test.go#L120); [TestCycleDiagnosticDeclarationPaths](../internal/check/program_diagnostics_test.go#L173); [TestManifestLinkDiagnosticContext](../internal/check/program_diagnostics_test.go#L208); [TestManifestDuplicateDeclarationContext](../internal/manifest/diagnostic_source_test.go#L117); [TestConfigurationDuplicateDeclarationPaths](../internal/config/spec_source_test.go#L92).
+Negative: [TestDiagnosticDeclarationPathsAcrossCacheAndWorkers](../internal/app/context_diagnostics_test.go#L54); [TestCallDiagnosticParameterContext](../internal/check/call_diagnostics_test.go#L81); [TestCallDiagnosticArgumentOrigin](../internal/check/call_diagnostics_test.go#L94); [TestExpressionDiagnosticTypesAndDeclarations](../internal/check/expression_diagnostics_test.go#L9); [TestLocalDiagnosticDeclarationPaths](../internal/check/expression_diagnostics_test.go#L40); [TestExpressionDiagnosticFieldAndCallOrigins](../internal/check/expression_diagnostics_test.go#L108); [TestDeclarationConflictDiagnosticContext](../internal/check/program_diagnostics_test.go#L40); [TestAnnotationDiagnosticContext](../internal/check/program_diagnostics_test.go#L76); [TestConstantDiagnosticContext](../internal/check/program_diagnostics_test.go#L120); [TestCycleDiagnosticDeclarationPaths](../internal/check/program_diagnostics_test.go#L173); [TestManifestLinkDiagnosticContext](../internal/check/program_diagnostics_test.go#L203); [TestManifestDuplicateDeclarationContext](../internal/manifest/diagnostic_source_test.go#L117); [TestConfigurationDuplicateDeclarationPaths](../internal/config/spec_source_test.go#L92).
 
 [Conformance fixtures](../fixtures/conformance/cases.json): `bool_is_not_int`, `wrong_capability`.
 
@@ -2419,7 +2327,7 @@ Optional structured type roles preserve expected/actual, operand, declaration, f
 
 ### S28.1-f8a8135a
 
-Section 28.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1945)
+Section 28.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L1941)
 
 > - a deterministic explanation path when another declaration is involved.
 
@@ -2427,7 +2335,7 @@ List obligation introduced by S28.1-129494e2.
 
 Positive: [TestDiagnosticContextBuilders](../internal/diag/context_test.go#L14); [TestDiagnosticDeclarationPathsAcrossCacheAndWorkers](../internal/app/context_diagnostics_test.go#L54).
 
-Negative: [TestDiagnosticDeclarationPathsAcrossCacheAndWorkers](../internal/app/context_diagnostics_test.go#L54); [TestCallDiagnosticParameterContext](../internal/check/call_diagnostics_test.go#L81); [TestCallDiagnosticArgumentOrigin](../internal/check/call_diagnostics_test.go#L94); [TestExpressionDiagnosticTypesAndDeclarations](../internal/check/expression_diagnostics_test.go#L9); [TestLocalDiagnosticDeclarationPaths](../internal/check/expression_diagnostics_test.go#L40); [TestExpressionDiagnosticFieldAndCallOrigins](../internal/check/expression_diagnostics_test.go#L108); [TestDeclarationConflictDiagnosticContext](../internal/check/program_diagnostics_test.go#L40); [TestAnnotationDiagnosticContext](../internal/check/program_diagnostics_test.go#L76); [TestConstantDiagnosticContext](../internal/check/program_diagnostics_test.go#L120); [TestCycleDiagnosticDeclarationPaths](../internal/check/program_diagnostics_test.go#L173); [TestManifestLinkDiagnosticContext](../internal/check/program_diagnostics_test.go#L208); [TestManifestDuplicateDeclarationContext](../internal/manifest/diagnostic_source_test.go#L117); [TestConfigurationDuplicateDeclarationPaths](../internal/config/spec_source_test.go#L92).
+Negative: [TestDiagnosticDeclarationPathsAcrossCacheAndWorkers](../internal/app/context_diagnostics_test.go#L54); [TestCallDiagnosticParameterContext](../internal/check/call_diagnostics_test.go#L81); [TestCallDiagnosticArgumentOrigin](../internal/check/call_diagnostics_test.go#L94); [TestExpressionDiagnosticTypesAndDeclarations](../internal/check/expression_diagnostics_test.go#L9); [TestLocalDiagnosticDeclarationPaths](../internal/check/expression_diagnostics_test.go#L40); [TestExpressionDiagnosticFieldAndCallOrigins](../internal/check/expression_diagnostics_test.go#L108); [TestDeclarationConflictDiagnosticContext](../internal/check/program_diagnostics_test.go#L40); [TestAnnotationDiagnosticContext](../internal/check/program_diagnostics_test.go#L76); [TestConstantDiagnosticContext](../internal/check/program_diagnostics_test.go#L120); [TestCycleDiagnosticDeclarationPaths](../internal/check/program_diagnostics_test.go#L173); [TestManifestLinkDiagnosticContext](../internal/check/program_diagnostics_test.go#L203); [TestManifestDuplicateDeclarationContext](../internal/manifest/diagnostic_source_test.go#L117); [TestConfigurationDuplicateDeclarationPaths](../internal/config/spec_source_test.go#L92).
 
 [Conformance fixtures](../fixtures/conformance/cases.json): `capability_missing`, `wrong_capability`.
 
@@ -2435,7 +2343,7 @@ Related locations follow relevant imports, declarations, actual argument and fie
 
 ### S29.1-dd0b87a3
 
-Section 29.1; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L2024)
+Section 29.1; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L2020)
 
 > Checks the configured project and emits deterministic human-readable diagnostics.
 
@@ -2447,7 +2355,7 @@ Text and JSON rejection output are compared across worker counts and cache modes
 
 ### S29.2-1041d9a8
 
-Section 29.2; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L2041)
+Section 29.2; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L2037)
 
 > Explains the resolved symbol, type, category, capability requirement, or rejection at a source location.
 
@@ -2459,7 +2367,7 @@ Successful call locations explain their resolved host target; a missing entrypoi
 
 ### S29.3-2658342a
 
-Section 29.3; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L2049)
+Section 29.3; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L2045)
 
 > Reports configured entrypoints or a selected function with:
 
@@ -2471,7 +2379,7 @@ The report includes capability labels, host references, and directly called trus
 
 ### S29.4-7c119390
 
-Section 29.4; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L2060)
+Section 29.4; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L2056)
 
 > Removes verifier analysis artifacts.
 
@@ -2483,7 +2391,7 @@ Cleanup removes owned cache artifacts while preserving unrelated files, director
 
 ### S30.2-737e9893
 
-Section 30.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2084)
+Section 30.2; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2080)
 
 > Parser-specific nodes MUST be isolated behind a frontend adapter. Unsupported syntax MUST still retain an accurate source range for diagnostics.
 
@@ -2495,7 +2403,7 @@ Static import checks confine tree-sitter to the frontend; returned IR is detache
 
 ### S30.3-e5240195
 
-Section 30.3; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2099)
+Section 30.3; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2095)
 
 > The whole-program checker MUST NOT depend directly on tree-sitter node identities.
 
@@ -2507,7 +2415,7 @@ The checker imports only detached model nodes; its malformed-IR regressions run 
 
 ### S30.10-3e3c07d9
 
-Section 30.10; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L2151)
+Section 30.10; **tested**; additional prose rule. [Specification](PUREPY_SPEC.md#L2147)
 
 > Diagnostics and summaries are sorted by stable module name, source position, code, and deterministic tie-breaker.
 
@@ -2517,21 +2425,57 @@ Negative: [TestDiagnosticOrderUsesModuleNames](../internal/app/spec_diagnostics_
 
 Package diagnostics sort before child modules, and equal-message diagnostics compare their complete stable context.
 
-### S30.11-a76d6df4
+### S30.11-79208052
 
-Section 30.11; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2157)
+Section 30.11; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L2151)
+
+> The verifier MUST check every nested body and propagate callable provenance through parameters, returns, captures, and local aliases.
+
+Positive: [TestFunctionalAccepted](../internal/check/functional_test.go#L37).
+
+Negative: [TestFunctionalRejected](../internal/check/functional_test.go#L54).
+
+Functional-core acceptance and rejection fixtures exercise this rule. This evidence is not a complete proof or exhaustive coverage.
+
+### S30.11-86a8bed1
+
+Section 30.11; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L2152)
+
+> Generic recursion MUST preserve type parameters; expanding recursion and alias-only cycles are rejected.
+
+Positive: [TestFunctionalAccepted](../internal/check/functional_test.go#L37).
+
+Negative: [TestFunctionalRejected](../internal/check/functional_test.go#L54).
+
+Functional-core acceptance and rejection fixtures exercise this rule. This evidence is not a complete proof or exhaustive coverage.
+
+### S30.11-86ba08a2
+
+Section 30.11; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L2153)
+
+> Expanded types MUST stay within 4,096 nodes and 128 levels; exceeding an analysis budget is an error.
+
+Positive: [TestFunctionalAccepted](../internal/check/functional_test.go#L37).
+
+Negative: [TestFunctionalRejected](../internal/check/functional_test.go#L54).
+
+Functional-core acceptance and rejection fixtures exercise this rule. This evidence is not a complete proof or exhaustive coverage.
+
+### S30.12-a76d6df4
+
+Section 30.12; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L2159)
 
 > Such rejection MUST produce an explicit error and MUST NOT produce successful verification by skipping analysis.
 
-Positive: [TestNestedSourceTextAllocationAndOwnership](../internal/frontend/resource_audit_test.go#L31); [TestCacheJSONBudgetIgnoresQuotedStructuralCharacters](../internal/cache/resource_audit_test.go#L48).
+Positive: [TestFunctionalAccepted](../internal/check/functional_test.go#L37).
 
-Negative: [TestParserRejectsExcessiveSyntaxResources](../internal/frontend/resource_audit_test.go#L16); [TestParserBoundsRepeatedLexicalDiagnostics](../internal/frontend/resource_audit_test.go#L9); [TestCacheRejectsDecodeAmplificationBeforeTypedAllocation](../internal/cache/resource_audit_test.go#L14); [TestCacheRejectsStructureBeforeDecode](../internal/cache/resource_audit_test.go#L61).
+Negative: [TestFunctionalRejected](../internal/check/functional_test.go#L54).
 
-Native depth/node/overlapping-text excess returns PP003 with no semantic tree; diagnostic overflow emits an explicit final truncation error. Ordinary bounded nested syntax retains detached text. Malformed oversized cache structures are rejected before typed decoding; quoted punctuation does not spuriously exhaust structural budgets. These bounded controls do not establish a global parser/process resource bound.
+Functional-core acceptance and rejection fixtures exercise this rule. This evidence is not a complete proof or exhaustive coverage.
 
 ### S31.3-17a86144
 
-Section 31.3; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2194)
+Section 31.3; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2196)
 
 > Concurrent work products MUST be merged in stable order. Output MUST NOT depend on goroutine scheduling or Go map iteration.
 
@@ -2543,7 +2487,7 @@ Accepted and rejected reports are byte-equal across worker counts and cache mode
 
 ### S31.6-6da2976f
 
-Section 31.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2223)
+Section 31.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2225)
 
 > Cached and uncached runs MUST produce byte-for-byte equivalent machine-readable results.
 
@@ -2555,7 +2499,7 @@ JSON equivalence is checked for accepted projects plus parser, linker, local-cal
 
 ### S31.6-211a6984
 
-Section 31.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2225)
+Section 31.6; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2227)
 
 > Cache corruption or schema mismatch MUST fall back safely to reanalysis.
 
@@ -2567,7 +2511,7 @@ Valid artifacts round-trip; truncation, malformed payloads, checksums, and schem
 
 ### S31.7-f5656237
 
-Section 31.7; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2229)
+Section 31.7; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2231)
 
 > Performance optimizations MUST NOT cause unknown operations to be accepted, skip validation, or make results schedule-dependent.
 
@@ -2577,11 +2521,11 @@ Negative: [TestRejectedReportsAreEquivalentAcrossCacheAndWorkers](../internal/ap
 
 Warm summaries never cache authorization decisions: unknown-call and changed dependency/manifest regressions require fresh rejection. Cache and workers cannot suppress those tested validations.
 
-### S32.1-31bd3d2e
+### S32.1-7852329f
 
-Section 32.1; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L2237)
+Section 32.1; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L2239)
 
-> A conforming PurePy 0.1 verifier MUST:
+> A conforming PurePy 0.2 verifier MUST:
 
 Positive: [TestReferenceServiceConforms](../internal/app/conformance_test.go#L77); [TestCacheColdWarmDisabledAndWorkersAreEquivalent](../internal/app/cli_test.go#L104).
 
@@ -2591,11 +2535,11 @@ The required fixture runner and source-no-execution, unknown-operation, version-
 
 ### S32.1-fbf45773
 
-Section 32.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2239)
+Section 32.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2241)
 
 > - accept every valid required conformance fixture;
 
-List obligation introduced by S32.1-31bd3d2e.
+List obligation introduced by S32.1-7852329f.
 
 Positive: [TestConformance](../internal/app/conformance_test.go#L20).
 
@@ -2607,11 +2551,11 @@ The conformance runner checks every fixture validity bit and required diagnostic
 
 ### S32.1-96fc32c5
 
-Section 32.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2240)
+Section 32.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2242)
 
 > - reject every invalid required conformance fixture;
 
-List obligation introduced by S32.1-31bd3d2e.
+List obligation introduced by S32.1-7852329f.
 
 Positive: [TestConformance](../internal/app/conformance_test.go#L20).
 
@@ -2623,11 +2567,11 @@ Every invalid fixture must fail verification and emit its required diagnostic fa
 
 ### S32.1-d4cb00a5
 
-Section 32.1; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L2241)
+Section 32.1; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L2243)
 
 > - implement the closed syntax and semantic rules in this document;
 
-List obligation introduced by S32.1-31bd3d2e.
+List obligation introduced by S32.1-7852329f.
 
 Positive: [TestControlFlowAndExpressions](../internal/frontend/parser_test.go#L100); [TestNamedUnicodeEscapes](../internal/frontend/unicode_test.go#L36); [TestNamedUnicodeEscapesAcrossCacheStates](../internal/app/unicode_test.go#L8); [TestUnicodeDataNamesAndAliases](../internal/unicodenames/names_test.go#L37).
 
@@ -2637,11 +2581,11 @@ The audit maps mandatory rules and feature families. Named Unicode escapes now c
 
 ### S32.1-4a1e78a9
 
-Section 32.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2242)
+Section 32.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2244)
 
 > - never execute analyzed project code;
 
-List obligation introduced by S32.1-31bd3d2e.
+List obligation introduced by S32.1-7852329f.
 
 Positive: [TestVerificationNeverExecutesProjectOrHost](../internal/app/cli_test.go#L225).
 
@@ -2651,11 +2595,11 @@ A valid manifest-backed project and rejected executable module both leave execut
 
 ### S32.1-6d2ea518
 
-Section 32.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2243)
+Section 32.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2245)
 
 > - reject unknown behavior;
 
-List obligation introduced by S32.1-31bd3d2e.
+List obligation introduced by S32.1-7852329f.
 
 Positive: [TestCacheColdWarmDisabledAndWorkersAreEquivalent](../internal/app/cli_test.go#L104).
 
@@ -2667,11 +2611,11 @@ Unknown external symbols and dynamic/unknown calls reject, including across warm
 
 ### S32.1-949949ad
 
-Section 32.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2244)
+Section 32.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2246)
 
 > - produce deterministic machine-readable results; and
 
-List obligation introduced by S32.1-31bd3d2e.
+List obligation introduced by S32.1-7852329f.
 
 Positive: [TestCacheColdWarmDisabledAndWorkersAreEquivalent](../internal/app/cli_test.go#L104).
 
@@ -2681,21 +2625,21 @@ Accepted and rejected machine reports are compared byte for byte, including diag
 
 ### S32.1-98babde7
 
-Section 32.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2245)
+Section 32.1; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2247)
 
 > - identify its supported specification and language versions.
 
-List obligation introduced by S32.1-31bd3d2e.
+List obligation introduced by S32.1-7852329f.
 
 Positive: [TestCLIVersionAndHelp](../internal/app/cli_test.go#L60); [TestReportsIdentifySpecificationAndLanguageVersions](../internal/app/spec_diagnostics_test.go#L144).
 
 Negative: [TestLoadRejectsInvalidConfiguration](../internal/config/config_test.go#L65); [TestReportsIdentifySpecificationAndLanguageVersions](../internal/app/spec_diagnostics_test.go#L144).
 
-CLI version and accepted/rejected JSON reports identify target specification 0.3-draft, language 0.1, and Python syntax 3.14. Invalid configuration versions reject; identifying the target does not assert complete conformance.
+CLI version and accepted/rejected JSON reports identify target specification 0.4-draft, language 0.2, and Python syntax 3.14. Invalid configuration versions reject; identifying the target does not assert complete conformance.
 
 ### S32.4-018499f6
 
-Section 32.4; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L2269)
+Section 32.4; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L2271)
 
 > The conformance suite MUST include positive and negative fixtures for:
 
@@ -2707,7 +2651,7 @@ The suite has positive and negative cases across required feature families; fini
 
 ### S32.4-f5622679
 
-Section 32.4; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L2271)
+Section 32.4; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L2273)
 
 > - every supported statement and expression;
 
@@ -2723,7 +2667,7 @@ Fixtures span the supported statement/expression families, but the finite operat
 
 ### S32.4-2ccfd594
 
-Section 32.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2272)
+Section 32.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2274)
 
 > - every prohibited syntax family;
 
@@ -2737,7 +2681,7 @@ The parser table rejects each listed prohibited syntax family, including excepti
 
 ### S32.4-51b7d9a7
 
-Section 32.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2273)
+Section 32.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2275)
 
 > - module and import rules;
 
@@ -2749,7 +2693,7 @@ Named accepted and rejected integration fixtures exercise this conformance famil
 
 ### S32.4-56714003
 
-Section 32.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2274)
+Section 32.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2276)
 
 > - value records;
 
@@ -2761,7 +2705,7 @@ Named accepted and rejected integration fixtures exercise this conformance famil
 
 ### S32.4-abfbc98e
 
-Section 32.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2275)
+Section 32.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2277)
 
 > - exact type matching;
 
@@ -2773,7 +2717,7 @@ Named accepted and rejected integration fixtures exercise this conformance famil
 
 ### S32.4-e8cb6445
 
-Section 32.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2276)
+Section 32.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2278)
 
 > - optional narrowing;
 
@@ -2789,7 +2733,7 @@ Named accepted and rejected integration fixtures exercise this conformance famil
 
 ### S32.4-6c66ad5b
 
-Section 32.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2277)
+Section 32.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2279)
 
 > - capability forwarding;
 
@@ -2801,7 +2745,7 @@ Named accepted and rejected integration fixtures exercise this conformance famil
 
 ### S32.4-9a177c2a
 
-Section 32.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2278)
+Section 32.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2280)
 
 > - host-reference restrictions;
 
@@ -2813,7 +2757,7 @@ Named accepted and rejected integration fixtures exercise this conformance famil
 
 ### S32.4-ed7fc861
 
-Section 32.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2279)
+Section 32.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2281)
 
 > - direct async usage;
 
@@ -2825,7 +2769,7 @@ Named accepted and rejected integration fixtures exercise this conformance famil
 
 ### S32.4-67a6663d
 
-Section 32.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2280)
+Section 32.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2282)
 
 > - pure and effectful call boundaries;
 
@@ -2837,7 +2781,7 @@ Named accepted and rejected integration fixtures exercise this conformance famil
 
 ### S32.4-0449ecd2
 
-Section 32.4; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L2281)
+Section 32.4; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L2283)
 
 > - manifest validation; and
 
@@ -2851,7 +2795,7 @@ Full manifest loading, strict container shapes, source indexing and ordered merg
 
 ### S32.4-9df511b8
 
-Section 32.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2282)
+Section 32.4; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2284)
 
 > - deterministic diagnostics.
 
@@ -2863,11 +2807,11 @@ Negative: [TestRejectedReportsAreEquivalentAcrossCacheAndWorkers](../internal/ap
 
 Accepted and rejected project fixtures compare cold/warm/no-cache reports and worker counts; diagnostic context ties have a focused regression.
 
-### S32.5-a0c47895
+### S32.5-8a713958
 
-Section 32.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2286)
+Section 32.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2288)
 
-> Before PurePy 0.1 is considered complete, a reference workload MUST demonstrate:
+> Before PurePy 0.2 is considered complete, a reference workload MUST demonstrate:
 
 Positive: [TestReferenceServiceConforms](../internal/app/conformance_test.go#L77); [test_reads_overlap_across_host_invocations](../examples/reference_service/tests/test_service.py#L90); [test_atomic_updates_under_concurrency](../examples/reference_service/tests/test_service.py#L96); [AcceptanceTests.test_recorded_measurements_pass_predefined_ceilings](../tools/tests/test_performance_acceptance.py#L21).
 
@@ -2877,11 +2821,11 @@ The documented local Apple M4 acceptance profile passed all 314 checks over the 
 
 ### S32.5-930e9a0d
 
-Section 32.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2288)
+Section 32.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2290)
 
 > - host-managed concurrent entrypoint invocation;
 
-List obligation introduced by S32.5-a0c47895.
+List obligation introduced by S32.5-8a713958.
 
 Positive: [test_reads_overlap_across_host_invocations](../examples/reference_service/tests/test_service.py#L90).
 
@@ -2891,11 +2835,11 @@ Socket requests overlap in separate host invocations; cancellation waits for a s
 
 ### S32.5-ccab6498
 
-Section 32.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2289)
+Section 32.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2291)
 
 > - an async verified handler;
 
-List obligation introduced by S32.5-a0c47895.
+List obligation introduced by S32.5-8a713958.
 
 Positive: [TestReferenceServiceConforms](../internal/app/conformance_test.go#L77); [test_health_lookup_and_errors](../examples/reference_service/tests/test_service.py#L59).
 
@@ -2907,25 +2851,23 @@ The service verifies its async entrypoint and handles success plus expected data
 
 ### S32.5-a8193e7b
 
-Section 32.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2290)
+Section 32.5; **partial**; mandatory. [Specification](PUREPY_SPEC.md#L2292)
 
 > - immutable HTTP-like request parsing;
 
-List obligation introduced by S32.5-a0c47895.
+List obligation introduced by S32.5-8a713958.
 
-Positive: [test_parse_and_routes](../examples/reference_service/tests/test_service.py#L25); [test_frozen_slots](../python/tests/test_value.py#L38).
+Positive: [test_runtime_fidelity](../examples/functional_core/check_runtime.py#L44).
 
-Negative: [test_malformed_requests_are_values](../examples/reference_service/tests/test_service.py#L35).
-
-The service parses immutable bytes into verified value records, routes well-formed requests, and represents malformed requests as values; runtime mutation tests enforce record immutability.
+Standard NamedTuple immutability and runtime operations are checked by the standalone example; no PurePy runtime is shipped.
 
 ### S32.5-66ff8aaf
 
-Section 32.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2291)
+Section 32.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2293)
 
 > - static routing;
 
-List obligation introduced by S32.5-a0c47895.
+List obligation introduced by S32.5-8a713958.
 
 Positive: [test_parse_and_routes](../examples/reference_service/tests/test_service.py#L25).
 
@@ -2935,11 +2877,11 @@ Concrete health/read/write/SSE paths route statically; unknown and malformed pat
 
 ### S32.5-747714e4
 
-Section 32.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2292)
+Section 32.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2294)
 
 > - one database read;
 
-List obligation introduced by S32.5-a0c47895.
+List obligation introduced by S32.5-8a713958.
 
 Positive: [test_health_lookup_and_errors](../examples/reference_service/tests/test_service.py#L59).
 
@@ -2949,11 +2891,11 @@ A socket request retrieves Ada through the capability-authorized read; unavailab
 
 ### S32.5-535ff08a
 
-Section 32.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2293)
+Section 32.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2295)
 
 > - one atomic database write or transaction-plan call;
 
-List obligation introduced by S32.5-a0c47895.
+List obligation introduced by S32.5-8a713958.
 
 Positive: [test_atomic_updates_under_concurrency](../examples/reference_service/tests/test_service.py#L96).
 
@@ -2963,11 +2905,11 @@ Concurrent increments preserve every update and event; an injected event-write f
 
 ### S32.5-94b2fbe6
 
-Section 32.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2294)
+Section 32.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2296)
 
 > - an SSE-style send loop;
 
-List obligation introduced by S32.5-a0c47895.
+List obligation introduced by S32.5-8a713958.
 
 Positive: [test_sse_repeated_events_and_host_cancellation](../examples/reference_service/tests/test_service.py#L152).
 
@@ -2977,11 +2919,11 @@ The socket test receives repeated balance events and verifies host cancellation 
 
 ### S32.5-bc4aeedf
 
-Section 32.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2295)
+Section 32.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2297)
 
 > - pure domain and rendering functions; and
 
-List obligation introduced by S32.5-a0c47895.
+List obligation introduced by S32.5-8a713958.
 
 Positive: [TestReferenceServiceConforms](../internal/app/conformance_test.go#L77); [test_health_lookup_and_errors](../examples/reference_service/tests/test_service.py#L59).
 
@@ -2991,11 +2933,11 @@ The verifier accepts domain/render modules without authority parameters; socket 
 
 ### S32.5-66e0ae7d
 
-Section 32.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2296)
+Section 32.5; **tested**; mandatory. [Specification](PUREPY_SPEC.md#L2298)
 
 > - acceptable verifier and runtime performance under a documented load test.
 
-List obligation introduced by S32.5-a0c47895.
+List obligation introduced by S32.5-8a713958.
 
 Positive: [test_reads_overlap_across_host_invocations](../examples/reference_service/tests/test_service.py#L90); [LoadIntegrationTests.test_sustained_mixed_requests_drain_sse_concurrently](../examples/reference_service/tests/test_loadtest.py#L147); [AcceptanceTests.test_recorded_measurements_pass_predefined_ceilings](../tools/tests/test_performance_acceptance.py#L21).
 

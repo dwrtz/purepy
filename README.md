@@ -1,32 +1,22 @@
 # PurePy
 
 PurePy verifies a small, immutable subset of Python without importing or executing
-the project being checked. Calls resolve to exact top-level declarations, external
-authority requires explicit capability parameters, and async composition uses only
-direct `await` of known calls.
+the project being checked. The standard language supports immutable records,
+generic functions, composition, and stable closures using ordinary Python 3.14.
+External authority requires explicit capability parameters; async composition
+uses direct `await` of known calls.
 
-This repository contains the experimental PurePy 0.1 verifier, the `@value` Python
-support package, conformance tests, and a working asynchronous reference service.
+Running verified 0.2 code requires no PurePy runtime or Python package. Download
+the native verifier from [GitHub releases](https://github.com/dwrtz/purepy/releases)
+or build it below. Omitting `language` in configuration selects the standard 0.2 language.
+Only language 0.2 is supported.
 The Go module is `github.com/dwrtz/purepy`.
-
-## Install a release
-
-Once a release is available on PyPI, install the small Python runtime with:
-
-```sh
-python -m pip install purepy-lang
-```
-
-The distribution is named `purepy-lang`; Python code still imports
-`from purepy import value`. PyPI contains the `@value` runtime. Download the native
-Go verifier from [GitHub releases](https://github.com/dwrtz/purepy/releases), or
-build it from source below.
 
 ## Build and set up
 
 Prerequisites: Go 1.24 or later, a C compiler for the pinned tree-sitter parser,
-and `uv`. The Makefile creates a repository-local `.venv` with Python 3.14 and
-installs the support package through the checked-in `python/uv.lock`.
+and `uv`. The Makefile creates a repository-local `.venv` with Python 3.14 for
+examples and tests. It installs no PurePy package.
 
 ```sh
 make setup
@@ -35,7 +25,7 @@ bin/purepy version
 make example
 ```
 
-`make setup` runs `uv sync`; rerunning it updates the existing environment. Override
+`make setup` creates or reuses the Python environment. Override
 the executable or interpreter with `UV=...` or `PYTHON_VERSION=...` if needed.
 Building and running the Go verifier itself does not require Python.
 
@@ -52,8 +42,7 @@ purepy version
 This builds and installs the CLI at `~/.local/bin/purepy` and the bundled
 [agent skill](skills/purepy/SKILL.md) at `~/.agents/skills/purepy/SKILL.md`.
 Add the PATH export to your shell startup file to keep the command available.
-Rerun `make install` to update both. The separate Python `@value` runtime is
-installed through `make setup` for this checkout or `purepy-lang` for your project.
+Rerun `make install` to update both. Verified programs run directly on Python.
 
 ```sh
 make uninstall
@@ -70,7 +59,6 @@ Create `purepy.toml` beside a `src` directory:
 
 ```toml
 [tool.purepy]
-language = "0.1"
 python_syntax = "3.14"
 source_root = "src"
 entrypoints = ["app.total"]
@@ -80,10 +68,9 @@ manifests = []
 Then put this in `src/app.py`:
 
 ```python
-from purepy import value
+from typing import NamedTuple
 
-@value
-class Line:
+class Line(NamedTuple):
     price: int
     quantity: int
 
@@ -101,8 +88,8 @@ bin/purepy cache clean --config /path/to/project/purepy.toml
 
 Use `--no-cache` to disable cache reads and writes, and `--timings` for stage timings
 on stderr. Exit status is 0 on success, 1 for rejected source, and 2 for usage,
-configuration, manifest-loading, or internal errors. JSON schema version 1 is
-deterministic across worker counts and cache states.
+configuration, manifest-loading, or internal errors. Reports are deterministic
+across worker counts and cache states. Reports use JSON schema 2; host manifests use schema 1.
 
 ## Test and run the service
 
@@ -158,13 +145,14 @@ with separate pipeline/worker timings and per-process memory. Pass
 `BENCHMARK_ARGS='--sizes 100,1000 --workers 1,4 --corpora wide,invalid,manifest'`
 for a scaling matrix. `make benchmark-compare` checks matching measurements against
 tolerant regression budgets; see the [performance guide](docs/PERFORMANCE.md).
-`make package` prepares local binary/checksum and Python distribution artifacts in
+`make package` prepares native binaries and checksums in
 `dist/candidate`, together with a source archive and verified inventories. Use a
 fresh `RELEASE_OUTPUT=...` for each candidate. Neither target publishes a release.
 
 ## Design and status
 
 - [Language specification](docs/PUREPY_SPEC.md) and [implementation plan](docs/PUREPY_PLAN.md)
+- [Functional 0.2 language](docs/FUNCTIONAL_CORE.md) and [executable examples](examples/functional_core/README.md)
 - [Language guide](docs/LANGUAGE_GUIDE.md)
 - [Implemented syntax and intrinsic table](docs/SYNTAX_MATRIX.md)
 - [Manifest schema and examples](docs/MANIFESTS.md)
@@ -177,5 +165,5 @@ fresh `RELEASE_OUTPUT=...` for each candidate. Neither target publishes a releas
 - [Reference service](examples/reference_service/README.md)
 
 The implementation deliberately has no unsafe suppression, executable verifier
-plugins, per-file exclusions, mutable containers, higher-order calls, task creation,
+plugins, per-file exclusions, mutable containers, task creation,
 generators, context managers, or runtime effect framework.

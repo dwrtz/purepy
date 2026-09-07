@@ -1,4 +1,4 @@
-# Writing PurePy 0.1 programs
+# Writing PurePy 0.2 programs
 
 PurePy checks a closed subset of Python 3.14 without running your source. A
 successful check applies to every Python module beneath the configured source
@@ -8,10 +8,9 @@ external functions in a trusted declarative manifest.
 ## Start with immutable data and ordinary functions
 
 ```python
-from purepy import value
+from typing import NamedTuple
 
-@value
-class Line:
+class Line(NamedTuple):
     price: int
     quantity: int
 
@@ -24,7 +23,7 @@ def total(lines: tuple[Line, ...]) -> int:
 
 Parameters, returns and record fields have explicit exact types. Records have
 fields without defaults, methods or inheritance. Their runtime instances are
-frozen and slotted. Tuples are homogeneous and recursively immutable; use an
+immutable standard NamedTuple instances. Tuples may be homogeneous sequences or explicitly typed products; use an
 annotation for an empty tuple, such as `lines: tuple[Line, ...] = ()`.
 
 The primitive types are `None`, `bool`, `int`, `float`, `str` and `bytes`.
@@ -54,9 +53,9 @@ remain available for every Pure Value.
 ## Compose through exact declarations
 
 Use direct imports such as `from app.domain import total`. Module imports,
-aliases, re-exports, import cycles, local callable values and dynamic call targets
+aliases, re-exports, import cycles, and computed call targets
 reject. Calls use fixed positional or explicit keyword arguments; defaults,
-`*args`, `**kwargs`, callbacks and parameter generics are outside 0.1.
+`*args` and `**kwargs` are prohibited. Pure callbacks, generic functions, and checked immutable captures support functional composition; see [Functional core](FUNCTIONAL_CORE.md).
 
 Module constants require the imported `Final` marker and an immutable initializer:
 
@@ -96,7 +95,6 @@ See the [host-boundary guide](HOST_BOUNDARY.md) and
 
 ```toml
 [tool.purepy]
-language = "0.1"
 python_syntax = "3.14"
 source_root = "src"
 entrypoints = ["app.total"]

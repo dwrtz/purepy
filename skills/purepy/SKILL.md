@@ -1,6 +1,6 @@
 ---
 name: purepy
-description: Write and verify PurePy 0.1 Python projects with the purepy CLI, diagnose rejected source, and inspect capabilities and trusted host boundaries. Use for projects configured with purepy.toml or explicit PurePy requests.
+description: Write and verify PurePy Python projects with the purepy CLI, diagnose rejected source, and inspect capabilities and trusted host boundaries. Use for projects configured with purepy.toml or explicit PurePy requests.
 ---
 
 # PurePy
@@ -15,11 +15,18 @@ Use `purepy version` and `purepy help` to inspect the installed CLI. The default
 installation is `~/.local/bin/purepy`; use that path if it is absent from PATH.
 In a PurePy source checkout, `make build` produces `bin/purepy` and `make install`
 installs the CLI and this skill. Building needs Go 1.24+ and a C compiler, but
-verification needs no Python interpreter. Running code that imports `value`
-requires the separate `purepy-lang` Python distribution (`from purepy import value`).
+verification needs no Python interpreter. Verified 0.2 programs use standard
+Python 3.14 and require no PurePy runtime. Only language 0.2 is supported.
 
 Inspect the project's existing `purepy.toml` before changing its structure.
 Prefer an explicit `--config` path when working outside the project directory.
+
+## Standard language
+
+New projects use the functional 0.2 language by default. Omit the `language` key;
+`language = "0.2"` is only an optional version pin. Remove obsolete version pins
+when migrating a project. Use NamedTuple records and ordinary pure functions; do not add
+a PurePy runtime or an `@value` dependency.
 
 ## Create a minimal verified project
 
@@ -27,7 +34,6 @@ Place `purepy.toml` beside `src/`:
 
 ```toml
 [tool.purepy]
-language = "0.1"
 python_syntax = "3.14"
 source_root = "src"
 entrypoints = ["app.total"]
@@ -37,10 +43,9 @@ manifests = []
 Put this in `src/app.py`:
 
 ```python
-from purepy import value
+from typing import NamedTuple
 
-@value
-class Line:
+class Line(NamedTuple):
     price: int
     quantity: int
 
@@ -72,7 +77,7 @@ purepy cache clean --config /path/to/project/purepy.toml
 configuration, manifest-loading, or internal errors. Read diagnostics and fix
 their source locations, then rerun `check` for the whole project. `explain`
 provides location-specific semantic facts; it is not a replacement for a final
-successful `check`. JSON output uses schema version 1. `--timings` writes to
+successful `check`. Reports use JSON schema 2. `--timings` writes to
 stderr; `--no-cache` disables both cache reads and writes.
 
 `capabilities` reports explicit authority, unused capabilities, and direct and
@@ -83,16 +88,30 @@ function argument for a broader report. Use it after changing the host boundary.
 
 - Annotate every function parameter, return, and record field with an exact type.
   Values are `None`, `bool`, `int`, `float`, `str`, `bytes`, homogeneous
-  `tuple[T, ...]`, data-only `@value` records, and optionals `T | None`.
+  `tuple[T, ...]`, product tuples `tuple[A, B]`, data-only `NamedTuple` records,
+  and optionals `T | None`. Generic and recursive records are supported in 0.2.
   `bool` is distinct from `int`; mixed numeric arithmetic needs explicit conversion.
 - Records have no inheritance, methods, or field defaults. Use typed empty tuples
   (`items: tuple[int, ...] = ()`). No lists, dictionaries, sets, or object mutation.
 - Rebind locals without changing their type. Write `n = n + 1`, not `n += 1`.
   Conditions must be `bool`; use `len(text) > 0` instead of truthiness. Narrow
   optional locals with `is None` or `is not None` before using their value.
-- Declare functions at module scope and call them directly. Import defining
-  symbols with absolute `from package.module import name`; no aliases, re-exports,
-  import cycles, callbacks, lambdas, callable values, defaults, or argument unpacking.
+- Use `from collections.abc import Callable` for pure synchronous function values.
+  Generic top-level functions use `def f[T](...)`; data type parameters have no
+  bounds or subtyping. Nested functions capture only assigned, stable immutable
+  bindings. No captures of changing accumulators, loop targets, capabilities, or
+  host references. Entry points have concrete data/capability signatures and
+  cannot receive or return functions. Higher-order async/effectful functions,
+  methods, lambdas, callable objects, and polymorphic recursion are rejected.
+- Import defining symbols with absolute `from package.module import name`; no
+  aliases, re-exports, import cycles, defaults, or argument unpacking.
+- Use `from copy import replace` with exact NamedTuple records and explicit field
+  keywords. Use immutable prepend/reverse for chains and folds for accumulation;
+  do not introduce a runtime, mutable builders, or new library APIs for PurePy.
+  `ord` and `chr` are sealed string primitives; ASCII helpers do not implement
+  Unicode case conversion. Consult `docs/FUNCTIONAL_CORE.md` in the verifier
+  checkout for the complete profile and `examples/functional_core` for verified
+  source.
 - Module constants use `from typing import Final` and `NAME: Final[int] = 1`.
   Initializers cannot perform arbitrary calls. No script guards or application
   work at import time; no `__future__` imports or quoted annotations.

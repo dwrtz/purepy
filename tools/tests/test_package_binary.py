@@ -11,7 +11,6 @@ import tarfile
 import tempfile
 import unittest
 from unittest.mock import patch
-import zipfile
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import package_binary as release
@@ -19,7 +18,7 @@ import package_binary as release
 
 def sources():
     files = {name: (release.ROOT / name).read_bytes() for name in release.REQUIRED_SOURCES}
-    for name in ("internal/manifest/manifest.go", "python/purepy/__init__.py", "python/purepy/py.typed",
+    for name in ("internal/manifest/manifest.go",
                  "internal/unicodenames/ucd/LICENSE"):
         files[name] = (release.ROOT / name).read_bytes()
     return files
@@ -40,27 +39,6 @@ def archives(output, files=None):
                                   "docs/RELEASE_NOTES.md": b"notes", "docs/PUREPY_SPEC.md": b"spec"},
                           {**common, "kind": "binary", "target": "darwin-arm64"}, {"purepy"})
     return source, binary
-
-
-def python_packages(output, files=None, tamper=False):
-    files = sources() if files is None else files
-    versions = release.versions(files)
-    name = versions["python_distribution"].replace("-", "_")
-    prefix = f"{name}-{versions['python_package']}"
-    info = f"Name: {versions['python_distribution']}\nVersion: {versions['python_package']}\n".encode()
-    runtime = {name.removeprefix("python/"): data for name, data in files.items() if name.startswith("python/purepy/")}
-    with zipfile.ZipFile(output / f"{prefix}-py3-none-any.whl", "w") as archive:
-        # Match the fixed epoch used by the real wheel build; writestr with a
-        # plain filename otherwise injects the wall clock into test artifacts.
-        for name, data in sorted(runtime.items()):
-            entry = zipfile.ZipInfo(name, date_time=(1980, 1, 1, 0, 0, 0))
-            archive.writestr(entry, b"different implementation" if tamper and name == "purepy/value.py" else data)
-        archive.writestr(zipfile.ZipInfo(f"{prefix}.dist-info/METADATA", date_time=(1980, 1, 1, 0, 0, 0)), info)
-    with tarfile.open(output / f"{prefix}.tar.gz", "w:gz") as archive:
-        for name, data in {**runtime, "PKG-INFO": info, "pyproject.toml": files["python/pyproject.toml"]}.items():
-            entry = tarfile.TarInfo(f"{prefix}/{name}")
-            entry.size = len(data)
-            archive.addfile(entry, io.BytesIO(data))
 
 
 class ReleaseArtifactTests(unittest.TestCase):
@@ -123,20 +101,15 @@ class ReleaseArtifactTests(unittest.TestCase):
         files["internal/app/check.go"] = files["internal/app/check.go"].replace(
             ('const Version = "' + release.versions(files)["verifier"] + '"').encode(),
             b'const Version = "3.2.1-dev"')
-        files["python/pyproject.toml"] = b'[project]\nname = "purepy-runtime"\nversion = "7.8.9"\n'
-        files["python/uv.lock"] = b'[[package]]\nname = "purepy-runtime"\nversion = "7.8.9"\n'
         versions = release.versions(files)
         self.assertEqual(versions["verifier"], "3.2.1-dev")
-        self.assertEqual(versions["python_package"], "7.8.9")
-        self.assertEqual(versions["python_distribution"], "purepy-runtime")
-        files["python/uv.lock"] = files["python/uv.lock"].replace(b'"7.8.9"', b'"7.8.10"')
-        with self.assertRaisesRegex(ValueError, "disagree"):
-            release.versions(files)
+        self.assertEqual(versions["supported_languages"], ["0.2"])
+        self.assertNotIn("python_distribution", versions)
 
     def test_schema_pin_detects_drift_and_missing_entries(self):
         files = sources()
         release.check_schema_lock(files)
-        files["docs/schema/diagnostics-v1.json"] += b" "
+        files["docs/schema/diagnostics-v2.json"] += b" "
         with self.assertRaisesRegex(ValueError, "frozen schema changed"):
             release.check_schema_lock(files)
         files = sources()
@@ -149,54 +122,21 @@ class ReleaseArtifactTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             output = Path(temp)
             archives(output)
-            self.assertFalse(release.finalize(output)["complete"])
-            with self.assertRaisesRegex(ValueError, "wheel and source"):
-                release.finalize(output, require_python=True)
-            python_packages(output)
-            (output / ".gitignore").write_bytes(b"*")  # uv's output marker
-            result = release.finalize(output, require_python=True)
+            result = release.finalize(output)
             self.assertTrue(result["complete"])
             before = {p.name: p.read_bytes() for p in output.iterdir()}
-            self.assertEqual(release.verify_release(output, True), result)
+            self.assertEqual(release.verify_release(output), result)
             self.assertEqual(before, {p.name: p.read_bytes() for p in output.iterdir()})
-            self.assertEqual(len(result["artifacts"]), 4)
-            (output / ".gitignore").write_text("unexpected contents")
-            with self.assertRaisesRegex(ValueError, "unexpected release artifact"):
-                release.verify_release(output, True)
+            self.assertEqual(len(result["artifacts"]), 2)
 
-    def test_same_version_wrong_python_implementation_is_rejected(self):
-        with tempfile.TemporaryDirectory() as temp:
-            output = Path(temp)
-            archives(output)
-            python_packages(output, tamper=True)
-            with self.assertRaisesRegex(ValueError, "wheel code differs"):
-                release.finalize(output, require_python=True)
-
-    def test_sdist_normalization_removes_clock_and_owner_variation(self):
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
-            left, right = root / "first", root / "second"
-            left.mkdir(); right.mkdir()
-            for output, second in ((left, 0), (right, 2)):
+    def test_python_distributions_are_rejected(self):
+        for filename in ("purepy-0.1-py3-none-any.whl", "purepy-0.1.tar.gz"):
+            with self.subTest(filename=filename), tempfile.TemporaryDirectory() as temp:
+                output = Path(temp)
                 archives(output)
-                # Separate ZIP's two-second clock windows deterministically.
-                with patch("zipfile.time.localtime", return_value=(2026, 9, 5, 12, 0, second, 5, 248, -1)):
-                    python_packages(output)
-            version_info = release.versions(sources())
-            project = version_info["python_distribution"].replace("-", "_")
-            sdist = right / f"{project}-{version_info['python_package']}.tar.gz"
-            with tarfile.open(sdist) as archive:
-                entries = [(deepcopy(item), archive.extractfile(item).read()) for item in archive]
-            with tarfile.open(sdist, "w:gz") as archive:
-                for item, data in reversed(entries):
-                    item.mtime = 123456789
-                    item.uid, item.gid = 501, 20
-                    item.uname, item.gname = "local-user", "local-group"
-                    archive.addfile(item, io.BytesIO(data))
-            for output in (left, right):
-                release.finalize(output, require_python=True)
-                release.verify_release(output, require_python=True)
-            self.assertEqual((left / release.CHECKSUMS).read_bytes(), (right / release.CHECKSUMS).read_bytes())
+                (output / filename).write_bytes(b"runtime distribution")
+                with self.assertRaisesRegex(ValueError, "no Python distribution"):
+                    release.finalize(output)
 
     def test_index_checksum_and_payload_tampering_fail_without_rewriting(self):
         for name in (release.INDEX, release.CHECKSUMS):
@@ -215,23 +155,6 @@ class ReleaseArtifactTests(unittest.TestCase):
             binary.write_bytes(gzip.compress(raw, mtime=0))
             with self.assertRaisesRegex(ValueError, "content differs"):
                 release.verify_archive(binary)
-
-    def test_raw_sdist_gzip_header_tampering_fails_without_rewriting(self):
-        with tempfile.TemporaryDirectory() as temp:
-            output = Path(temp)
-            archives(output)
-            python_packages(output)
-            index = release.finalize(output, require_python=True)
-            artifact = next(item for item in index["artifacts"] if item["kind"] == "python_sdist")
-            sdist = output / artifact["file"]
-            changed = bytearray(sdist.read_bytes())
-            changed[4:8] = (12345).to_bytes(4, "little")
-            sdist.write_bytes(changed)
-            self.assertNotEqual(release.digest(changed), artifact["sha256"])
-            before = {path.name: path.read_bytes() for path in output.iterdir()}
-            with self.assertRaisesRegex(ValueError, "checksum"):
-                release.verify_release(output, require_python=True)
-            self.assertEqual(before, {path.name: path.read_bytes() for path in output.iterdir()})
 
     def test_release_index_rejects_ambiguous_unsafe_and_incomplete_inventories(self):
         for mutation in ("duplicate", "traversal", "boolean_size", "bad_digest", "missing"):

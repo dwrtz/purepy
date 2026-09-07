@@ -33,7 +33,7 @@ func (p *Program) CheckFunctions(jobs int) Result {
 	}
 	names := []string{}
 	for name, f := range p.Functions {
-		if f.Origin == "project" {
+		if f.Origin == "project" && f.Parent == "" {
 			names = append(names, name)
 		}
 	}
@@ -50,7 +50,8 @@ func (p *Program) CheckFunctions(jobs int) Result {
 			defer wg.Done()
 			for i := range work {
 				f := p.Functions[names[i]]
-				c := newChecker(p, p.Modules[f.Module], f)
+				m := p.Scopes[f.Name]
+				c := newChecker(p, m, f)
 				results[i] = c.function()
 			}
 		}()
@@ -75,15 +76,22 @@ func (p *Program) CheckFunctions(jobs int) Result {
 	}
 	out.Diagnostics = append(out.Diagnostics, p.Diagnostics...)
 	for _, r := range results {
+		out.Bindings = append(out.Bindings, r.Bindings...)
+		out.Invocations = append(out.Invocations, r.Invocations...)
 		out.Diagnostics = append(out.Diagnostics, r.Diagnostics...)
 		out.Calls = append(out.Calls, r.Calls...)
 		out.Facts = append(out.Facts, r.Facts...)
 	}
+	p.resolveCallbacks(&out)
+	p.checkGenericCycles(&out)
 	return out
 }
 
 func collectLocals(body []*model.Node, names map[string]bool) {
 	for _, n := range body {
+		if n.Kind == "Function" {
+			names[n.A("name")] = true
+		}
 		if n.Kind == "Assign" || n.Kind == "For" {
 			if t := n.Get("target"); t != nil && t.Kind == "Name" {
 				names[t.A("name")] = true
@@ -103,6 +111,9 @@ func (c *checker) function() Result {
 	}
 	c.localDeclarations(c.f.Body)
 	for _, p := range c.f.Parameters {
+		if p.Type.Kind == "callable" {
+			p.Type.Origins = []string{"$param:" + c.f.Name + "." + p.Name, "$var:" + c.f.Name + "." + p.Name}
+		}
 		c.vars[p.Name] = variable{Type: p.Type, Current: p.Type, Assigned: true, Parameter: true, Declaration: p.Span}
 		if s := c.m.Bindings[p.Name]; s != nil {
 			c.error("PP503", "parameter cannot shadow module or imported declaration "+p.Name, p.Span).WithSymbol(c.localSymbol(p.Name)).WithType("declared", p.Type).WithRelated(c.m.ImportedAt[p.Name], s.Declaration())
@@ -138,6 +149,8 @@ func (c *checker) localAnnotation(n *model.Node, at model.Span) model.Type {
 	// annotations cannot mutate diagnostics belonging to another worker.
 	p := *c.p
 	p.Diagnostics = nil
+	p.AliasActive = map[string]bool{}
+	p.TypeSteps = 0
 	t := p.annotation(c.m, n, at)
 	for i := range p.Diagnostics {
 		if p.Diagnostics[i].Symbol == "" {
@@ -153,6 +166,9 @@ func (c *checker) bind(target *model.Node, t model.Type, annotation *model.Node,
 		return
 	}
 	name := target.A("name")
+	if c.m.TypeVars[name].Kind != "" {
+		c.error("PP503", "locals cannot shadow type parameters", at)
+	}
 	if forbiddenName(name) {
 		c.nameContext(c.error("PP104", "dunder locals are prohibited", at), name)
 	}
@@ -161,7 +177,7 @@ func (c *checker) bind(target *model.Node, t model.Type, annotation *model.Node,
 		return
 	}
 	v := c.vars[name]
-	if v.Parameter && !v.Type.Pure() {
+	if v.Parameter && !v.Type.Pure() && v.Type.Kind != "callable" {
 		code := "PP313"
 		if v.Type.Kind == "host_ref" {
 			code = "PP334"
@@ -173,7 +189,7 @@ func (c *checker) bind(target *model.Node, t model.Type, annotation *model.Node,
 	untyped := v.Type.Kind == "" || v.Type.Kind == "invalid"
 	if annotation != nil {
 		declared = c.localAnnotation(annotation, at)
-		if !declared.Pure() {
+		if !declared.FunctionalValue() {
 			c.error("PP201", "local annotations must be Pure Value types", at).WithSymbol(c.localSymbol(name)).WithType("declared", declared)
 		}
 	}
@@ -197,6 +213,16 @@ func (c *checker) bind(target *model.Node, t model.Type, annotation *model.Node,
 			c.result.Diagnostics[before].WithSymbol(c.localSymbol(name)).WithRelated(v.Declaration)
 		}
 		c.expect(v.Type, t, at).WithSymbol(c.localSymbol(name)).WithRelated(v.Declaration)
+		if t.Kind == "callable" {
+			slot := "$var:" + c.f.Name + "." + name
+			c.result.Bindings = append(c.result.Bindings, callableBinding{Slot: slot, Sources: t.Origins})
+			v.Type.Origins = []string{slot}
+			if v.Parameter {
+				v.Type.Origins = append(v.Type.Origins, "$param:"+c.f.Name+"."+name)
+			}
+		} else {
+			v.Type.Origins = mergeOrigins(v.Type.Origins, t.Origins)
+		}
 		v.Current = v.Type
 		v.Assigned = true
 	} else {
@@ -218,6 +244,8 @@ func (c *checker) block(body []*model.Node, docstring bool) bool {
 }
 func (c *checker) statement(n *model.Node) bool {
 	switch n.Kind {
+	case "Function":
+		c.closure(n)
 	case "Assign":
 		target := n.Get("target")
 		want := model.Invalid
@@ -243,6 +271,9 @@ func (c *checker) statement(n *model.Node) bool {
 		t := model.None
 		if n.Get("value") != nil {
 			t = c.expr(n.Get("value"), c.f.Returns)
+		}
+		if t.Kind == "callable" {
+			c.result.Bindings = append(c.result.Bindings, callableBinding{Slot: "$return:" + c.f.Name, Sources: t.Origins})
 		}
 		before := len(c.result.Diagnostics)
 		c.pure(t, n.Span)
@@ -397,6 +428,8 @@ func (c *checker) join(a, b map[string]variable, aliveA, aliveB bool, at model.S
 			out[name] = y
 			continue
 		}
+		x.Type.Origins = mergeOrigins(x.Type.Origins, y.Type.Origins)
+		x.Current.Origins = mergeOrigins(x.Current.Origins, y.Current.Origins)
 		x.Assigned = x.Assigned && y.Assigned
 		x.Parameter = x.Parameter || y.Parameter
 		if !x.Current.Equal(y.Current) {

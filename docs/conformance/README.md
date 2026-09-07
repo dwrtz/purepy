@@ -54,4 +54,4 @@ syntax tests. New mandatory clauses, missing list items, stale quotations,
 deleted tests, nonexistent fixtures, unsupported status values, duplicate rows,
 and one-sided `tested` claims fail the gate. Open obligations remain visible in
 the generated report; a passing gate means the map is current, not that every
-PurePy 0.1 release obligation has been discharged.
+PurePy 0.2 release obligation has been discharged.

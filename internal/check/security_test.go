@@ -67,11 +67,11 @@ func TestSecurityCategoryAndCallRejections(t *testing.T) {
 		"nested_coroutine":              "async def f(cap: Read, conn: Connection) -> int:\n    return len(read(cap, conn))\n",
 		"unreachable_authority":         "def f() -> int:\n    return 1\n    read(0, 0)\n",
 		"unreachable_unsupported":       "def f() -> int:\n    return 1\n    raise ValueError()\n",
-		"function_as_data":              "def f() -> int:\n    other = f\n    return other()\n",
+		"function_as_integer":           "def f() -> int:\n    other: int = f\n    return other()\n",
 		"method_dispatch":               "def f(x: str) -> str:\n    return x.upper()\n",
 		"intrinsic_local_shadow":        "def f(len: int, x: str) -> int:\n    return len(x)\n",
 		"intrinsic_later_local":         "def f(x: str) -> int:\n    y = len(x)\n    len = 1\n    return y\n",
-		"private_field_source_spelling": "from purepy import value\n@value\nclass R:\n    __field: int\ndef f() -> R:\n    return R(__field=1)\n",
+		"private_field_source_spelling": "from typing import NamedTuple\n\nclass R(NamedTuple):\n    __field: int\ndef f() -> R:\n    return R(__field=1)\n",
 		"tuple_subscription":            "def f(xs: tuple[int, ...]) -> int:\n    return xs[0,]\n",
 	}
 	for name, source := range cases {
@@ -98,7 +98,7 @@ func TestSecurityFlowRejections(t *testing.T) {
 		"bool_integer_arithmetic":        "def f(x: bool) -> int:\n    return x + 1\n",
 		"unknown_return_annotation":      "def f() -> object:\n    return None\n",
 		"arbitrary_union":                "def f(x: int | str) -> int:\n    return 0\n",
-		"fixed_tuple_annotation":         "def f(x: tuple[int, int]) -> int:\n    return 0\n",
+		"product_with_mutable_element":   "def f(x: tuple[int, list[int]]) -> int:\n    return 0\n",
 	}
 	for name, source := range cases {
 		t.Run(name, func(t *testing.T) {
@@ -118,9 +118,9 @@ func TestSecurityAuthorityForwardingAccepted(t *testing.T) {
 
 func TestSecurityInitializationOrder(t *testing.T) {
 	cases := map[string]map[string]string{
-		"record_before_definition": {"app": "from typing import Final\nfrom purepy import value\nX: Final[R] = R(1)\n@value\nclass R:\n    x: int\n"},
+		"record_before_definition": {"app": "from typing import Final\nfrom typing import NamedTuple\nX: Final[R] = R(1)\n\nclass R(NamedTuple):\n    x: int\n"},
 		"constant_before_import":   {"other": "from typing import Final\nY: Final[int] = 1\n", "app": "from typing import Final\nX: Final[int] = Y\nfrom other import Y\n"},
-		"decorator_before_import":  {"app": "@value\nclass R:\n    x: int\nfrom purepy import value\n"},
+		"decorator_before_import":  {"app": "\nclass R(NamedTuple):\n    x: int\nfrom typing import NamedTuple\n"},
 	}
 	for name, sources := range cases {
 		t.Run(name, func(t *testing.T) {
@@ -132,15 +132,15 @@ func TestSecurityInitializationOrder(t *testing.T) {
 }
 
 func TestSecuritySealedModuleCollision(t *testing.T) {
-	sources := map[string]string{"purepy": "def value(x: int) -> None:\n    return\n", "app": "from purepy import value\n@value\nclass R:\n    x: int\n"}
+	sources := map[string]string{"typing": "def NamedTuple(x: int) -> None:\n    return\n", "app": "from typing import NamedTuple\n\nclass R(NamedTuple):\n    x: int\n"}
 	if ds := securityVerify(t, sources, nil); len(ds) == 0 {
-		t.Fatal("accepted a project module shadowing sealed runtime support")
+		t.Fatal("accepted a project module shadowing sealed standard-library declaration")
 	}
 }
 
 func TestSecurityOpaqueEqualityCannotHideInsideValues(t *testing.T) {
 	external := &manifest.Set{Modules: []manifest.Module{{Name: "host.data", ImportSafe: true, Source: "host.toml"}}, Types: []manifest.Type{{Name: "host.data.Token", Category: "value", Immutable: true, Source: "host.toml"}}}
-	prefix := "from purepy import value\nfrom host.data import Token\n@value\nclass Inner:\n    token: Token\n@value\nclass Outer:\n    items: tuple[Inner, ...]\n"
+	prefix := "from typing import NamedTuple\nfrom host.data import Token\n\nclass Inner(NamedTuple):\n    token: Token\n\nclass Outer(NamedTuple):\n    items: tuple[Inner, ...]\n"
 	cases := map[string]string{
 		"record_equality":                 "def f(a: Inner, b: Inner) -> bool:\n    return a == b\n",
 		"nested_record_inequality":        "def f(a: Outer, b: Outer) -> bool:\n    return a != b\n",

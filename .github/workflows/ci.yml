@@ -81,6 +81,14 @@ jobs:
             echo '::error::The base has an unrecognized benchmark schema; refusing to skip the regression gate.'
             exit 1
           fi
+          git show "$BASE_REF:internal/app/check.go" > "$RUNNER_TEMP/purepy-base-versions.go"
+          base_language=$(sed -n 's/^const LanguageVersion = "\(.*\)"$/\1/p' "$RUNNER_TEMP/purepy-base-versions.go")
+          head_language=$(sed -n 's/^const LanguageVersion = "\(.*\)"$/\1/p' internal/app/check.go)
+          if [[ "$base_language" != "$head_language" ]]; then
+            echo '::notice::Performance bootstrap: the base verifies a different language version.'
+            echo 'Language contract changed; head measurements are retained for the next comparison.' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
           echo "ref=$BASE_REF" >> "$GITHUB_OUTPUT"
       - name: Build and measure base on the same runner
         if: steps.base.outputs.ref != ''

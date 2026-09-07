@@ -56,7 +56,7 @@ func identityOpaqueHost() *manifest.Set {
 }
 
 func TestNoneIdentityNominalValues(t *testing.T) {
-	prefix := "from purepy import value\nfrom host.data import Token\n@value\nclass Plain:\n    number: int\n@value\nclass Wrapped:\n    token: Token\n@value\nclass Nested:\n    values: tuple[Wrapped, ...]\n"
+	prefix := "from typing import NamedTuple\nfrom host.data import Token\n\nclass Plain(NamedTuple):\n    number: int\n\nclass Wrapped(NamedTuple):\n    token: Token\n\nclass Nested(NamedTuple):\n    values: tuple[Wrapped, ...]\n"
 	for _, typ := range []string{
 		"Plain", "Plain | None", "Token", "Token | None",
 		"Wrapped", "Wrapped | None", "Nested", "Nested | None",
@@ -155,12 +155,12 @@ func TestNoneIdentityNarrowingAndReassignment(t *testing.T) {
 }
 
 func TestNoneIdentityRejectsNonValues(t *testing.T) {
-	prefix := "from host.io import Read, Connection\nfrom purepy import value\n@value\nclass Record:\n    number: int\ndef helper() -> None:\n    return\n"
+	prefix := "from host.io import Read, Connection\nfrom typing import NamedTuple\n\nclass Record(NamedTuple):\n    number: int\ndef helper() -> None:\n    return\n"
 	for _, tc := range []struct{ name, params, operand, code string }{
 		{"capability", "item: Read", "item", "PP313"},
 		{"host_reference", "item: Connection", "item", "PP334"},
 		{"ephemeral_range", "", "range(1)", "PP304"},
-		{"function_declaration", "", "helper", "PP301"},
+		{"function_declaration", "", "helper", "PP212"},
 		{"record_declaration", "", "Record", "PP301"},
 		{"opaque_type_declaration", "", "Read", "PP301"},
 	} {

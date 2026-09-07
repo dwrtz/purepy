@@ -2,7 +2,7 @@
 
 PurePy diagnostics are errors: an unsupported or unresolved operation never
 becomes a warning or a purity assumption. This registry describes the current
-PurePy 0.1 implementation. Once a code is published in a tagged language release,
+PurePy 0.2 implementation. Once a code is published in a tagged language release,
 its meaning must not be repurposed; add a code for a new meaning and preserve
 existing consumers. Wording and explanatory notes may improve without changing
 the underlying rule. Unassigned numbers remain reserved within their family.
@@ -31,9 +31,9 @@ the underlying rule. Unassigned numbers remain reserved within their family.
 | `PP105` | The verified import graph contains a cycle. | Move shared declarations into an acyclic dependency module. |
 | `PP106` | A project module shadows a sealed support package. | Rename the project module; `purepy` and `typing` support meanings are fixed. |
 | `PP201` | A Pure Value is required but the type belongs to another category. | Keep capabilities and host references in parameter forwarding only. |
-| `PP202` | A record violates the data-only `@value` declaration form. | Use the exact decorator and annotated fields without bases, methods or defaults. |
+| `PP202` | A record violates the data-only `NamedTuple` declaration form. | Use the exact decorator and annotated fields without bases, methods or defaults. |
 | `PP203` | A type annotation is missing/unsupported, or a literal has no admitted type. | Write one concrete supported type and use an approved literal. |
-| `PP204` | Value-record types are recursive. | Use a finite nonrecursive record structure. |
+| `PP204` | Record recursion expands type parameters or exceeds an analysis budget. | Preserve recursive type parameters and keep type graphs within the documented bounds. |
 | `PP205` | Exact types disagree at an assignment, argument, result, condition or control-flow join. | Keep one exact type; use an explicit approved conversion or optional annotation. |
 | `PP206` | A local may be read before definite assignment. | Initialize it on every reachable path before use. |
 | `PP207` | A tuple is heterogeneous or an empty tuple lacks a contextual element type. | Use one element type or a record; annotate an empty tuple context. |
@@ -128,8 +128,8 @@ the import in the caller to the callee declaration and then its parameter.
 Manifest-backed calls point to the function and parameter inside the TOML file;
 an invalid authority argument can also relate the caller's original parameter.
 Duplicate arguments include the earlier argument's span, and conflicting local
-bindings include the earlier binding. Import and record-type cycles retain an
-ordered path through the declarations that form the cycle. Repeated locations
+bindings include the earlier binding. Import cycles retain an ordered path through their declarations. Generic record
+errors identify a record whose instantiations violate the recursion contract. Repeated locations
 and the main span are omitted from that path; related locations are not sorted
 independently. A diagnostic with no other relevant declaration has an empty path.
 

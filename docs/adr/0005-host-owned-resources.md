@@ -1,6 +1,6 @@
 # ADR 0005: Host-owned resources
 
-Status: accepted for PurePy 0.1.
+Status: accepted for PurePy 0.2.
 
 The excluded host creates, owns and closes connections, pools, transactions,
 streams and scheduling resources. Verified code may receive opaque host-reference

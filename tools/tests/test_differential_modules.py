@@ -25,7 +25,7 @@ CASES = {case.name: case for case in catalog()}
 
 def verdict(case, codes=None):
     codes = case.codes if codes is None else codes
-    return {"schema": 1, "verifier_version": "test-verifier", "ok": not codes,
+    return {"schema": 2, "verifier_version": "test-verifier", "ok": not codes,
             "diagnostics": [{"code": code} for code in codes],
             "functions": [{"name": "main.probe", "returns": gate.reported_type(case.returns),
                            "kind": case.kind, "classification": case.classification}]}
@@ -40,7 +40,7 @@ class ModuleDifferentialTests(unittest.TestCase):
     def test_catalog_covers_nominal_import_opaque_and_async_contracts(self):
         self.assertEqual(len(CASES), len(catalog()))
         self.assertGreaterEqual(len(CASES), 26)
-        self.assertTrue({"records/private_mangled_keyword", "records/nested_optional_tuple",
+        self.assertTrue({"records/equality", "records/nested_optional_tuple",
                          "imports/package_absolute_composition", "imports/nominal_names_are_distinct",
                          "opaque/nested_membership_rejected", "async/loop_await_order",
                          "async/capability_host_reference_and_none"}.issubset(CASES))
@@ -167,8 +167,8 @@ class ModuleDifferentialTests(unittest.TestCase):
             self.assertIs(sys.modules["models"], sentinel)
             self.assertEqual(first["outcomes"], second["outcomes"])
         self.assertEqual(sys.path, prior_path)
-        from dataclasses import make_dataclass
-        false_pair = make_dataclass("Pair", [("x", int), ("label", str)])
+        from typing import NamedTuple
+        false_pair = NamedTuple("Pair", [("x", int), ("label", str)])
         false_pair.__module__ = "models"
         fake_module = types.ModuleType("models")
         fake_module.Pair = object

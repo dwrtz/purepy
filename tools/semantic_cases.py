@@ -1,4 +1,4 @@
-"""Independent, bounded oracle cases for the PurePy 0.1 sealed operation table.
+"""Independent, bounded oracle cases for the PurePy 0.2 sealed operation table.
 
 Acceptance expectations come from docs/SYNTAX_MATRIX.md, not the verifier's
 implementation or its output.  These are finite development checks, not an

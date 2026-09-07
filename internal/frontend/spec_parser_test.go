@@ -13,7 +13,7 @@ import (
 
 func TestUnsupportedSyntaxRetainsExactSourceRanges(t *testing.T) {
 	for _, tc := range []struct{ name, source, selected string }{
-		{"expression", "# Unicode é 😀 before the declaration\ndef f(é: int) -> int:\n    return [é, 2]\n", "[é, 2]"},
+		{"expression", "# Unicode é 😀 before the declaration\ndef f(é: int) -> int:\n    return {é, 2}\n", "{é, 2}"},
 		{"statement", "def f() -> None:\n    assert True\n", "assert True"},
 		{"multiline", "def f() -> None:\n    try:\n        pass\n    except:\n        pass\n", "try:\n        pass\n    except:\n        pass"},
 		{"lambda", "def f() -> None:\n    x = lambda: 1\n", "lambda: 1"},

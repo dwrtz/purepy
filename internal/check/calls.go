@@ -10,7 +10,7 @@ import (
 // IntrinsicVersion identifies the sealed operator, comparison, conversion, and
 // builtin-call contract documented in docs/SYNTAX_MATRIX.md. Change this when
 // that contract changes; the application includes it in every cache image key.
-const IntrinsicVersion = "1"
+const IntrinsicVersion = "2"
 
 // callContext describes the resolved signature without evaluating arguments.
 // Related locations follow the use through its import to the declaration.
@@ -256,8 +256,16 @@ func (c *checker) intrinsic(name string, n *model.Node) model.Type {
 	if len(args) == 1 {
 		t := args[0]
 		switch name {
+		case "ord":
+			if t.Kind == "str" {
+				return model.Int
+			}
+		case "chr":
+			if t.Kind == "int" {
+				return model.Str
+			}
 		case "len":
-			if sequence(t) {
+			if sequence(t) || t.Kind == "product" {
 				return model.Int
 			}
 		case "abs":

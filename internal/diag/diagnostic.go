@@ -34,7 +34,7 @@ func (d *Diagnostic) WithSymbol(symbol string) *Diagnostic {
 }
 
 func (d *Diagnostic) WithType(role string, typ model.Type) *Diagnostic {
-	if d != nil && role != "" && typ.Kind != "" && typ.Kind != "invalid" {
+	if d != nil && role != "" && typ.Kind != "" && typ.Kind != "invalid" && typ.WithinLimit() {
 		if d.Types == nil {
 			d.Types = map[string]model.Type{}
 		}

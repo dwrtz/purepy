@@ -1,11 +1,15 @@
-# PurePy Phased Implementation Plan
+# Historical PurePy Implementation Plan
 
-**File:** `PUREPY_PLAN.md`  
-**Plan version:** `0.2-draft`  
-**Normative specification:** `PUREPY_SPEC.md`, specification `0.3-draft`, PurePy language `0.1`  
-**Target source syntax:** Python 3.14  
-**Reference implementation language:** Go  
-**Status:** Implementation plan  
+This plan records the original implementation. The current language and release
+contract are [PurePy 0.2](PUREPY_SPEC.md) and [Functional core](FUNCTIONAL_CORE.md).
+Compatibility with the original language is not supported.
+
+**File:** `PUREPY_PLAN.md`
+**Plan version:** `0.2-draft`
+**Normative specification:** `PUREPY_SPEC.md`, specification `0.3-draft`, PurePy language `0.1`
+**Target source syntax:** Python 3.14
+**Reference implementation language:** Go
+**Status:** Implementation plan
 **Last updated:** 2026-09-05
 
 ---

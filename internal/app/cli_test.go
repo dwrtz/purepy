@@ -21,7 +21,7 @@ func cliProject(t *testing.T, files map[string]string, entrypoints, manifests []
 	if manifests == nil {
 		manifestPaths = []byte("[]")
 	}
-	cliWrite(t, root, "purepy.toml", fmt.Sprintf("[tool.purepy]\nlanguage = \"0.1\"\npython_syntax = \"3.14\"\nsource_root = \"src\"\nentrypoints = %s\nmanifests = %s\n", entries, manifestPaths))
+	cliWrite(t, root, "purepy.toml", fmt.Sprintf("[tool.purepy]\nlanguage = \"0.2\"\npython_syntax = \"3.14\"\nsource_root = \"src\"\nentrypoints = %s\nmanifests = %s\n", entries, manifestPaths))
 	if err := os.MkdirAll(filepath.Join(root, "src"), 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -58,7 +58,7 @@ func cliJSON(t *testing.T, r *Report) string {
 }
 
 func TestCLIVersionAndHelp(t *testing.T) {
-	want := "purepy " + Version + " (specification 0.3-draft, language 0.1, Python syntax 3.14, intrinsics 1)\n"
+	want := "purepy " + Version + " (specification 0.4-draft, language 0.2, Python syntax 3.14, intrinsics 2)\n"
 	for _, command := range []string{"version", "--version"} {
 		status, out, errOut := cliRun(command)
 		if status != 0 || out != want || errOut != "" {
@@ -237,7 +237,7 @@ func TestVerificationNeverExecutesProjectOrHost(t *testing.T) {
 	cliWrite(t, root, "manifest.toml", cliManifest)
 	cliWrite(t, root, "host/ops.py", fmt.Sprintf("open(%q, 'w').write('executed')\nraise RuntimeError('must not import host')\n", sentinel))
 	cliWrite(t, root, "host/__init__.py", fmt.Sprintf("open(%q, 'w').write('executed')\n", sentinel))
-	cliWrite(t, root, "purepy.toml", "[tool.purepy]\nlanguage = \"0.1\"\npython_syntax = \"3.14\"\nsource_root = \"src\"\nentrypoints = [\"main.run\"]\nmanifests = [\"manifest.toml\"]\n")
+	cliWrite(t, root, "purepy.toml", "[tool.purepy]\nlanguage = \"0.2\"\npython_syntax = \"3.14\"\nsource_root = \"src\"\nentrypoints = [\"main.run\"]\nmanifests = [\"manifest.toml\"]\n")
 	status, out, errOut = cliRun("check", root, "--no-cache")
 	if status != 0 {
 		t.Fatalf("manifest-backed project failed: %d %s%s", status, out, errOut)

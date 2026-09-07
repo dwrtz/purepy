@@ -545,7 +545,7 @@
   },
   {
     "section": "25.2",
-    "quote": "PurePy 0.1 configuration MUST identify:",
+    "quote": "PurePy 0.2 configuration MUST identify:",
     "status": "tested",
     "positive": [
       {
@@ -577,29 +577,6 @@
     ],
     "fixtures": [],
     "notes": "Configuration tests cover all five required fields, explicit empty lists, supported versions, one contained source root, manifest order, invalid values, and missing fields. Exact decoded configuration keys now reject case-folded table/setting aliases and prevent language or source-root values from being overwritten under differently cased keys; errors identify the offending key."
-  },
-  {
-    "section": "25.2",
-    "quote": "- language version;",
-    "status": "tested",
-    "positive": [
-      {
-        "path": "internal/config/config_test.go",
-        "test": "TestLoadResolvesPathsAndPreservesOrder"
-      }
-    ],
-    "negative": [
-      {
-        "path": "internal/config/spec_boundary_test.go",
-        "test": "TestBoundaryRequiredVersions/language_missing"
-      },
-      {
-        "path": "internal/config/config_test.go",
-        "test": "TestLoadRejectsInvalidConfiguration/language"
-      }
-    ],
-    "fixtures": [],
-    "notes": "Language version is explicit and must be supported."
   },
   {
     "section": "25.2",

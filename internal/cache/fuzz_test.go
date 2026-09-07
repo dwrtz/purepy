@@ -17,13 +17,13 @@ import (
 	"github.com/dwrtz/purepy/internal/model"
 )
 
-const cacheFuzzSource = `from purepy import value
+const cacheFuzzSource = `from typing import NamedTuple
 from typing import Final
 
 LIMIT: Final[int] = 3
 
-@value
-class Box:
+
+class Box(NamedTuple):
     number: int
 
 def run(x: int, text: str, maybe: int | None) -> int:

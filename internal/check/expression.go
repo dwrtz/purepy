@@ -9,6 +9,8 @@ import (
 )
 
 type Result struct {
+	Bindings    []callableBinding
+	Invocations []callableInvocation
 	Diagnostics []diag.Diagnostic
 	Calls       []model.CallEdge
 	Facts       []model.Fact
@@ -57,7 +59,7 @@ func (c *checker) pure(t model.Type, at model.Span) bool {
 	if t.Kind == "invalid" {
 		return false
 	}
-	if !t.Pure() {
+	if !t.FunctionalValue() {
 		code := "PP201"
 		if t.Kind == "host_ref" {
 			code = "PP334"
@@ -76,7 +78,17 @@ func (c *checker) expr(n *model.Node, want model.Type) (t model.Type) {
 		return model.Invalid
 	}
 	t = model.Invalid
-	defer func() { c.fact(n, t, "", "expression") }()
+	defer func() {
+		if !t.WithinLimit() {
+			c.error("PP203", "instantiated type exceeds analysis limit", n.Span)
+			t = model.Invalid
+		}
+		c.fact(n, t, "", "expression")
+	}()
+	if !want.WithinLimit() {
+		c.error("PP203", "contextual type exceeds analysis limit", n.Span)
+		return model.Invalid
+	}
 	if c.constant {
 		switch n.Kind {
 		case "Literal", "Tuple", "Name", "Call":
@@ -119,6 +131,9 @@ func (c *checker) expr(n *model.Node, want model.Type) (t model.Type) {
 					return
 				}
 			}
+			if s.Function != nil {
+				return c.functionValue(s.Function, want, n.Span)
+			}
 			if s.Kind == "constant" {
 				if !s.Type.Pure() {
 					c.nameContext(c.error("PP502", "constant must be defined before use: "+name, n.Span), name)
@@ -131,6 +146,9 @@ func (c *checker) expr(n *model.Node, want model.Type) (t model.Type) {
 		}
 		c.nameContext(c.error("PP104", "unknown name "+name, n.Span), name)
 	case "Tuple":
+		if want.Kind == "product" {
+			return c.product(n, want)
+		}
 		xs := n.Items("elements")
 		element := model.Invalid
 		if want.Kind == "tuple" && want.Elem != nil {
@@ -167,7 +185,7 @@ func (c *checker) expr(n *model.Node, want model.Type) (t model.Type) {
 		}
 		if base.Kind == "record" {
 			if r := c.p.Records[base.Name]; r != nil {
-				for _, f := range r.Fields {
+				for _, f := range recordFields(r, base) {
 					if f.Name == name {
 						return f.Type
 					}
@@ -175,7 +193,7 @@ func (c *checker) expr(n *model.Node, want model.Type) (t model.Type) {
 			}
 		}
 		if base.Kind != "invalid" {
-			d := c.expressionContext(c.error("PP208", "attribute reads require a declared field of an exact @value record", n.Span).WithType("receiver", base), n.Get("value"))
+			d := c.expressionContext(c.error("PP208", "attribute reads require a declared field of an exact NamedTuple record", n.Span).WithType("receiver", base), n.Get("value"))
 			if r := c.p.Records[base.Name]; r != nil {
 				d.WithSymbol(r.Name + "." + name).WithRelated(r.Span)
 			}
@@ -247,13 +265,21 @@ func (c *checker) expr(n *model.Node, want model.Type) (t model.Type) {
 		c.narrow(n.Get("test"), false)
 		b := c.expr(n.Get("else"), want)
 		c.vars = before
+		if want.Kind != "invalid" && want.Accepts(a) && want.Accepts(b) {
+			want.Origins = mergeOrigins(a.Origins, b.Origins)
+			return want
+		}
 		if !a.Equal(b) {
 			c.expressionContext(c.error("PP205", "conditional expression branches must have the same exact type", n.Span).WithType("left", a).WithType("right", b), n)
 			return
 		}
+		a.Origins = mergeOrigins(a.Origins, b.Origins)
 		return a
 	case "Index", "Slice":
 		base := c.expr(n.Get("value"), model.Invalid)
+		if base.Kind == "product" {
+			return c.productIndex(n, base)
+		}
 		if base.Kind != "str" && base.Kind != "bytes" && base.Kind != "tuple" {
 			if base.Kind != "invalid" {
 				c.expressionContext(c.error("PP210", "only str, bytes and homogeneous tuples support subscription", n.Span).WithType("receiver", base), n.Get("value"))
@@ -280,7 +306,7 @@ func (c *checker) expr(n *model.Node, want model.Type) (t model.Type) {
 		}
 		return model.Str
 	case "Call":
-		return c.call(n, false)
+		return c.functionalCall(n, want)
 	case "AwaitCall":
 		if c.constant {
 			c.error("PP502", "module initialization cannot await", n.Span)
@@ -340,39 +366,8 @@ func (c *checker) binary(op string, l, r model.Type, at model.Span) model.Type {
 	c.error("PP209", fmt.Sprintf("operator %s has no exact rule for %s and %s", op, l, r), at).WithType("left", l).WithType("right", r)
 	return model.Invalid
 }
-func (c *checker) equality(t model.Type, active map[string]bool) (comparable bool) {
-	switch t.Kind {
-	case "None", "bool", "int", "float", "str", "bytes":
-		return true
-	case "tuple", "optional":
-		return t.Elem != nil && c.equality(*t.Elem, active)
-	case "record":
-		if result, checked := c.recordEquality[t.Name]; checked {
-			return result
-		}
-		if active[t.Name] {
-			return false
-		}
-		r := c.p.Records[t.Name]
-		if r == nil {
-			return false
-		}
-		active[t.Name] = true
-		if c.recordEquality == nil {
-			c.recordEquality = map[string]bool{}
-		}
-		defer func() {
-			delete(active, t.Name)
-			c.recordEquality[t.Name] = comparable
-		}()
-		for _, f := range r.Fields {
-			if !c.equality(f.Type, active) {
-				return false
-			}
-		}
-		return true
-	}
-	return false
+func (c *checker) equality(t model.Type, active map[string]bool) bool {
+	return c.functionalEquality(t, active)
 }
 func (c *checker) compare(op string, l, r model.Type, at model.Span) {
 	if l.Kind == "invalid" || r.Kind == "invalid" {

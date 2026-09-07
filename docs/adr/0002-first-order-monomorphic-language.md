@@ -1,6 +1,6 @@
 # ADR 0002: First-order monomorphic language
 
-Status: accepted for PurePy 0.1.
+Status: superseded by [the functional core](../FUNCTIONAL_CORE.md) in PurePy 0.2.
 
 Every function has one fixed, fully annotated signature, and every call resolves
 to a top-level project function, declared external function, sealed intrinsic or

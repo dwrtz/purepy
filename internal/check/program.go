@@ -19,6 +19,7 @@ type Module struct {
 	Bindings   map[string]*Symbol
 	ImportedAt map[string]model.Span
 	Imports    []string
+	TypeVars   map[string]model.Type
 }
 type Symbol struct {
 	Name     string
@@ -62,6 +63,9 @@ func manifestSpan(at model.Span, source string) model.Span {
 }
 
 type Program struct {
+	Scopes                     map[string]*Module
+	AliasActive                map[string]bool
+	TypeSteps                  int
 	Modules                    map[string]*Module
 	Order                      []string
 	Symbols                    map[string]*Symbol
@@ -73,19 +77,19 @@ type Program struct {
 }
 
 func Link(modules []*Module, external *manifest.Set, entrypoints []string) *Program {
-	p := &Program{Modules: map[string]*Module{}, Symbols: map[string]*Symbol{}, Functions: map[string]*model.Function{}, Records: map[string]*model.Record{}, ExternalModules: map[string]bool{}, ExternalModuleDeclarations: map[string]manifest.Module{}, Diagnostics: []diag.Diagnostic{}}
+	p := &Program{Scopes: map[string]*Module{}, AliasActive: map[string]bool{}, Modules: map[string]*Module{}, Symbols: map[string]*Symbol{}, Functions: map[string]*model.Function{}, Records: map[string]*model.Record{}, ExternalModules: map[string]bool{}, ExternalModuleDeclarations: map[string]manifest.Module{}, Diagnostics: []diag.Diagnostic{}}
 	for _, m := range modules {
 		m.Bindings = map[string]*Symbol{}
 		m.ImportedAt = map[string]model.Span{}
 		p.Modules[m.Name] = m
 		p.Order = append(p.Order, m.Name)
-		if m.Name == "purepy" || strings.HasPrefix(m.Name, "purepy.") || m.Name == "typing" || strings.HasPrefix(m.Name, "typing.") {
+		if sealedPackage(m.Name) {
 			p.error("PP106", "verified modules cannot shadow sealed support packages: "+m.Name, m.Tree.Span).WithSymbol(m.Name)
 		}
 	}
 	sort.Strings(p.Order)
 	for _, m := range external.Modules {
-		if m.Name == "purepy" || strings.HasPrefix(m.Name, "purepy.") || m.Name == "typing" || strings.HasPrefix(m.Name, "typing.") {
+		if sealedPackage(m.Name) {
 			p.error("PP601", "manifests cannot replace sealed support packages: "+m.Name, manifestSpan(m.Span, m.Source)).WithSymbol(m.Name)
 		}
 		p.ExternalModules[m.Name] = m.ImportSafe
@@ -159,7 +163,8 @@ func Link(modules []*Module, external *manifest.Set, entrypoints []string) *Prog
 			}
 		}
 	}
-	p.recordCycles()
+	p.functionalRecords()
+
 	// Constants are checked in import order, then source order within each module.
 	done := map[string]bool{}
 	visiting := map[string]bool{}
@@ -187,12 +192,22 @@ func Link(modules []*Module, external *manifest.Set, entrypoints []string) *Prog
 		}
 		seen[name] = true
 		f := p.Functions[name]
-		if f == nil || f.Origin != "project" {
+		if f == nil || f.Origin != "project" || f.Parent != "" {
 			d := p.error("PP701", "entrypoint must name a verified top-level function: "+name, model.Span{}).WithSymbol(name).WithRelated(p.Symbols[name].Declaration())
 			if s := p.Symbols[name]; s != nil {
 				d.WithType("actual", s.Type).WithNote(name + " is a " + s.Kind + " declaration.")
 				if s.Function != nil {
 					d.WithType("return", s.Function.Returns).WithNote("The function is declared by a manifest, outside the verified source boundary.")
+				}
+			}
+		}
+		if f != nil {
+			if len(f.TypeParams) > 0 || f.Returns.Kind == "callable" {
+				p.error("PP701", "entrypoints require concrete data signatures", f.Span)
+			}
+			for _, a := range f.Parameters {
+				if a.Type.Kind == "callable" {
+					p.error("PP701", "host-supplied callbacks are prohibited", a.Span)
 				}
 			}
 		}
@@ -249,6 +264,17 @@ func (p *Program) index(m *Module) {
 			s.Kind = "type"
 			s.Type = model.Type{Kind: "record", Name: m.Name + "." + name}
 			s.Record = &model.Record{Name: s.Type.Name, Span: n.Span}
+		case "Alias":
+			left := n.Get("left")
+			if left != nil && left.Kind == "Index" {
+				left = left.Get("value")
+			}
+			if left == nil || left.Kind != "Name" {
+				p.error("PP203", "type alias requires a name", n.Span)
+				continue
+			}
+			name = left.A("name")
+			s.Kind = "alias"
 		case "Assign":
 			if target := n.Get("target"); target != nil && target.Kind == "Name" {
 				name = target.A("name")
@@ -299,7 +325,7 @@ func (p *Program) imports(m *Module) {
 				continue
 			}
 			var s *Symbol
-			if from == "purepy" && name == "value" || from == "typing" && name == "Final" {
+			if from == "typing" && (name == "Final" || name == "NamedTuple") || from == "collections.abc" && name == "Callable" || from == "copy" && name == "replace" {
 				s = &Symbol{Name: from + "." + name, Kind: "support", Span: item.Span}
 			} else {
 				s = p.Symbols[from+"."+name]
@@ -386,94 +412,6 @@ func (p *Program) labels(t model.Type) []string {
 	}
 	return nil
 }
-func (p *Program) signatures(m *Module) {
-	for _, n := range m.Tree.Items("body") {
-		s := p.Symbols[m.Name+"."+n.A("name")]
-		if s == nil || s.Node != n {
-			continue
-		}
-		if n.Kind == "Function" {
-			f := s.Function
-			if len(n.Items("decorators")) != 0 || n.A("unsupported") != "" {
-				d := p.error("PP003", "functions require fixed annotated signatures and no decorators", n.Span).WithSymbol(f.Name)
-				for i, decorator := range n.Items("decorators") {
-					p.annotationContext(d, m, decorator, fmt.Sprintf("decorator.%d", i+1))
-				}
-			}
-			seen := map[string]model.Parameter{}
-			for _, a := range n.Items("params") {
-				name := a.A("name")
-				t := p.annotationFor(m, a.Get("annotation"), a.Span, f.Name+"."+name)
-				previous, duplicate := seen[name]
-				if duplicate || forbiddenName(name) {
-					p.error("PP103", "invalid or duplicate parameter "+name, a.Span).WithSymbol(f.Name+"."+name).WithType("declared", t).WithType("previous", previous.Type).WithRelated(previous.Span)
-				}
-				if !duplicate {
-					seen[name] = model.Parameter{Name: name, Type: t, Span: a.Span}
-				}
-				if a.Kind != "Param" || a.A("unsupported") != "" {
-					p.error("PP003", "parameter defaults, variadics and signature markers are prohibited", a.Span).WithSymbol(f.Name+"."+name).WithType("parameter", t)
-				}
-				f.Parameters = append(f.Parameters, model.Parameter{Name: name, Type: t, Span: a.Span, Labels: p.labels(t)})
-			}
-			f.ReturnSpan = n.Span
-			if returns := n.Get("returns"); returns != nil {
-				f.ReturnSpan = returns.Span
-			}
-			f.Returns = p.annotationFor(m, n.Get("returns"), n.Span, f.Name)
-			if !f.Returns.Pure() {
-				p.error("PP201", "function return type must be a Pure Value", f.ReturnSpan).WithSymbol(f.Name).WithType("return", f.Returns).WithRelated(p.Symbols[f.Returns.Name].Declaration())
-			}
-		} else if n.Kind == "Record" {
-			decs := n.Items("decorators")
-			valid := len(decs) == 1 && decs[0].Kind == "Name" && m.Bindings[decs[0].A("name")] != nil && m.Bindings[decs[0].A("name")].Name == "purepy.value"
-			if valid && m.ImportedAt[decs[0].A("name")].Start > n.Span.Start {
-				valid = false
-			}
-			if !valid || len(n.Items("bases")) > 0 || n.A("unsupported") != "" {
-				d := p.error("PP202", "records require the exact @value decorator, no bases or class options", n.Span).WithSymbol(s.Name).WithType("record", s.Type)
-				for i, decorator := range decs {
-					p.annotationContext(d, m, decorator, fmt.Sprintf("decorator.%d", i+1))
-				}
-				for i, base := range n.Items("bases") {
-					p.annotationContext(d, m, base, fmt.Sprintf("base.%d", i+1))
-				}
-			}
-			seen := map[string]model.Parameter{}
-			for i, a := range n.Items("body") {
-				if i == 0 && doc(a) {
-					continue
-				}
-				target := a.Get("target")
-				if a.Kind != "Assign" || target == nil || target.Kind != "Name" || a.Get("value") != nil {
-					owner := s.Name
-					if target != nil && target.Kind == "Name" {
-						owner += "." + target.A("name")
-					} else if a.Kind == "Function" {
-						owner += "." + a.A("name")
-					}
-					d := p.error("PP202", "record bodies allow only annotated fields without defaults", a.Span).WithSymbol(owner).WithType("record", s.Type)
-					p.annotationContext(d, m, a.Get("annotation"), "annotation")
-					continue
-				}
-				name := target.A("name")
-				t := p.annotationFor(m, a.Get("annotation"), a.Span, s.Name+"."+name)
-				previous, duplicate := seen[name]
-				if duplicate || forbiddenName(name) {
-					p.error("PP202", "invalid or duplicate record field "+name, a.Span).WithSymbol(s.Name+"."+name).WithType("declared", t).WithType("previous", previous.Type).WithRelated(previous.Span)
-				}
-				if !duplicate {
-					seen[name] = model.Parameter{Name: name, Type: t, Span: a.Span}
-				}
-				if !t.Pure() {
-					p.error("PP201", "record fields must contain only Pure Values", a.Span).WithSymbol(s.Name+"."+name).WithType("field", t).WithRelated(p.Symbols[t.Name].Declaration())
-				}
-				s.Record.Fields = append(s.Record.Fields, model.Parameter{Name: name, Type: t, Span: a.Span})
-			}
-		}
-	}
-}
-
 func (p *Program) ownerContext(start int, name string) {
 	for i := start; i < len(p.Diagnostics); i++ {
 		if p.Diagnostics[i].Symbol == "" {
@@ -490,6 +428,14 @@ func (p *Program) annotationFor(m *Module, n *model.Node, at model.Span, owner s
 }
 
 func (p *Program) annotation(m *Module, n *model.Node, at model.Span) model.Type {
+	t := p.functionalAnnotation(m, n, at)
+	if !t.WithinLimit() {
+		p.error("PP203", "instantiated type exceeds analysis limit", at)
+		return model.Invalid
+	}
+	return t
+}
+func (p *Program) dataAnnotation(m *Module, n *model.Node, at model.Span) model.Type {
 	if n == nil {
 		p.error("PP203", "explicit type annotation required", at)
 		return model.Invalid
@@ -610,6 +556,10 @@ func (p *Program) typeText(m *Module, text string, at model.Span) model.Type {
 	}
 	if sym := p.Symbols[s]; sym != nil {
 		if sym.Kind == "type" {
+			if sym.Record != nil && len(sym.Record.TypeParams) > 0 {
+				p.error("PP602", "manifest schema 1 cannot name an unspecialized generic record", at)
+				return model.Invalid
+			}
 			return sym.Type
 		}
 		p.error("PP602", "unknown or unsupported manifest type "+s, at).WithSymbol(s).WithType("actual", sym.Type).WithRelated(sym.Declaration()).WithNote("the name resolves to a " + sym.Kind + ", which cannot be used as a type")
@@ -617,59 +567,6 @@ func (p *Program) typeText(m *Module, text string, at model.Span) model.Type {
 	}
 	p.error("PP602", "unknown or unsupported manifest type "+s, at).WithSymbol(s)
 	return model.Invalid
-}
-func (p *Program) recordCycles() {
-	type fieldEdge struct {
-		symbol string
-		field  model.Parameter
-	}
-	state := map[string]int{}
-	var visit func(string, []string, []fieldEdge)
-	visit = func(name string, path []string, edges []fieldEdge) {
-		r := p.Records[name]
-		if r == nil {
-			return
-		}
-		if state[name] == 2 {
-			return
-		}
-		if state[name] == 1 {
-			first := 0
-			for path[first] != name {
-				first++
-			}
-			cycle := edges[first:]
-			last := cycle[len(cycle)-1]
-			d := p.error("PP204", "recursive value-record type "+name, last.field.Span).WithSymbol(last.symbol).WithType("field", last.field.Type)
-			for _, edge := range cycle {
-				d.WithNote(edge.symbol + " has type " + edge.field.Type.String())
-			}
-			for _, edge := range cycle[:len(cycle)-1] {
-				d.WithRelated(edge.field.Span)
-			}
-			d.WithRelated(r.Span)
-			return
-		}
-		state[name] = 1
-		for _, f := range r.Fields {
-			t := f.Type
-			for t.Elem != nil {
-				t = *t.Elem
-			}
-			if t.Kind == "record" {
-				visit(t.Name, append(path, name), append(edges, fieldEdge{symbol: name + "." + f.Name, field: f}))
-			}
-		}
-		state[name] = 2
-	}
-	names := make([]string, 0, len(p.Records))
-	for name := range p.Records {
-		names = append(names, name)
-	}
-	sort.Strings(names)
-	for _, name := range names {
-		visit(name, nil, nil)
-	}
 }
 func (p *Program) constants(m *Module) {
 	c := newChecker(p, m, nil)

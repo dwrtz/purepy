@@ -40,7 +40,7 @@ type TrustedModule struct {
 }
 
 func (r *Report) Capabilities(name string) (AuthorityReport, error) {
-	out := AuthorityReport{Schema: JSONSchema, Functions: []Authority{}}
+	out := AuthorityReport{Schema: r.Schema, Functions: []Authority{}}
 	if r.Program == nil || !r.OK {
 		return out, fmt.Errorf("capability reports require successful verification")
 	}
@@ -54,7 +54,7 @@ func (r *Report) Capabilities(name string) (AuthorityReport, error) {
 		if f == nil || f.Origin != "project" {
 			return out, fmt.Errorf("unknown verified function %s", name)
 		}
-		a := Authority{FunctionReport: FunctionReport{Name: f.Name, Kind: f.Kind, Classification: f.Classification(), Parameters: f.Parameters, Returns: f.Returns}, Capabilities: []model.Parameter{}, HostReferences: []model.Parameter{}, UnusedCapabilities: []string{}, DirectCalls: []model.CallEdge{}, TrustedExternal: []model.Function{}, ReachableTrustedExternal: []model.Function{}, TrustedTypes: []TrustedType{}, TrustedModules: []TrustedModule{}}
+		a := Authority{FunctionReport: FunctionReport{TypeParams: f.TypeParams, Parent: f.Parent, Name: f.Name, Kind: f.Kind, Classification: f.Classification(), Parameters: f.Parameters, Returns: f.Returns}, Capabilities: []model.Parameter{}, HostReferences: []model.Parameter{}, UnusedCapabilities: []string{}, DirectCalls: []model.CallEdge{}, TrustedExternal: []model.Function{}, ReachableTrustedExternal: []model.Function{}, TrustedTypes: []TrustedType{}, TrustedModules: []TrustedModule{}}
 		for _, p := range f.Parameters {
 			if p.Type.Kind == "capability" {
 				a.Capabilities = append(a.Capabilities, p)
@@ -116,6 +116,15 @@ func (r *Report) Capabilities(name string) (AuthorityReport, error) {
 		types := map[string]bool{}
 		var collectType func(model.Type)
 		collectType = func(t model.Type) {
+			for _, a := range t.Args {
+				collectType(a)
+			}
+			for _, a := range t.Params {
+				collectType(a)
+			}
+			if t.Returns != nil {
+				collectType(*t.Returns)
+			}
 			if t.Elem != nil {
 				collectType(*t.Elem)
 				return
@@ -215,7 +224,7 @@ type Explanation struct {
 }
 
 func (r *Report) Explain(file string, line, column int) Explanation {
-	out := Explanation{Schema: JSONSchema, Diagnostics: []diag.Diagnostic{}, Facts: []model.Fact{}}
+	out := Explanation{Schema: r.Schema, Diagnostics: []diag.Diagnostic{}, Facts: []model.Fact{}}
 	abs, _ := filepath.Abs(file)
 	if resolved, err := filepath.EvalSymlinks(abs); err == nil {
 		abs = resolved

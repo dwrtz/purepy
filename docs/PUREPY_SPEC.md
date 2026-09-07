@@ -1,11 +1,11 @@
 # PurePy Language and Verification Specification
 
-**File:** `PUREPY_SPEC.md`  
-**PurePy specification version:** `0.3-draft`  
-**Initial conformance level:** PurePy `0.1`  
-**Target source syntax:** Python 3.14  
-**Status:** Design specification  
-**Last updated:** 2026-09-05
+**File:** `PUREPY_SPEC.md`
+**PurePy specification version:** `0.4-draft`
+**Language:** PurePy `0.2`
+**Target source syntax:** Python 3.14
+**Status:** Implemented language contract
+**Last updated:** 2026-09-07
 
 ---
 
@@ -19,9 +19,9 @@ PurePy is designed around five commitments:
 
 1. Ordinary functions are pure by construction.
 2. External authority enters verified code only through explicit capability parameters.
-3. Calls are first-order, monomorphic, and statically resolved.
+3. Functions compose through statically checked pure callables and rank-one data generics.
 4. Asynchronous execution is admitted only through direct `await` of known async calls.
-5. Scheduling and resource ownership remain in a narrow host boundary in PurePy 0.1.
+5. Scheduling and resource ownership remain in a narrow host boundary in PurePy 0.2.
 
 PurePy is not:
 
@@ -43,9 +43,14 @@ Sections marked **Non-normative** explain motivation or implementation strategy 
 
 ### 1.2 Versioning
 
-This document is specification draft `0.3`. It defines the intended PurePy `0.1` language level.
+This document is specification draft `0.4-draft` for PurePy `0.2`.
+PurePy 0.2 is the only supported language. Configuration may omit `language` or
+pin `language = "0.2"`; older language versions are rejected. Reports use JSON
+schema 2, and host manifests independently use schema 1.
 
-Later language levels MAY add features, but they MUST preserve the guarantees of accepted PurePy 0.1 programs. New features MUST be independently specified and MUST NOT retroactively reinterpret unsupported PurePy 0.1 syntax as trusted behavior.
+[The functional core contract](FUNCTIONAL_CORE.md) specifies generic records,
+products, aliases, pure callable provenance, captures, and analysis bounds in
+more detail. It is part of this specification.
 
 ---
 
@@ -53,7 +58,7 @@ Later language levels MAY add features, but they MUST preserve the guarantees of
 
 PurePy is:
 
-> A closed-world, first-order, monomorphic subset of Python syntax in which ordinary data is deeply immutable, all calls are statically resolved, and every interaction with external state requires an explicit host-provided capability value.
+> A closed-world, functional subset of Python syntax in which ordinary data is deeply immutable, all calls are statically resolved, and every interaction with external state requires an explicit host-provided capability value.
 
 A normal PurePy function accepts only Pure Values and returns a Pure Value:
 
@@ -91,7 +96,7 @@ known database operation is authorized
 
 A function without a `DatabaseRead` parameter cannot perform that operation.
 
-PurePy 0.1 supports modern nonblocking service code through restricted `async def` and direct `await`. The host remains responsible for:
+PurePy 0.2 supports modern nonblocking service code through restricted `async def` and direct `await`. The host remains responsible for:
 
 - creating the event loop;
 - accepting network connections;
@@ -115,7 +120,7 @@ For example, `a + b` is accepted only when `a` and `b` have exact approved built
 
 Likewise, `value.field` is accepted only for:
 
-- a field of a verified `@value` record; or
+- a field of a verified `NamedTuple` record; or
 - a statically declared module symbol.
 
 PurePy does not model descriptors, properties, custom attribute lookup, metaclass behavior, or open inheritance.
@@ -142,25 +147,22 @@ No capability may be obtained from:
 - an ordinary Pure Value; or
 - an unknown external call.
 
-### 3.4 First-order calls
+### 3.4 Pure function composition
 
-Functions are not ordinary data in PurePy 0.1.
+Every call target MUST resolve to a verified named function, a tracked pure
+callable, an exact record constructor, a manifest declaration, or a sealed
+intrinsic. Methods, callable objects, and computed call targets are prohibited.
 
-Every call target MUST resolve statically to:
+### 3.5 Exact generic semantics
 
-- a top-level project function;
-- a top-level trusted external function declared in a manifest; or
-- a sealed PurePy intrinsic.
-
-### 3.5 Monomorphic semantics
-
-PurePy 0.1 does not define user generics, overload resolution, protocol conformance, structural typing, or effect polymorphism.
-
-Every verified function has one concrete signature after names are resolved.
+Pure synchronous top-level functions and NamedTuple records may declare rank-one
+unbounded data type parameters. Bodies are checked with rigid type variables;
+calls infer exact substitutions. There is no subtyping, effect polymorphism,
+protocol dispatch, or polymorphic recursion. Nested functions are monomorphic.
 
 ### 3.6 Host-owned resources
 
-PurePy 0.1 deliberately does not prove general ownership, borrowing, transfer, cleanup, or task lifetimes.
+PurePy 0.2 deliberately does not prove general ownership, borrowing, transfer, cleanup, or task lifetimes.
 
 Sockets, connections, transactions, cursors, pools, task handles, and similar objects are host-owned opaque references. Verified code may use such references only within the invocation in which the host supplied them and only through known operations.
 
@@ -194,7 +196,7 @@ The language is intentionally restricted so the verifier can provide fast, deter
 
 ## 4. Goals
 
-PurePy 0.1 has the following goals.
+PurePy 0.2 has the following goals.
 
 ### 4.1 Strong purity
 
@@ -237,7 +239,7 @@ Compatibility with arbitrary Python libraries is not a goal. Rejecting dynamic f
 
 ## 5. Non-goals
 
-PurePy 0.1 does not attempt to support or verify:
+PurePy 0.2 does not attempt to support or verify:
 
 - arbitrary Python code;
 - arbitrary standard-library or third-party libraries;
@@ -249,8 +251,8 @@ PurePy 0.1 does not attempt to support or verify:
 - dynamic imports;
 - monkey-patching;
 - reflection;
-- callbacks or higher-order functions;
-- user-defined generics;
+- unknown host callbacks or higher-order effectful functions;
+- higher-rank, bounded, variadic, or effectful generics;
 - exception handling;
 - generators or asynchronous generators;
 - first-class coroutine objects;
@@ -259,7 +261,7 @@ PurePy 0.1 does not attempt to support or verify:
 - general mutable containers;
 - resource ownership or borrowing;
 - framework dependency injection;
-- runtime decorator semantics other than `@value`;
+- runtime decorator semantics;
 - transparent persistent or distributed memoization;
 - proving termination;
 - cross-platform bit-identical floating-point results; or
@@ -287,13 +289,13 @@ Purity is defined relative to a fixed program image.
 
 ### 6.2 Closed world
 
-PurePy 0.1 operates in closed-world application mode.
+PurePy 0.2 operates in closed-world application mode.
 
 Every imported symbol and every call target must resolve within the program image. Code loaded dynamically after verification is outside the guarantee.
 
 ### 6.3 Source root
 
-A project has exactly one verified source root in PurePy 0.1.
+A project has exactly one verified source root in PurePy 0.2.
 
 Each `.py` file beneath the source root maps deterministically to one module name. Namespace packages are not supported. Package directories MUST contain `__init__.py` files.
 
@@ -316,13 +318,13 @@ The host is trusted. PurePy verifies only the use of host-provided declarations,
 
 Entrypoints are configured by fully qualified function name in `purepy.toml`.
 
-PurePy 0.1 does not require or recognize an `@entrypoint` decorator.
+PurePy 0.2 does not require or recognize an `@entrypoint` decorator.
 
 An entrypoint MAY be synchronous or asynchronous. Its parameters MAY include Pure Values, capabilities, and host references. Its return type MUST be a Pure Value type.
 
 ### 6.6 Ordinary Python execution
 
-Accepted PurePy source remains ordinary Python source and executes on a normal Python implementation together with a small support package and host implementation.
+Accepted PurePy source remains ordinary Python source and executes on a normal Python implementation with its declared host implementation. No PurePy runtime or support package is required.
 
 Verification does not imply that arbitrary unverified callers will respect PurePy contracts. The host is responsible for invoking verified entrypoints with values matching their declared categories.
 
@@ -332,17 +334,17 @@ Verification does not imply that arbitrary unverified callers will respect PureP
 
 ### 7.1 Pure function
 
-A top-level function is a **pure function** when:
+A synchronous function is a **pure function** when:
 
-- all parameters are Pure Value types;
-- its return type is a Pure Value type;
+- all parameters are immutable data or pure synchronous callable types;
+- its return type is immutable data or a pure synchronous callable type;
 - its body conforms to PurePy;
 - every call in its body targets another pure function, a trusted pure external function, or a pure intrinsic; and
 - it contains no capability or host-reference value.
 
 For a fixed program image and equivalent Pure Value arguments, evaluating a pure synchronous function MUST have one of these outcomes:
 
-1. return an equivalent Pure Value;
+1. return equivalent immutable data or a pure function with equivalent behavior;
 2. terminate through the same deterministic runtime exception class under the same operation and equivalent operands; or
 3. fail to terminate.
 
@@ -354,7 +356,7 @@ An `async def` function is pure when it satisfies the pure-function conditions a
 
 For equivalent inputs, if a conforming host drives the coroutine to completion without externally cancelling it, it MUST produce the same eventual Pure Value, the same deterministic runtime exception, or divergence.
 
-External cancellation is outside the pure result relation. Verified code cannot catch, inspect, delay, or suppress cancellation in PurePy 0.1.
+External cancellation is outside the pure result relation. Verified code cannot catch, inspect, delay, or suppress cancellation in PurePy 0.2.
 
 ### 7.3 Excluded ambient dependencies
 
@@ -396,11 +398,11 @@ Allocation of new immutable values is permitted.
 
 ### 7.5 Partiality
 
-Purity does not imply termination. PurePy 0.1 does not prove loop or recursion termination.
+Purity does not imply termination. PurePy 0.2 does not prove loop or recursion termination.
 
 ### 7.6 Deterministic runtime exceptions
 
-PurePy source cannot explicitly raise or catch exceptions in 0.1, but approved primitive operations may still fail, for example integer division by zero or indexing outside a valid range.
+PurePy source cannot explicitly raise or catch exceptions in 0.2, but approved primitive operations may still fail, for example integer division by zero or indexing outside a valid range.
 
 Such failures do not constitute an external effect when the exception is determined solely by Pure Value inputs and the fixed program image.
 
@@ -408,7 +410,7 @@ Tracebacks, frames, exception context, and process-level exception hooks are not
 
 ### 7.7 Floating-point behavior
 
-`float` is a Pure Value type. Results are guaranteed relative to the selected Python runtime and execution platform. PurePy 0.1 does not promise bit-identical floating-point behavior across processors, operating systems, Python implementations, or math libraries.
+`float` is a Pure Value type. Results are guaranteed relative to the selected Python runtime and execution platform. PurePy 0.2 does not promise bit-identical floating-point behavior across processors, operating systems, Python implementations, or math libraries.
 
 ---
 
@@ -430,7 +432,7 @@ Core Pure Value types are:
 - `bytes`;
 - homogeneous tuples `tuple[T, ...]` where `T` is a Pure Value type;
 - `T | None` where `T` is a Pure Value type; and
-- instances of verified `@value` records whose fields are Pure Value types.
+- instances of verified `NamedTuple` records whose fields are Pure Value types.
 
 Immutability is recursive.
 
@@ -463,7 +465,7 @@ Host references are not Pure Values and do not themselves grant authority. A hos
 
 An **Ephemeral Intrinsic Value** exists only as part of a statically bounded approved operation.
 
-PurePy 0.1 recognizes:
+PurePy 0.2 recognizes:
 
 - `range` values consumed directly by a `for` loop;
 - internal iteration state for approved built-in immutable iterables; and
@@ -480,7 +482,7 @@ A value whose type or category cannot be established is an **Unknown Value** and
 Capability values and host references MUST NOT be:
 
 - returned from a verified function;
-- stored in a tuple or `@value` record;
+- stored in a tuple or `NamedTuple` record;
 - assigned to a module constant;
 - compared;
 - formatted;
@@ -502,13 +504,13 @@ They MAY be forwarded directly from a function parameter to a statically known c
 
 Every function parameter and return value MUST have an explicit type annotation.
 
-Every `@value` field MUST have an explicit type annotation.
+Every `NamedTuple` field MUST have an explicit type annotation.
 
 Module constants MUST have an explicit `Final[T]` annotation.
 
 ### 9.2 Supported type expressions
 
-PurePy 0.1 supports only:
+PurePy 0.2 supports only:
 
 ```text
 None
@@ -518,37 +520,40 @@ float
 str
 bytes
 tuple[T, ...]
+tuple[A, B, ...]         fixed products of immutable data
+Callable[[A, ...], B]    pure synchronous functions only
 T | None
-VerifiedValueRecord
+VerifiedValueRecord[TypeArguments]
+TypeAlias[TypeArguments]
 DeclaredCapabilityType
 DeclaredHostReferenceType
 Final[T]                 module constants only
 ```
 
-`T` in `tuple[T, ...]` and `T | None` must be a permitted concrete type.
+`T` in `tuple[T, ...]` and `T | None` must be immutable data or a data type parameter. Callable parameters and results may themselves be pure callables; data containers cannot contain callables.
 
 ### 9.3 Prohibited type expressions
 
-PurePy 0.1 rejects:
+PurePy 0.2 rejects:
 
 - `Any`;
 - `object`;
-- `Callable`;
-- `TypeVar` and user-defined generics;
+- callable forms other than the exact `collections.abc.Callable` form;
+- `TypeVar`, bounds, defaults, constraints, and variadic type parameters;
 - `Protocol`;
 - `Generic`;
 - `Literal`;
 - arbitrary unions;
 - intersections;
 - overloads;
-- recursive aliases;
+- alias cycles that do not pass through a named record;
 - `list`, `dict`, `set`, `frozenset`, `bytearray`, and mutable collection types;
 - iterator, generator, coroutine, task, future, context-manager, or exception types; and
-- user class types not declared as `@value` records or in trusted manifests.
+- user class types not declared as `NamedTuple` records or in trusted manifests.
 
 ### 9.4 No subtyping
 
-PurePy 0.1 uses exact nominal type matching, except for the explicit optional form `T | None` and the ordinary relation that a value of type `T` may be used where `T | None` is expected.
+PurePy 0.2 uses exact nominal type matching, except for the explicit optional form `T | None` and the ordinary relation that a value of type `T` may be used where `T | None` is expected.
 
 There is no user-defined inheritance, structural subtyping, variance, or capability subtyping.
 
@@ -572,7 +577,7 @@ if value is None:
 return use_value(value)
 ```
 
-No other union narrowing is defined in PurePy 0.1.
+No other union narrowing is defined in PurePy 0.2.
 
 ---
 
@@ -583,20 +588,19 @@ No other union narrowing is defined in PurePy 0.1.
 PurePy provides one approved class form:
 
 ```python
-from purepy import value
+from typing import NamedTuple
 
 
-@value
-class User:
+class User(NamedTuple):
     user_id: int
     display_name: str
 ```
 
-A `@value` class defines a deeply immutable nominal record.
+A class with exactly the imported `typing.NamedTuple` base defines a deeply immutable nominal record. The verifier recognizes this standard declaration without executing it.
 
 ### 10.2 Class-body restrictions
 
-A `@value` class body MAY contain only:
+A `NamedTuple` class body MAY contain only:
 
 - an optional docstring; and
 - annotated field declarations without defaults.
@@ -611,19 +615,12 @@ It MUST NOT contain:
 - computed fields;
 - descriptors;
 - nested classes;
-- decorators other than the exact `@value` decorator;
-- inheritance;
+- decorators;
+- additional bases or user-defined inheritance;
 - metaclass declarations; or
 - executable statements.
 
-Identifiers in a record class body follow Python private-name mangling after Unicode NFKC normalization.
-
-For example, the source field `__key` in `class Secret` has the effective field
-name `_Secret__key`. Construction by keyword and field reads
-outside the class use that effective name; `Secret(__key=1)` has no matching
-field, while `Secret(_Secret__key=1)` and positional `Secret(1)` are permitted.
-This preserves Python's field-name semantics and does not grant reflection or
-access to prohibited double-leading-and-trailing-underscore names.
+NamedTuple field names beginning with `_` are prohibited, following Python's field naming rules. Names are normalized with Unicode NFKC before checking.
 
 ### 10.3 Field types
 
@@ -654,7 +651,7 @@ records; their fields do not acquire comparison behavior from the record wrapper
 
 ### 10.6 Behavior belongs in functions
 
-All behavior over records MUST be expressed as top-level functions:
+All behavior over records MUST be expressed as free functions:
 
 ```python
 def rename_user(user: User, display_name: str) -> User:
@@ -666,14 +663,13 @@ def rename_user(user: User, display_name: str) -> User:
 
 ## 11. Function subset
 
-### 11.1 Top-level definitions only
+### 11.1 Function definitions
 
-PurePy 0.1 permits only top-level function definitions:
-
-- `def`;
-- `async def`.
-
-Nested functions and lambdas are prohibited.
+Top-level `def` and `async def` declarations are supported. Pure synchronous
+nested definitions may capture established immutable data or pure functions.
+Captured parameters cannot be rebound, and captured locals have exactly one
+assignment. Definitions inside loops and rebinding nested definitions are
+prohibited. Lambdas, mutable captures, and captured authority are prohibited.
 
 ### 11.2 Fixed signatures
 
@@ -691,17 +687,17 @@ The following are prohibited:
 - `*args`;
 - `**kwargs`;
 - parameter unpacking;
-- type parameters;
+- type parameter bounds, defaults, constraints, and variadics;
 - overloads; and
 - decorators.
 
-The only decorator admitted anywhere in a verified module is `@value` on a data-only record.
+No decorators are admitted in verified modules.
 
 ### 11.3 Parameter categories
 
 Each parameter is exactly one of:
 
-1. a Pure Value parameter;
+1. an immutable data or pure synchronous callable parameter;
 2. a capability parameter; or
 3. a host-reference parameter.
 
@@ -709,9 +705,9 @@ Capability and host-reference parameters MUST retain their original names and MU
 
 ### 11.4 Return category
 
-Every verified function MUST return a Pure Value type or `None`.
+Every verified function MUST return immutable data, `None`, or a pure synchronous callable. Async and effectful functions return data only.
 
-Capabilities, host references, ephemeral intrinsic values, functions, modules, classes, and suspended computations cannot be returned.
+Capabilities, host references, ephemeral intrinsic values, modules, classes, and suspended computations cannot be returned.
 
 ### 11.5 Function classification
 
@@ -769,7 +765,7 @@ A verified module MAY contain only:
 - an optional module docstring;
 - approved module-level imports;
 - immutable `Final` constants;
-- `@value` record definitions;
+- `NamedTuple` record definitions;
 - top-level `def` definitions; and
 - top-level `async def` definitions.
 
@@ -777,7 +773,7 @@ No other module-level statement is permitted.
 
 ### 12.2 Imports
 
-PurePy 0.1 permits only absolute imports of the form:
+PurePy 0.2 permits only absolute imports of the form:
 
 ```python
 from package.module import symbol
@@ -803,7 +799,7 @@ The verifier recognizes these support symbols intrinsically:
 
 ```python
 from typing import Final
-from purepy import value
+from typing import NamedTuple
 ```
 
 Additional imported symbols must resolve to another verified project module, a sealed intrinsic module, or a trusted external manifest declaration.
@@ -812,7 +808,7 @@ Additional imported symbols must resolve to another verified project module, a s
 
 A package `__init__.py` file MAY contain only an optional docstring.
 
-Imports, re-exports, constants, records, functions, and executable statements are prohibited in package initializers in PurePy 0.1. Application modules import directly from the defining module.
+Imports, re-exports, constants, records, functions, and executable statements are prohibited in package initializers in PurePy 0.2. Application modules import directly from the defining module.
 
 ### 12.5 Module constants
 
@@ -829,7 +825,7 @@ The initializer MUST be a constant expression consisting only of:
 - tuple displays of constant expressions;
 - references to earlier constants in the same module;
 - references to imported verified constants; and
-- direct construction of a `@value` record from constant expressions.
+- direct construction of a `NamedTuple` record from constant expressions.
 
 No ordinary function call is permitted during module initialization.
 
@@ -930,7 +926,7 @@ Discarding a non-`None` result is prohibited.
 
 ### 13.8 Prohibited statements
 
-PurePy 0.1 prohibits:
+PurePy 0.2 prohibits:
 
 - `assert`;
 - `raise`;
@@ -943,7 +939,7 @@ PurePy 0.1 prohibits:
 - `nonlocal`;
 - `del`;
 - local imports;
-- nested function definitions;
+- nested generic or asynchronous function definitions;
 - local class definitions;
 - type-alias statements;
 - assignment expressions; and
@@ -976,7 +972,7 @@ values = (1, 2, 3)
 
 The inferred type is `tuple[int, ...]`.
 
-Heterogeneous tuples are prohibited. Use a `@value` record instead.
+Heterogeneous products use explicit contextual `tuple[A, B]` annotations. Their elements must be immutable data; access uses a constant in-range index. Dynamic product indexing, slicing, and iteration are prohibited.
 
 The empty tuple has no standalone inferred element type. It is permitted only when an explicit contextual type supplies `tuple[T, ...]`, for example `items: tuple[int, ...] = ()`.
 
@@ -988,7 +984,7 @@ List, dictionary, set, and mutable-container displays are prohibited.
 
 Arithmetic is permitted only for exact approved built-in operand combinations.
 
-PurePy 0.1 supports:
+PurePy 0.2 supports:
 
 - integer arithmetic;
 - float arithmetic;
@@ -1014,13 +1010,13 @@ Permitted equality includes:
 
 - same-type primitives;
 - homogeneous tuples of equality-comparable Pure Values;
-- same-type `@value` records whose fields are all recursively equality-comparable; and
+- same-type `NamedTuple` records whose fields are all recursively equality-comparable; and
 - comparison of an optional value to `None` when its non-`None` element type is recursively equality-comparable.
 
 Equality-comparability is closed over the exact primitives `None`, `bool`, `int`,
 `float`, `str`, and `bytes`, homogeneous tuples of comparable elements, optionals
 of comparable elements, and verified records whose fields are all comparable.
-Recursive record types are prohibited. An immutable manifest-declared value has
+Regular recursive records are supported. Equality analysis is conservative and bounded. An immutable manifest-declared value has
 no sealed equality rule, including when it occurs inside a tuple, optional, or
 record. For example, `token == None` is rejected for an opaque `Token | None`:
 Python could invoke `Token.__eq__` on the non-`None` path. Use `token is None`
@@ -1030,7 +1026,7 @@ Identity operators `is` and `is not` are permitted only with `None`.
 
 For each identity comparison, at least one operand has the exact type `None`;
 the other operand may be any Pure Value, including a nonoptional value, an
-optional value, a `@value` record, or a manifest-declared immutable value. The
+optional value, a `NamedTuple` record, or a manifest-declared immutable value. The
 `None` operand may be a literal or another expression with exact type `None`.
 An optional type alone does not satisfy the exact-`None` requirement. Each
 adjacent pair in a comparison chain is checked separately.
@@ -1062,7 +1058,7 @@ Indices must be `int`. Slice bounds must be `int | None`. Extended slicing and u
 
 ### 14.9 Field reads
 
-`record.field` is permitted only when `record` has one exact verified `@value` type and `field` is a declared field.
+`record.field` is permitted only when `record` has one exact verified `NamedTuple` type and `field` is a declared field.
 
 No other instance attribute access is permitted in project code.
 
@@ -1095,7 +1091,7 @@ Dynamic format specifications, locale-sensitive formatting, arbitrary `__format_
 
 ### 14.13 Comprehensions
 
-List, dictionary, set, and generator comprehensions are prohibited in PurePy 0.1.
+List, dictionary, set, and generator comprehensions are prohibited in PurePy 0.2.
 
 Equivalent loops over tuples may be written using tuple concatenation. A later local-builder extension is expected to provide an efficient form.
 
@@ -1148,7 +1144,7 @@ The initial set MAY include exact typed forms of:
 - `bytes` construction from approved byte values;
 - tuple concatenation;
 - approved string and bytes search operations; and
-- construction and equality of `@value` records.
+- construction and equality of `NamedTuple` records.
 
 ### 15.3 No protocol dispatch
 
@@ -1160,7 +1156,7 @@ For example, `len(value)` is accepted only when `value` is exactly `str`, `bytes
 
 The verifier MUST version and test the intrinsic table. Adding an intrinsic is a language change.
 
-The PurePy 0.1 reference table has intrinsic contract version `1`, independent
+The PurePy 0.2 reference table has intrinsic contract version `2`, independent
 of the verifier build version. Its exact call forms and result types are listed
 in `SYNTAX_MATRIX.md`. The `purepy version` command identifies this version, and
 it participates in program-image cache identity. Changes to accepted calls or
@@ -1173,36 +1169,37 @@ implementation fixes preserving the contract do not.
 
 ### 16.1 Exact target resolution
 
-Every call target MUST resolve to exactly one callable declaration.
+Every call target MUST resolve to a known declaration or a pure callable whose provenance is tracked through the verified program.
 
 The target may be:
 
 - a top-level function in the same module;
 - a directly imported top-level function from another verified module;
 - a directly imported trusted external function; or
+- a checked nested function or local pure callable; or
 - a sealed intrinsic.
 
 ### 16.2 Prohibited call targets
 
 The following are prohibited:
 
-- local variables holding callables;
+- local variables holding untracked or effectful callables;
 - record fields holding callables;
 - instance methods;
 - class methods;
 - static methods;
 - callable objects;
-- constructors other than `@value` record construction;
+- constructors other than `NamedTuple` record construction;
 - union-dispatched callables;
 - overloaded functions;
-- dynamically selected functions; and
+- computed call targets; and
 - unknown imported functions.
 
 ### 16.3 Argument checking
 
 Every argument MUST match the exact declared parameter type and category.
 
-A capability parameter must receive the exact incoming capability parameter name or another direct capability expression explicitly permitted by a future specification. PurePy 0.1 defines no capability constructors or transformations.
+A capability parameter must receive the exact incoming capability parameter name or another direct capability expression explicitly permitted by a future specification. PurePy 0.2 defines no capability constructors or transformations.
 
 A host-reference parameter must receive the exact incoming host-reference parameter name.
 
@@ -1267,7 +1264,7 @@ capability host.network.NetworkWrite:
 
 ### 17.2 Exact authority
 
-Capability labels are exact strings. PurePy 0.1 defines no hierarchy, implication, aliasing, or wildcard grants.
+Capability labels are exact strings. PurePy 0.2 defines no hierarchy, implication, aliasing, or wildcard grants.
 
 A capability with label `database` does not automatically authorize `database.read` or `database.write`.
 
@@ -1313,11 +1310,11 @@ Capabilities enter verified code only as:
 
 A capability may be used repeatedly and sequentially within one invocation. It is not an owned resource.
 
-PurePy 0.1 does not permit verified task creation, so concurrent capability sharing inside verified code does not arise.
+PurePy 0.2 does not permit verified task creation, so concurrent capability sharing inside verified code does not arise.
 
 ### 17.6 Capability attenuation
 
-PurePy 0.1 defines no source-level capability attenuation or composition.
+PurePy 0.2 defines no source-level capability attenuation or composition.
 
 A host may supply separate narrow capability types instead of a broad capability.
 
@@ -1349,7 +1346,7 @@ host_ref host.network.Connection
 
 The host guarantees that a host reference remains valid for the duration of the entrypoint invocation and every direct verified call awaited within that invocation.
 
-PurePy 0.1 does not verify creation, ownership transfer, closure, or finalization.
+PurePy 0.2 does not verify creation, ownership transfer, closure, or finalization.
 
 ### 18.3 Restrictions
 
@@ -1459,7 +1456,7 @@ An effectful async function may directly await an operation requiring capabiliti
 
 `await` itself is not treated as an external effect. The awaited operation determines the required authority.
 
-PurePy 0.1 prohibits:
+PurePy 0.2 prohibits:
 
 - task creation;
 - futures;
@@ -1515,7 +1512,7 @@ index = index + 1
 
 ### 20.3 Mutable containers
 
-`list`, `dict`, `set`, `bytearray`, and mutable user objects are prohibited in PurePy 0.1.
+`list`, `dict`, `set`, `bytearray`, and mutable user objects are prohibited in PurePy 0.2.
 
 ### 20.4 No mutating methods
 
@@ -1530,7 +1527,7 @@ bytearray -> bytes
 list[T]   -> tuple[T, ...]
 ```
 
-Such an extension must prove that the mutable builder is fresh, uniquely named, never exposed, and frozen before escape. It is not part of PurePy 0.1.
+Such an extension must prove that the mutable builder is fresh, uniquely named, never exposed, and frozen before escape. It is not part of PurePy 0.2.
 
 ---
 
@@ -1543,23 +1540,21 @@ Expected application failures MUST be represented as Pure Values.
 Example:
 
 ```python
-from purepy import value
+from typing import NamedTuple
 
 
-@value
-class ParseError:
+class ParseError(NamedTuple):
     message: str
 
 
-@value
-class ParseResult:
+class ParseResult(NamedTuple):
     request: Request | None
     error: ParseError | None
 ```
 
 ### 21.2 No `raise` or `try`
 
-PurePy 0.1 prohibits explicit exception construction, raising, catching, suppression, and `finally` cleanup.
+PurePy 0.2 prohibits explicit exception construction, raising, catching, suppression, and `finally` cleanup.
 
 ### 21.3 Trusted host contracts
 
@@ -1581,7 +1576,7 @@ A semantic manifest describes the small statically relevant surface of host or n
 
 ### 22.2 Manifest scope
 
-PurePy 0.1 manifests may declare only:
+PurePy 0.2 manifests may declare only:
 
 - import-safe modules;
 - pure external value types;
@@ -1649,7 +1644,7 @@ A manifest module imported by verified source MUST be marked `import_safe`.
 
 ### 22.8 No executable plugins
 
-PurePy 0.1 supports no executable verifier plugins.
+PurePy 0.2 supports no executable verifier plugins.
 
 Manifests are declarative data. Unknown fields MUST be rejected unless the schema version explicitly permits them.
 
@@ -1665,7 +1660,7 @@ The verifier MUST be able to report every trusted external declaration reachable
 
 ### 22.11 Minimality
 
-PurePy 0.1 manifests do not describe:
+PurePy 0.2 manifests do not describe:
 
 - callbacks;
 - methods;
@@ -1686,7 +1681,7 @@ PurePy 0.1 manifests do not describe:
 
 ### 23.1 Single escape boundary
 
-PurePy 0.1 has no source-level `@unsafe` decorator.
+PurePy 0.2 has no source-level `@unsafe` decorator.
 
 Code that cannot be verified belongs outside the verified source root and is accessed only through trusted manifest declarations.
 
@@ -1728,7 +1723,7 @@ A C, Rust, or other native function may be declared pure when its trusted contra
 
 ### 24.1 Sealed allowlist
 
-PurePy 0.1 does not assume the Python standard library is pure or statically modelable.
+PurePy 0.2 does not assume the Python standard library is pure or statically modelable.
 
 Only sealed intrinsics and explicit standard manifests are available.
 
@@ -1760,7 +1755,7 @@ A minimal configuration is:
 
 ```toml
 [tool.purepy]
-language = "0.1"
+language = "0.2"
 python_syntax = "3.14"
 source_root = "src"
 entrypoints = [
@@ -1773,19 +1768,20 @@ manifests = [
 
 ### 25.2 Required fields
 
-PurePy 0.1 configuration MUST identify:
+PurePy 0.2 configuration MUST identify:
 
-- language version;
 - target Python syntax version;
 - one source root;
 - zero or more entrypoints; and
 - an ordered manifest list.
 
+The language defaults to `0.2`; an explicit pin must also be `0.2`.
+
 ### 25.3 Exclusions
 
 Files outside the source root are outside the guarantee.
 
-Files inside the source root cannot be individually excluded in PurePy 0.1. This avoids accidental holes in the verified module graph.
+Files inside the source root cannot be individually excluded in PurePy 0.2. This avoids accidental holes in the verified module graph.
 
 ### 25.4 Entrypoint validation
 
@@ -1811,7 +1807,7 @@ Paths are resolved relative to the configuration file.
 
 ### 26.1 Required architecture
 
-A PurePy 0.1 service uses a trusted host for runtime mechanics and verified functions for application behavior:
+A PurePy 0.2 service uses a trusted host for runtime mechanics and verified functions for application behavior:
 
 ```text
 trusted host
@@ -1836,7 +1832,7 @@ trusted host
 
 The host MAY invoke the same verified async entrypoint concurrently for many requests or connections.
 
-PurePy 0.1 does not permit one verified invocation to spawn another task. This does not prevent concurrent service operation.
+PurePy 0.2 does not permit one verified invocation to spawn another task. This does not prevent concurrent service operation.
 
 ### 26.3 Database interaction
 
@@ -1848,7 +1844,7 @@ Hidden lazy I/O through property access is impossible because methods and proper
 
 ### 26.4 Transactions
 
-PurePy 0.1 does not expose an interactive transaction resource.
+PurePy 0.2 does not expose an interactive transaction resource.
 
 A host MAY expose atomic or transactional one-shot functions accepting immutable plans and returning immutable results.
 
@@ -1889,7 +1885,7 @@ A route selector can return a small immutable route code or request classificati
 
 ### 26.7 Performance path
 
-PurePy 0.1 permits nonblocking I/O and host-managed concurrency. A later local-builder extension is expected to make parsing and encoding efficient without exposing general mutable state.
+PurePy 0.2 permits nonblocking I/O and host-managed concurrency. Immutable recursive structures and folds support construction without mutable builders.
 
 ---
 
@@ -1901,9 +1897,9 @@ The verifier can report that a function is verified pure.
 
 That fact is a necessary foundation for safe memoization, parallel evaluation, worker offloading, and content-addressed computation.
 
-### 27.2 Not part of PurePy 0.1
+### 27.2 Not part of PurePy 0.2
 
-PurePy 0.1 does not define:
+PurePy 0.2 does not define:
 
 - a memoization decorator;
 - cache key encoding;
@@ -1917,7 +1913,7 @@ PurePy 0.1 does not define:
 
 An application-visible cache remains an effectful host facility requiring explicit capabilities.
 
-An external in-process optimization may choose to memoize a verified pure function, but that optimization is outside PurePy 0.1 conformance unless a later specification defines its observability and invalidation rules.
+An external in-process optimization may choose to memoize a verified pure function, but that optimization is outside PurePy 0.2 conformance unless a later specification defines its observability and invalidation rules.
 
 ### 27.4 Planned progression
 
@@ -1969,7 +1965,7 @@ app.py:18:12 PP301 unknown call target
     return registry[name](request)
            ^^^^^^^^^^^^^^
 
-PurePy 0.1 requires a direct call to one statically resolved top-level function.
+PurePy 0.2 requires a named call target with statically checked callable provenance.
 ```
 
 Missing capability:
@@ -1986,7 +1982,7 @@ The caller has no `DatabaseRead` parameter to pass.
 Stored coroutine:
 
 ```text
-app.py:31:15 PP401 coroutine values are not first-class in PurePy 0.1
+app.py:31:15 PP401 coroutine values are not first-class in PurePy 0.2
 
     pending = load_user(database_read, user_id)
               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -2007,13 +2003,13 @@ Pass `connection` directly to a known host operation.
 
 ### 28.4 No misleading fixes
 
-The verifier SHOULD suggest a fix only when the replacement preserves the user's apparent intent and remains inside PurePy 0.1.
+The verifier SHOULD suggest a fix only when the replacement preserves the user's apparent intent and remains inside PurePy 0.2.
 
 ---
 
 ## 29. CLI contract
 
-PurePy 0.1 defines four commands.
+PurePy 0.2 defines four commands.
 
 ### 29.1 `purepy check`
 
@@ -2150,7 +2146,13 @@ Configured entrypoints are resolved and summarized. Their parameter categories d
 
 Diagnostics and summaries are sorted by stable module name, source position, code, and deterministic tie-breaker.
 
-### 30.11 Implementation resource limits
+### 30.11 Functional analysis limits
+
+The verifier MUST check every nested body and propagate callable provenance through parameters, returns, captures, and local aliases.
+Generic recursion MUST preserve type parameters; expanding recursion and alias-only cycles are rejected.
+Expanded types MUST stay within 4,096 nodes and 128 levels; exceeding an analysis budget is an error.
+
+### 30.12 Implementation resource limits
 
 A verifier MAY reject input exceeding documented implementation resource limits,
 including input that otherwise satisfies the language's typing and syntax rules.
@@ -2209,7 +2211,7 @@ Each unchanged module may be represented by a compact cached summary containing:
 
 ### 31.5 Initial invalidation model
 
-PurePy 0.1 may use a deliberately simple invalidation policy:
+PurePy uses a deliberately simple invalidation policy:
 
 - reuse summaries for source-identical modules;
 - when any relevant module or manifest changes, relink the project;
@@ -2234,7 +2236,7 @@ Performance optimizations MUST NOT cause unknown operations to be accepted, skip
 
 ### 32.1 Conforming verifier
 
-A conforming PurePy 0.1 verifier MUST:
+A conforming PurePy 0.2 verifier MUST:
 
 - accept every valid required conformance fixture;
 - reject every invalid required conformance fixture;
@@ -2259,7 +2261,7 @@ A program conforms when:
 The guarantee depends on:
 
 - the Python runtime executing accepted constructs according to the assumptions encoded by PurePy;
-- the `purepy` support package correctly implementing `@value`;
+- Python's standard `typing.NamedTuple`, `collections.abc.Callable`, and `copy.replace` behavior;
 - trusted external manifests accurately describing their implementations;
 - the host respecting parameter categories and lifetimes; and
 - the verifier implementation being correct.
@@ -2283,7 +2285,7 @@ The conformance suite MUST include positive and negative fixtures for:
 
 ### 32.5 Reference service workload
 
-Before PurePy 0.1 is considered complete, a reference workload MUST demonstrate:
+Before PurePy 0.2 is considered complete, a reference workload MUST demonstrate:
 
 - host-managed concurrent entrypoint invocation;
 - an async verified handler;
@@ -2301,16 +2303,14 @@ The workload is a conformance and expressiveness test, not a supported framework
 
 ## 33. Deferred extensions
 
-The following order is recommended after PurePy 0.1.
+The following order is recommended after PurePy 0.2.
 
-### 33.1 Narrow local builders
+### 33.1 Efficient immutable algorithms
 
-Admit syntactically bounded fresh local mutation for:
-
-1. `bytearray` converted to `bytes`;
-2. `list[T]` converted to `tuple[T, ...]`.
-
-No general borrowing or ownership system is required.
+Recursive NamedTuple structures, folds, and persistent trees provide construction
+and grouping without mutation. Balanced persistent maps and richer verified
+Unicode operations remain design work; no mutable-builder or runtime-library
+extension is committed.
 
 ### 33.2 Bounded `parallel_join`
 
@@ -2361,30 +2361,26 @@ The following is non-normative but illustrates the intended architecture.
 ### 34.1 Pure data
 
 ```python
-from purepy import value
+from typing import NamedTuple
 
 
-@value
-class Request:
+class Request(NamedTuple):
     method: str
     path: str
     body: bytes
 
 
-@value
-class ParseResult:
+class ParseResult(NamedTuple):
     request: Request | None
     error_status: int | None
 
 
-@value
-class User:
+class User(NamedTuple):
     user_id: int
     display_name: str
 
 
-@value
-class UserResult:
+class UserResult(NamedTuple):
     user: User | None
     found: bool
 ```
@@ -2446,12 +2442,12 @@ The host may invoke `handle_connection` concurrently. The verifier need not mode
 
 ## 35. Summary
 
-PurePy 0.1 is intentionally small:
+PurePy 0.2 is intentionally small:
 
 ```text
 Python 3.14 syntax subset
-+ first-order top-level functions
-+ concrete immutable values
++ pure functions, checked closures, and composition
++ immutable data and rank-one generics
 + data-only records
 + exact direct calls
 + explicit capability parameters
@@ -2465,8 +2461,8 @@ It deliberately excludes:
 ```text
 methods
 inheritance
-callbacks
-generics
+unknown host callbacks
+higher-rank or effectful generics
 exceptions
 generators
 tasks

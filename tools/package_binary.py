@@ -5,7 +5,6 @@ Untracked additions require an explicit --include-source per reviewed file.
 """
 
 import argparse
-from email.parser import BytesParser
 import gzip
 from hashlib import sha256
 import io
@@ -16,29 +15,27 @@ import shlex
 import subprocess
 import tarfile
 import tempfile
-import tomllib
-import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = "RELEASE-MANIFEST.json"
 INDEX = "release-index.json"
 CHECKSUMS = "SHA256SUMS"
-SCHEMA_LOCK = "docs/schema/frozen-v1.json"
-FROZEN_SCHEMAS = {"manifests/schema/v1.json", "docs/schema/diagnostics-v1.json",
-                  "docs/schema/capabilities-v1.json", "docs/schema/explain-v1.json"}
+SCHEMA_LOCK = "docs/schema/frozen-v2.json"
+FROZEN_SCHEMAS = {"manifests/schema/v1.json", "docs/schema/diagnostics-v2.json",
+                  "docs/schema/capabilities-v2.json", "docs/schema/explain-v2.json"}
 SUPPORTED_TARGETS = {"linux-amd64", "darwin-arm64"}
 EXCLUDED_PARTS = {".git", ".venv", ".purepy-cache", "__pycache__", "node_modules", "dist", "build", "bin"}
 REQUIRED_SOURCES = {
     "go.mod", "go.sum", "Makefile", "README.md", "internal/app/check.go",
     "skills/purepy/SKILL.md",
-    "python/pyproject.toml", "python/uv.lock", "python/purepy/value.py",
+    "docs/FUNCTIONAL_CORE.md", "examples/functional_core/purepy.toml",
     "docs/PUREPY_SPEC.md", "docs/PUREPY_PLAN.md", "docs/IMPLEMENTATION.md",
     "docs/RELEASE.md", "docs/RELEASE_NOTES.md", "docs/SCHEMA_CONTRACT.md",
     "docs/LANGUAGE_GUIDE.md",
     "docs/CONFORMANCE.md", "docs/conformance/core.json", "docs/conformance/boundary.json",
     "docs/conformance/tooling.json", "docs/MANIFESTS.md", "docs/DIAGNOSTICS.md",
-    "manifests/schema/v1.json", "docs/schema/diagnostics-v1.json",
-    "docs/schema/capabilities-v1.json", "docs/schema/explain-v1.json", SCHEMA_LOCK,
+    "manifests/schema/v1.json", "docs/schema/diagnostics-v2.json",
+    "docs/schema/capabilities-v2.json", "docs/schema/explain-v2.json", SCHEMA_LOCK,
     "examples/reference_service/README.md", "docs/validation/2026-09-05/service.json",
     "docs/validation/2026-09-05/service-run.json", "docs/validation/2026-09-05/README.md",
     "tools/package_binary.py", "tools/tests/test_package_binary.py",
@@ -94,6 +91,8 @@ def source_files(root, additions=()):
         result = subprocess.run(["git", "ls-files", "--cached", "-z"], cwd=root,
                                 check=True, capture_output=True)
         names = result.stdout.decode().rstrip("\0").split("\0")
+        # A source snapshot reflects tracked worktree deletions as well as edits.
+        names = [name for name in names if (root / name).exists() or (root / name).is_symlink()]
     files = {name: read_source(root, name) for name in sorted(set(names) | set(additions))}
     if (root / MANIFEST).is_file() and file_inventory(files) != recorded["files"]:
         raise ValueError("extracted source snapshot changed; prepare a new release from a reviewed Git checkout")
@@ -116,29 +115,21 @@ def versions(files):
         if len(matches) != 1:
             raise ValueError(f"cannot resolve authoritative {constant}")
         values[key] = matches[0]
-    metadata = tomllib.loads(files["python/pyproject.toml"].decode())["project"]
-    values["python_package"] = metadata["version"]
-    values["python_distribution"] = metadata["name"]
-    if any(not re.fullmatch(r"[A-Za-z0-9.+_-]+", values[key]) for key in ("python_package", "python_distribution")):
-        raise ValueError("unsafe Python distribution name or version")
-    lock = tomllib.loads(files["python/uv.lock"].decode())
-    locked = [item["version"] for item in lock["package"] if item["name"] == values["python_distribution"]]
-    if locked != [values["python_package"]]:
-        raise ValueError("Python project name/version and uv.lock disagree")
+    values["supported_languages"] = [values["language"]]
     return values
 
 
 def check_schema_lock(files):
     lock = json.loads(files[SCHEMA_LOCK])
-    if lock.get("schema") != 1 or lock.get("manifest_schema") != 1 or lock.get("json_schema") != 1:
+    if lock.get("schema") != 1 or lock.get("manifest_schema") != 1 or lock.get("json_schema") != 2:
         raise ValueError("unsupported schema freeze contract")
     if set(lock.get("files", {})) != FROZEN_SCHEMAS:
         raise ValueError("schema freeze inventory is incomplete")
     for name, expected in lock["files"].items():
         if digest(files[name]) != expected:
             raise ValueError(f"frozen schema changed: {name}; review and version the contract explicitly")
-    for name, declaration in (("internal/app/check.go", "JSONSchema"), ("internal/manifest/manifest.go", "SchemaVersion")):
-        if not re.search(r"^const " + declaration + r" = 1$", files[name].decode(), re.M):
+    for name, declaration, version in (("internal/app/check.go", "JSONSchema", 2), ("internal/manifest/manifest.go", "SchemaVersion", 1)):
+        if not re.search(r"^const " + declaration + rf" = {version}$", files[name].decode(), re.M):
             raise ValueError(f"{declaration} implementation disagrees with frozen schema")
 
 
@@ -275,75 +266,8 @@ def build_snapshot(files, expected_binary=None):
                                      "modules": module_metadata}, licenses
 
 
-def python_artifact(path, version_info, source_inventory):
-    version = version_info["python_package"]
-    project = version_info["python_distribution"]
-    normalized = re.sub(r"[-_.]+", "_", project).lower()
-    prefix = f"{normalized}-{version}"
-    expected_runtime = {item["path"].removeprefix("python/"): item["sha256"] for item in source_inventory
-                        if item["path"].startswith("python/purepy/")}
-    if path.name == f"{prefix}-py3-none-any.whl":
-        with zipfile.ZipFile(path) as archive:
-            names = archive.namelist()
-            if len(names) != len(set(names)):
-                raise ValueError("duplicate wheel member")
-            for name in names:
-                safe_name(name.rstrip("/"))
-            expected = f"{prefix}.dist-info/METADATA"
-            if not {"purepy/value.py", "purepy/py.typed", expected}.issubset(names):
-                raise ValueError("Python wheel is incomplete")
-            for name, expected_hash in expected_runtime.items():
-                if name not in names or digest(archive.read(name)) != expected_hash:
-                    raise ValueError(f"wheel code differs from source snapshot: {name}")
-            if {name for name in names if name.startswith("purepy/")} != set(expected_runtime):
-                raise ValueError("wheel contains unexpected runtime files")
-            metadata = BytesParser().parsebytes(archive.read(expected))
-        kind = "python_wheel"
-    elif path.name == f"{prefix}.tar.gz":
-        with tarfile.open(path, "r:gz") as archive:
-            members = archive.getmembers()
-            names = [item.name for item in members]
-            if len(names) != len(set(names)):
-                raise ValueError("duplicate Python source member")
-            for member in members:
-                safe_name(member.name.rstrip("/"))
-                if not member.isfile() and not member.isdir():
-                    raise ValueError("non-regular Python source member")
-            expected = f"{prefix}/PKG-INFO"
-            if not {f"{prefix}/purepy/value.py", f"{prefix}/pyproject.toml", expected}.issubset(names):
-                raise ValueError("Python source package is incomplete")
-            expected_runtime["pyproject.toml"] = next(item["sha256"] for item in source_inventory
-                                                      if item["path"] == "python/pyproject.toml")
-            for name, expected_hash in expected_runtime.items():
-                member_name = f"{prefix}/{name}"
-                if member_name not in names or digest(archive.extractfile(member_name).read()) != expected_hash:
-                    raise ValueError(f"Python source distribution differs from source snapshot: {name}")
-            metadata = BytesParser().parsebytes(archive.extractfile(expected).read())
-        kind = "python_sdist"
-    else:
-        raise ValueError(f"unexpected release artifact: {path.name}")
-    if metadata.get("Name") != project or metadata.get("Version") != version:
-        raise ValueError(f"Python artifact metadata disagrees with project: {path.name}")
-    return kind
-
-
-def normalize_python_sdist(path):
-    """Normalize setuptools sdist metadata after validating source identity."""
-    with tarfile.open(path, "r:gz") as archive:
-        files = {item.name: archive.extractfile(item).read() for item in archive if item.isfile()}
-    output = io.BytesIO()
-    with gzip.GzipFile(filename="", mode="wb", fileobj=output, mtime=0, compresslevel=9) as compressed:
-        with tarfile.open(fileobj=compressed, mode="w", format=tarfile.USTAR_FORMAT) as archive:
-            for name, data in sorted(files.items()):
-                member = tarfile.TarInfo(name)
-                member.mode = 0o644
-                member.size = len(data)
-                archive.addfile(member, io.BytesIO(data))
-    path.write_bytes(output.getvalue())
-
-
-def finalize(output, require_python=False):
-    artifacts, manifests, python_paths = [], [], []
+def finalize(output):
+    artifacts, manifests = [], []
     for path in sorted(output.iterdir()):
         if path.name in {INDEX, CHECKSUMS}:
             continue
@@ -359,7 +283,7 @@ def finalize(output, require_python=False):
             artifacts.append({"file": path.name, "kind": manifest["kind"], "sha256": digest(path.read_bytes()),
                               "size": path.stat().st_size, "target": manifest.get("target")})
         else:
-            python_paths.append(path)
+            raise ValueError(f"unexpected release artifact: {path.name}; PurePy releases contain no Python distribution")
     if {item["kind"] for item in manifests} != {"binary", "source"}:
         raise ValueError("release requires a binary archive and source archive")
     sources = [item for item in manifests if item["kind"] == "source"]
@@ -370,18 +294,9 @@ def finalize(output, require_python=False):
     if len(identity) != 1:
         raise ValueError("release archives disagree on source snapshot or versions")
     version_info = manifests[0]["versions"]
-    for path in python_paths:
-        kind = python_artifact(path, version_info, sources[0]["files"])
-        if kind == "python_sdist":
-            normalize_python_sdist(path)
-        artifacts.append({"file": path.name, "kind": kind,
-                          "sha256": digest(path.read_bytes()), "size": path.stat().st_size})
-    kinds = [item["kind"] for item in artifacts]
-    if require_python and (kinds.count("python_wheel") != 1 or kinds.count("python_sdist") != 1):
-        raise ValueError("complete release requires exactly one Python wheel and source distribution")
     artifacts.sort(key=lambda item: item["file"])
     index = {"schema": 1, "versions": version_info, "source_tree_sha256": manifests[0]["source_tree_sha256"],
-             "complete": "python_wheel" in kinds and "python_sdist" in kinds, "artifacts": artifacts}
+             "complete": True, "artifacts": artifacts}
     (output / INDEX).write_bytes(json_bytes(index))
     checksums = "".join(f"{item['sha256']}  {item['file']}\n" for item in artifacts)
     checksums += f"{digest((output / INDEX).read_bytes())}  {INDEX}\n"
@@ -389,7 +304,7 @@ def finalize(output, require_python=False):
     return index
 
 
-def verify_release(output, require_python=False):
+def verify_release(output):
     for name in (INDEX, CHECKSUMS):
         if not (output / name).is_file() or (output / name).is_symlink():
             raise ValueError(f"release metadata must be a regular file: {name}")
@@ -424,15 +339,14 @@ def verify_release(output, require_python=False):
                 if path.name not in expected_artifacts:
                     raise ValueError(f"unexpected release artifact: {path.name}")
                 expected = expected_artifacts[path.name]
-                # Authenticate original bytes before finalize can normalize a
-                # copied sdist: canonicalization must never conceal corruption.
+                # Authenticate original bytes before validating the copied archive.
                 if len(data) != expected["size"] or digest(data) != expected["sha256"]:
                     raise ValueError(f"raw artifact checksum or size differs from release index: {path.name}")
                 seen.add(path.name)
                 (temporary / path.name).write_bytes(data)
         if seen != set(expected_artifacts):
             raise ValueError("release index references missing artifacts")
-        result = finalize(temporary, require_python)
+        result = finalize(temporary)
         if expected_index != (temporary / INDEX).read_bytes() or expected_checksums != (temporary / CHECKSUMS).read_bytes():
             raise ValueError("release index/checksums disagree with artifact contents")
         return result
@@ -451,7 +365,7 @@ def package(root, output, additions=(), expected_binary=None):
     prefix = f"purepy-{version_info['verifier']}"
     write_archive(output / f"{prefix}-source.tar.gz", files, {**metadata, "kind": "source"})
     bundle = {name: data for name, data in files.items()
-              if name == "README.md" or name.startswith(("docs/", "skills/", "manifests/schema/", "examples/reference_service/"))}
+              if name == "README.md" or name.startswith(("docs/", "skills/", "manifests/schema/", "examples/reference_service/", "examples/functional_core/"))}
     bundle.update(licenses)
     bundle["purepy"] = binary
     write_archive(output / f"{prefix}-{target}.tar.gz", bundle,
@@ -467,20 +381,17 @@ def main(argv=None):
                         help="reviewed untracked source file, relative to root (repeatable)")
     parser.add_argument("--binary", type=Path, help="require this binary to match a fresh source-snapshot build")
     mode = parser.add_mutually_exclusive_group()
-    mode.add_argument("--finalize", action="store_true", help="add Python artifacts and regenerate checksums")
+    mode.add_argument("--finalize", action="store_true", help="validate native/source artifacts and regenerate checksums")
     mode.add_argument("--verify", action="store_true", help="verify inventories, metadata and checksums")
-    parser.add_argument("--require-python", action="store_true", help="require both wheel and source distribution")
     args = parser.parse_args(argv)
     try:
         if args.verify:
-            result = verify_release(args.output, args.require_python)
+            result = verify_release(args.output)
         elif args.finalize:
-            result = finalize(args.output, args.require_python)
+            result = finalize(args.output)
         else:
-            if args.require_python:
-                raise ValueError("build Python artifacts, then use --finalize --require-python")
             result = package(args.root, args.output, args.include_source, args.binary)
-    except (ValueError, OSError, KeyError, subprocess.CalledProcessError, tarfile.TarError, zipfile.BadZipFile) as error:
+    except (ValueError, OSError, KeyError, subprocess.CalledProcessError, tarfile.TarError) as error:
         parser.exit(1, f"release preparation failed: {error}\n")
     print(json.dumps({"output": str(args.output), "source_tree_sha256": result["source_tree_sha256"],
                       "complete": result["complete"], "artifacts": len(result["artifacts"])}, sort_keys=True))

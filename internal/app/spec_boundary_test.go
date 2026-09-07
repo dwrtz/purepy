@@ -46,11 +46,11 @@ parameters = []
 returns = "host.ops.Unreachable"
 `
 
-const boundarySource = `from purepy import value
+const boundarySource = `from typing import NamedTuple
 from host.ops import Read, Write, Connection, Row, Token, load, decode, encode, hidden
 
-@value
-class Wrapped:
+
+class Wrapped(NamedTuple):
     row: Row
 
 def format_row(number: int) -> str:

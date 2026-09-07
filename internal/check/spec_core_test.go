@@ -40,9 +40,9 @@ func TestSpecCoreAccepted(t *testing.T) {
 		"narrowing_conditional":                "def f(x: int | None) -> int:\n    return x if x is not None else 0\n",
 		"none_returns_and_fallthrough":         "def a() -> None:\n    return\ndef b() -> None:\n    return None\ndef c() -> None:\n    pass\n",
 		"direct_none_statements":               "def g() -> None:\n    return\nasync def h() -> None:\n    return\nasync def f() -> None:\n    g()\n    await h()\n",
-		"record_fields_and_top_level_behavior": "from purepy import value\n@value\nclass Inner:\n    number: int\n@value\nclass Record:\n    \"\"\"Immutable payload.\"\"\"\n    inner: Inner\n    values: tuple[str, ...]\n    maybe: int | None\ndef f(item: Record) -> Record:\n    return Record(Inner(item.inner.number), maybe=None, values=item.values)\n",
-		"same_record_equality":                 "from purepy import value\n@value\nclass Record:\n    values: tuple[int, ...]\ndef f(a: Record, b: Record) -> bool:\n    return a == b or a != b\n",
-		"module_docstring_and_constant_forms":  "\"\"\"Static constants.\"\"\"\nfrom typing import Final\nfrom purepy import value\n@value\nclass Record:\n    value: int\nA: Final[int] = 1\nB: Final[int] = A\nC: Final[tuple[int, ...]] = (A, B)\nD: Final[Record] = Record(value=A)\ndef f() -> int:\n    return D.value\n",
+		"record_fields_and_top_level_behavior": "from typing import NamedTuple\n\nclass Inner(NamedTuple):\n    number: int\n\nclass Record(NamedTuple):\n    \"\"\"Immutable payload.\"\"\"\n    inner: Inner\n    values: tuple[str, ...]\n    maybe: int | None\ndef f(item: Record) -> Record:\n    return Record(Inner(item.inner.number), maybe=None, values=item.values)\n",
+		"same_record_equality":                 "from typing import NamedTuple\n\nclass Record(NamedTuple):\n    values: tuple[int, ...]\ndef f(a: Record, b: Record) -> bool:\n    return a == b or a != b\n",
+		"module_docstring_and_constant_forms":  "\"\"\"Static constants.\"\"\"\nfrom typing import Final\nfrom typing import NamedTuple\n\nclass Record(NamedTuple):\n    value: int\nA: Final[int] = 1\nB: Final[int] = A\nC: Final[tuple[int, ...]] = (A, B)\nD: Final[Record] = Record(value=A)\ndef f() -> int:\n    return D.value\n",
 		"range_forms":                          "def f() -> int:\n    total = 0\n    for x in range(3):\n        total = total + x\n    for y in range(1, 3):\n        total = total + y\n    for z in range(1, 5, 2):\n        total = total + z\n    return total\n",
 		"iterable_element_types":               "def f(text: str, data: bytes, xs: tuple[float, ...]) -> float:\n    total = 0.0\n    for char in text:\n        size: int = len(char)\n    for byte in data:\n        total = total + float(byte)\n    for x in xs:\n        total = total + x\n    return total\n",
 		"tuple_nested_context":                 "def g(xs: tuple[int, ...]) -> tuple[int, ...]:\n    return xs\ndef f() -> tuple[tuple[int, ...], ...]:\n    return (g(()), ())\n",
@@ -97,23 +97,23 @@ func TestSpecCoreRejected(t *testing.T) {
 		"extended_slice":                      {"def f(xs: str) -> str:\n    return xs[::2]\n", "PP003"},
 		"unknown_instance_field":              {"def f(s: str) -> int:\n    return s.real\n", "PP208"},
 		"membership_wrong_element_type":       {"def f(xs: tuple[int, ...]) -> bool:\n    return True in xs\n", "PP212"},
-		"record_field_missing":                {"from purepy import value\n@value\nclass R:\n    x: int\ndef f(r: R) -> int:\n    return r.y\n", "PP208"},
-		"record_nominal_type_mismatch":        {"from purepy import value\n@value\nclass A:\n    x: int\n@value\nclass B:\n    x: int\ndef f(a: A) -> B:\n    return a\n", "PP205"},
-		"record_field_default":                {"from purepy import value\n@value\nclass R:\n    x: int = 1\n", "PP202"},
-		"record_method":                       {"from purepy import value\n@value\nclass R:\n    x: int\n    def method(self: R) -> int:\n        return self.x\n", "PP202"},
-		"record_inheritance":                  {"from purepy import value\n@value\nclass A:\n    x: int\n@value\nclass B(A):\n    y: int\n", "PP202"},
-		"record_class_options":                {"from purepy import value\n@value\nclass R(metaclass=int):\n    x: int\n", "PP003"},
-		"record_non_field_statement":          {"from purepy import value\n@value\nclass R:\n    pass\n", "PP202"},
-		"record_nested_class":                 {"from purepy import value\n@value\nclass R:\n    class Nested:\n        x: int\n", "PP202"},
-		"record_class_constant":               {"from purepy import value\n@value\nclass R:\n    x = 1\n", "PP202"},
+		"record_field_missing":                {"from typing import NamedTuple\n\nclass R(NamedTuple):\n    x: int\ndef f(r: R) -> int:\n    return r.y\n", "PP208"},
+		"record_nominal_type_mismatch":        {"from typing import NamedTuple\n\nclass A(NamedTuple):\n    x: int\n\nclass B(NamedTuple):\n    x: int\ndef f(a: A) -> B:\n    return a\n", "PP205"},
+		"record_field_default":                {"from typing import NamedTuple\n\nclass R(NamedTuple):\n    x: int = 1\n", "PP202"},
+		"record_method":                       {"from typing import NamedTuple\n\nclass R(NamedTuple):\n    x: int\n    def method(self: R) -> int:\n        return self.x\n", "PP202"},
+		"record_inheritance":                  {"from typing import NamedTuple\n\nclass A(NamedTuple):\n    x: int\n\nclass B(A):\n    y: int\n", "PP202"},
+		"record_class_options":                {"from typing import NamedTuple\n\nclass R(metaclass=int):\n    x: int\n", "PP003"},
+		"record_non_field_statement":          {"from typing import NamedTuple\n\nclass R(NamedTuple):\n    pass\n", "PP202"},
+		"record_nested_class":                 {"from typing import NamedTuple\n\nclass R(NamedTuple):\n    class Nested:\n        x: int\n", "PP202"},
+		"record_class_constant":               {"from typing import NamedTuple\n\nclass R(NamedTuple):\n    x = 1\n", "PP202"},
 		"record_missing_decorator":            {"class R:\n    x: int\n", "PP202"},
-		"record_extra_decorator":              {"from purepy import value\n@value\n@value\nclass R:\n    x: int\n", "PP202"},
-		"record_missing_argument":             {"from purepy import value\n@value\nclass R:\n    x: int\ndef f() -> R:\n    return R()\n", "PP302"},
-		"record_wrong_field_type":             {"from purepy import value\n@value\nclass R:\n    x: int\ndef f() -> R:\n    return R(True)\n", "PP205"},
-		"record_unknown_keyword":              {"from purepy import value\n@value\nclass R:\n    x: int\ndef f() -> R:\n    return R(other=1)\n", "PP302"},
-		"record_duplicate_argument":           {"from purepy import value\n@value\nclass R:\n    x: int\ndef f() -> R:\n    return R(1, x=2)\n", "PP302"},
-		"record_argument_unpacking":           {"from purepy import value\n@value\nclass R:\n    x: int\ndef f(xs: tuple[int, ...]) -> R:\n    return R(*xs)\n", "PP003"},
-		"recursive_record":                    {"from purepy import value\n@value\nclass R:\n    items: tuple[R, ...]\n", "PP204"},
+		"record_extra_decorator":              {"from typing import NamedTuple\n@value\n\nclass R(NamedTuple):\n    x: int\n", "PP202"},
+		"record_missing_argument":             {"from typing import NamedTuple\n\nclass R(NamedTuple):\n    x: int\ndef f() -> R:\n    return R()\n", "PP302"},
+		"record_wrong_field_type":             {"from typing import NamedTuple\n\nclass R(NamedTuple):\n    x: int\ndef f() -> R:\n    return R(True)\n", "PP205"},
+		"record_unknown_keyword":              {"from typing import NamedTuple\n\nclass R(NamedTuple):\n    x: int\ndef f() -> R:\n    return R(other=1)\n", "PP302"},
+		"record_duplicate_argument":           {"from typing import NamedTuple\n\nclass R(NamedTuple):\n    x: int\ndef f() -> R:\n    return R(1, x=2)\n", "PP302"},
+		"record_argument_unpacking":           {"from typing import NamedTuple\n\nclass R(NamedTuple):\n    x: int\ndef f(xs: tuple[int, ...]) -> R:\n    return R(*xs)\n", "PP003"},
+		"expanding_recursive_record":          {"from typing import NamedTuple\n\nclass R[T](NamedTuple):\n    items: R[tuple[T, ...]] | None\n", "PP204"},
 		"constant_ordinary_call":              {"from typing import Final\ndef f() -> int:\n    return 1\nX: Final[int] = f()\n", "PP502"},
 		"constant_intrinsic_call":             {"from typing import Final\nX: Final[int] = len('x')\n", "PP502"},
 		"constant_later_reference":            {"from typing import Final\nX: Final[int] = Y\nY: Final[int] = 1\n", "PP502"},
@@ -136,7 +136,7 @@ func TestSpecCoreRejected(t *testing.T) {
 		"format_repr":                         {"def f(x: int) -> str:\n    return f'{x!r}'\n", "PP003"},
 		"format_locale":                       {"def f(x: int) -> str:\n    return f'{x:n}'\n", "PP211"},
 		"format_dynamic_spec":                 {"def f(x: int, width: int) -> str:\n    return f'{x:{width}}'\n", "PP003"},
-		"intrinsic_no_protocol_dispatch":      {"from purepy import value\n@value\nclass R:\n    x: int\ndef f(r: R) -> int:\n    return len(r)\n", "PP303"},
+		"intrinsic_no_protocol_dispatch":      {"from typing import NamedTuple\n\nclass R(NamedTuple):\n    x: int\ndef f(r: R) -> int:\n    return len(r)\n", "PP303"},
 		"float_sum_requires_start":            {"def f(xs: tuple[float, ...]) -> float:\n    return sum(xs)\n", "PP303"},
 	}
 	for name, tc := range cases {
@@ -151,7 +151,7 @@ func TestSpecCoreProhibitedSyntax(t *testing.T) {
 		"keyword_only":             "def f(*, x: int) -> int:\n    return x\n",
 		"variadic_positional":      "def f(*xs: int) -> int:\n    return 0\n",
 		"variadic_keyword":         "def f(**xs: int) -> int:\n    return 0\n",
-		"generic_function":         "def f[T](x: T) -> T:\n    return x\n",
+		"bounded_generic_function": "def f[T: int](x: T) -> T:\n    return x\n",
 		"function_decorator":       "def marker() -> None:\n    return\n@marker\ndef f() -> None:\n    return\n",
 		"import_module":            "import other\n",
 		"relative_import":          "from .other import f\n",
@@ -159,9 +159,9 @@ func TestSpecCoreProhibitedSyntax(t *testing.T) {
 		"import_alias":             "from typing import Final as F\n",
 		"local_import":             "def f() -> None:\n    from typing import Final\n",
 		"conditional_import":       "if True:\n    from typing import Final\n",
-		"nested_function":          "def f() -> None:\n    def g() -> None:\n        return\n",
+		"nested_generic_function":  "def f() -> None:\n    def g[T]() -> None:\n        return\n",
 		"lambda":                   "def f() -> None:\n    g = lambda: 1\n",
-		"attribute_assignment":     "from purepy import value\n@value\nclass R:\n    x: int\ndef f(r: R) -> None:\n    r.x = 2\n",
+		"attribute_assignment":     "from typing import NamedTuple\n\nclass R(NamedTuple):\n    x: int\ndef f(r: R) -> None:\n    r.x = 2\n",
 		"subscription_assignment":  "def f(xs: tuple[int, ...]) -> None:\n    xs[0] = 1\n",
 		"destructuring_assignment": "def f(xs: tuple[int, ...]) -> None:\n    x, y = xs\n",
 		"starred_assignment":       "def f(xs: tuple[int, ...]) -> None:\n    x, *ys = xs\n",
@@ -206,13 +206,13 @@ func TestSpecCoreRecordBodies(t *testing.T) {
 	}
 	for name, body := range cases {
 		t.Run(name, func(t *testing.T) {
-			specCoreCheck(t, "from purepy import value\n@value\nclass R:\n"+body, "PP202")
+			specCoreCheck(t, "from typing import NamedTuple\n\nclass R(NamedTuple):\n"+body, "PP202")
 		})
 	}
 }
 
 func TestSpecCoreProhibitedTypes(t *testing.T) {
-	for _, annotation := range []string{"Any", "object", "Callable", "TypeVar", "Protocol", "Generic", "Literal[1]", "int | str", "list[int]", "dict[str, int]", "set[int]", "frozenset[int]", "bytearray", "Iterator[int]", "Generator[int]", "Coroutine[int]", "Task[int]", "Future[int]", "Exception", "tuple[int, str]"} {
+	for _, annotation := range []string{"Any", "object", "Callable", "TypeVar", "Protocol", "Generic", "Literal[1]", "int | str", "list[int]", "dict[str, int]", "set[int]", "frozenset[int]", "bytearray", "Iterator[int]", "Generator[int]", "Coroutine[int]", "Task[int]", "Future[int]", "Exception", "tuple[int, list[str]]"} {
 		t.Run(annotation, func(t *testing.T) {
 			specCoreCheck(t, "def f(x: "+annotation+") -> None:\n    return\n", "PP203")
 		})

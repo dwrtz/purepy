@@ -13,7 +13,7 @@ func TestParseTimedPreservesResultsAndPartitionsWork(t *testing.T) {
 		lower  bool
 	}{
 		{"valid", []byte("def f(x: int) -> int:\n    return x + 1\n"), true},
-		{"normalization", []byte("from purepy import value\n@value\nclass V:\n    __field: int\n"), true},
+		{"normalization", []byte("from typing import NamedTuple\n\nclass V(NamedTuple):\n    __field: int\n"), true},
 		{"lowering rejection", []byte("x = [1]\n"), true},
 		{"syntax rejection", []byte("def f(:\n"), false},
 		{"UTF-8 rejection", []byte{0xff}, false},

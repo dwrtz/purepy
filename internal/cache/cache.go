@@ -120,8 +120,8 @@ type nodeShape struct {
 // diagnostics. Unknown keys cannot smuggle unchecked descendants into a hit.
 var nodeShapes = map[string]nodeShape{
 	"Module":      {role: roleModule, lists: map[string]nodeRole{"body": roleStatement}},
-	"Function":    {role: roleStatement, attrs: "name async", required: "returns", fields: map[string]nodeRole{"returns": roleExpression}, lists: map[string]nodeRole{"body": roleStatement, "params": roleParam, "decorators": roleExpression}},
-	"Record":      {role: roleStatement, attrs: "name", lists: map[string]nodeRole{"body": roleStatement, "bases": roleExpression, "decorators": roleExpression}},
+	"Function":    {role: roleStatement, attrs: "name async", required: "returns", fields: map[string]nodeRole{"returns": roleExpression}, lists: map[string]nodeRole{"body": roleStatement, "params": roleParam, "typeparams": roleExpression, "decorators": roleExpression}},
+	"Record":      {role: roleStatement, attrs: "name", lists: map[string]nodeRole{"body": roleStatement, "bases": roleExpression, "typeparams": roleExpression, "decorators": roleExpression}},
 	"Param":       {role: roleParam, attrs: "name", required: "annotation", fields: map[string]nodeRole{"annotation": roleExpression, "default": roleExpression}},
 	"Import":      {role: roleStatement, attrs: "module", lists: map[string]nodeRole{"names": roleExpression}},
 	"Name":        {role: roleExpression, attrs: "name alias"},
@@ -135,6 +135,8 @@ var nodeShapes = map[string]nodeShape{
 	"Pass":        {role: roleStatement},
 	"Break":       {role: roleStatement},
 	"Continue":    {role: roleStatement},
+	"Alias":       {role: roleStatement, required: "left right", fields: map[string]nodeRole{"left": roleExpression, "right": roleExpression}},
+	"TypeList":    {role: roleExpression, lists: map[string]nodeRole{"elements": roleExpression}},
 	"Tuple":       {role: roleExpression, lists: map[string]nodeRole{"elements": roleExpression}},
 	"Attribute":   {role: roleExpression, attrs: "name", required: "value", fields: map[string]nodeRole{"value": roleExpression}},
 	"Unary":       {role: roleExpression, attrs: "op", required: "operand", fields: map[string]nodeRole{"operand": roleExpression}},

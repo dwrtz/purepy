@@ -1,6 +1,6 @@
 # ADR 0008: Conservative cache invalidation
 
-Status: accepted for PurePy 0.1.
+Status: accepted for PurePy 0.2.
 
 Reuse content-addressed frontend results only when all relevant inputs match:
 verifier/frontend identity, language version, Python syntax version, normalized

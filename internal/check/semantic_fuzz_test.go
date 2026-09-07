@@ -75,7 +75,7 @@ func FuzzCheckerSource(f *testing.F) {
 		"def f(flag: bool) -> int:\n    if flag:\n        x = 1\n    return x\n",
 		"def f(xs: tuple[int, ...]) -> int:\n    for x in xs:\n        pass\n    return x\n",
 		"async def f() -> None:\n    await f()\n",
-		"from purepy import value\n@value\nclass R:\n    x: int\ndef f(x: R) -> int:\n    return x.x\n",
+		"from typing import NamedTuple\n\nclass R(NamedTuple):\n    x: int\ndef f(x: R) -> int:\n    return x.x\n",
 		"def f(é: str) -> str:\n    return é\n",
 		"import os\nos.system('never executed')\n",
 		"def f() -> None:\n    exec('never executed')\n",

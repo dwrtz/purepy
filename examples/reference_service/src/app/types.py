@@ -1,54 +1,46 @@
-from purepy import value
+from typing import NamedTuple
 
 
-@value
-class Request:
+class Request(NamedTuple):
     valid: bool
     method: bytes
     path: bytes
 
 
-@value
-class Route:
+class Route(NamedTuple):
     code: int
     user_id: int
     amount: int
 
 
-@value
-class User:
+class User(NamedTuple):
     user_id: int
     name: str
     balance: int
 
 
-@value
-class UserResult:
+class UserResult(NamedTuple):
     found: bool
     user: User
     error: str
 
 
-@value
-class UpdatePlan:
+class UpdatePlan(NamedTuple):
     user_id: int
     amount: int
 
 
-@value
-class UpdateResult:
+class UpdateResult(NamedTuple):
     applied: bool
     balance: int
     error: str
 
 
-@value
-class Event:
+class Event(NamedTuple):
     event_id: int
     user_id: int
     balance: int
 
 
-@value
-class EventPage:
+class EventPage(NamedTuple):
     events: tuple[Event, ...]

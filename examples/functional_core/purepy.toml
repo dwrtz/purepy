@@ -1,0 +1,5 @@
+[tool.purepy]
+python_syntax = "3.14"
+source_root = "src"
+entrypoints = ["core.group_labels", "core.lower_ascii"]
+manifests = []

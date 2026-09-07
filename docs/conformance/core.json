@@ -19,15 +19,6 @@
     "notes": "Sentinel files prove that rejected project statements and accepted manifest-backed imports do not execute project or host code."
   },
   {
-    "section": "1.2",
-    "quote": "Later language levels MAY add features, but they MUST preserve the guarantees of accepted PurePy 0.1 programs. New features MUST be independently specified and MUST NOT retroactively reinterpret unsupported PurePy 0.1 syntax as trusted behavior.",
-    "status": "deferred",
-    "positive": [],
-    "negative": [],
-    "fixtures": [],
-    "notes": "Future language evolution obligation. Only PurePy 0.1 is implemented; preserving prior semantics across future versions is not established by the present tests."
-  },
-  {
     "section": "3.2",
     "quote": "When the verifier cannot establish the exact meaning of an operation, it MUST reject the operation.",
     "status": "partial",
@@ -123,162 +114,6 @@
     ],
     "fixtures": [],
     "notes": "Tests establish direct parameter forwarding and representative construction/storage/ambient-call rejection. Host entrypoint argument provenance remains trusted."
-  },
-  {
-    "section": "3.4",
-    "quote": "Every call target MUST resolve statically to:",
-    "status": "tested",
-    "positive": [
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreAccepted/direct_recursive_call"
-      },
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreDirectProjectImports"
-      },
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreAccepted/primitive_intrinsics"
-      },
-      {
-        "path": "internal/check/security_test.go",
-        "test": "TestSecurityAuthorityForwardingAccepted"
-      }
-    ],
-    "negative": [
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreRejected/dynamic_call_target"
-      },
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreRejected/unknown_import"
-      },
-      {
-        "path": "internal/check/security_test.go",
-        "test": "TestSecurityCategoryAndCallRejections/function_as_data"
-      }
-    ],
-    "fixtures": [],
-    "notes": "Direct project, intrinsic, and manifest calls are accepted; local callable values, conditional targets, and unknown imports are rejected."
-  },
-  {
-    "section": "3.4",
-    "quote": "- a top-level project function;",
-    "status": "tested",
-    "positive": [
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreAccepted/direct_recursive_call"
-      },
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreDirectProjectImports"
-      },
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreAccepted/primitive_intrinsics"
-      },
-      {
-        "path": "internal/check/security_test.go",
-        "test": "TestSecurityAuthorityForwardingAccepted"
-      }
-    ],
-    "negative": [
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreRejected/dynamic_call_target"
-      },
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreRejected/unknown_import"
-      },
-      {
-        "path": "internal/check/security_test.go",
-        "test": "TestSecurityCategoryAndCallRejections/function_as_data"
-      }
-    ],
-    "fixtures": [],
-    "notes": "Direct project, intrinsic, and manifest calls are accepted; local callable values, conditional targets, and unknown imports are rejected."
-  },
-  {
-    "section": "3.4",
-    "quote": "- a top-level trusted external function declared in a manifest; or",
-    "status": "tested",
-    "positive": [
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreAccepted/direct_recursive_call"
-      },
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreDirectProjectImports"
-      },
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreAccepted/primitive_intrinsics"
-      },
-      {
-        "path": "internal/check/security_test.go",
-        "test": "TestSecurityAuthorityForwardingAccepted"
-      }
-    ],
-    "negative": [
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreRejected/dynamic_call_target"
-      },
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreRejected/unknown_import"
-      },
-      {
-        "path": "internal/check/security_test.go",
-        "test": "TestSecurityCategoryAndCallRejections/function_as_data"
-      }
-    ],
-    "fixtures": [],
-    "notes": "Direct project, intrinsic, and manifest calls are accepted; local callable values, conditional targets, and unknown imports are rejected."
-  },
-  {
-    "section": "3.4",
-    "quote": "- a sealed PurePy intrinsic.",
-    "status": "tested",
-    "positive": [
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreAccepted/direct_recursive_call"
-      },
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreDirectProjectImports"
-      },
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreAccepted/primitive_intrinsics"
-      },
-      {
-        "path": "internal/check/security_test.go",
-        "test": "TestSecurityAuthorityForwardingAccepted"
-      }
-    ],
-    "negative": [
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreRejected/dynamic_call_target"
-      },
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreRejected/unknown_import"
-      },
-      {
-        "path": "internal/check/security_test.go",
-        "test": "TestSecurityCategoryAndCallRejections/function_as_data"
-      }
-    ],
-    "fixtures": [],
-    "notes": "Direct project, intrinsic, and manifest calls are accepted; local callable values, conditional targets, and unknown imports are rejected."
   },
   {
     "section": "3.7",
@@ -538,37 +373,6 @@
   {
     "section": "7.1",
     "quote": "For a fixed program image and equivalent Pure Value arguments, evaluating a pure synchronous function MUST have one of these outcomes:",
-    "status": "trust",
-    "positive": [
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreAccepted/explicit_numeric_conversions"
-      },
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreAccepted/same_record_equality"
-      }
-    ],
-    "negative": [
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreRejected/identity_exposes_object_identity"
-      },
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreRejected/mixed_numeric_arithmetic"
-      }
-    ],
-    "fixtures": [
-      "arithmetic",
-      "pure_async",
-      "infinite_loop_no_return"
-    ],
-    "notes": "Finite static tests cannot prove observational equivalence, exception determinism, or divergence for arbitrary programs. These guarantees additionally rely on Python/platform behavior, sealed operations, runtime support, and truthful trusted external declarations."
-  },
-  {
-    "section": "7.1",
-    "quote": "1. return an equivalent Pure Value;",
     "status": "trust",
     "positive": [
       {
@@ -972,7 +776,7 @@
     "negative": [
       {
         "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreProhibitedSyntax/nested_function"
+        "test": "TestSpecCoreProhibitedSyntax/nested_generic_function"
       },
       {
         "path": "internal/check/spec_core_test.go",
@@ -1315,7 +1119,7 @@
       },
       {
         "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreProhibitedSyntax/nested_function"
+        "test": "TestSpecCoreProhibitedSyntax/nested_generic_function"
       }
     ],
     "fixtures": [],
@@ -1519,7 +1323,7 @@
   },
   {
     "section": "8.6",
-    "quote": "- stored in a tuple or `@value` record;",
+    "quote": "- stored in a tuple or `NamedTuple` record;",
     "status": "tested",
     "positive": [
       {
@@ -1751,7 +1555,7 @@
   },
   {
     "section": "9.1",
-    "quote": "Every `@value` field MUST have an explicit type annotation.",
+    "quote": "Every `NamedTuple` field MUST have an explicit type annotation.",
     "status": "tested",
     "positive": [
       {
@@ -1793,7 +1597,7 @@
   },
   {
     "section": "9.3",
-    "quote": "PurePy 0.1 rejects:",
+    "quote": "PurePy 0.2 rejects:",
     "status": "partial",
     "positive": [
       {
@@ -1820,7 +1624,7 @@
   },
   {
     "section": "9.4",
-    "quote": "PurePy 0.1 uses exact nominal type matching, except for the explicit optional form `T | None` and the ordinary relation that a value of type `T` may be used where `T | None` is expected.",
+    "quote": "PurePy 0.2 uses exact nominal type matching, except for the explicit optional form `T | None` and the ordinary relation that a value of type `T` may be used where `T | None` is expected.",
     "status": "tested",
     "positive": [
       {
@@ -2147,48 +1951,6 @@
   },
   {
     "section": "10.2",
-    "quote": "- decorators other than the exact `@value` decorator;",
-    "status": "tested",
-    "positive": [
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreAccepted/record_fields_and_top_level_behavior"
-      }
-    ],
-    "negative": [
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreRejected/record_extra_decorator"
-      },
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreRejected/record_missing_decorator"
-      }
-    ],
-    "fixtures": [],
-    "notes": "Valid data-only records provide the positive control; the rejected record-body form is named directly by the cited case."
-  },
-  {
-    "section": "10.2",
-    "quote": "- inheritance;",
-    "status": "tested",
-    "positive": [
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreAccepted/record_fields_and_top_level_behavior"
-      }
-    ],
-    "negative": [
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreRejected/record_inheritance"
-      }
-    ],
-    "fixtures": [],
-    "notes": "Valid data-only records provide the positive control; the rejected record-body form is named directly by the cited case."
-  },
-  {
-    "section": "10.2",
     "quote": "- metaclass declarations; or",
     "status": "tested",
     "positive": [
@@ -2282,52 +2044,6 @@
     "notes": "Positional field order and explicit keyword construction pass; missing, wrong-type, unknown, duplicate, and unpacked arguments reject."
   },
   {
-    "section": "10.6",
-    "quote": "All behavior over records MUST be expressed as top-level functions:",
-    "status": "tested",
-    "positive": [
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreAccepted/record_fields_and_top_level_behavior"
-      }
-    ],
-    "negative": [
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreRejected/record_method"
-      },
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreRecordBodies"
-      }
-    ],
-    "fixtures": [],
-    "notes": "Top-level functions can construct new immutable records from field reads; record-local behaviors and descriptors reject."
-  },
-  {
-    "section": "11.1",
-    "quote": "Nested functions and lambdas are prohibited.",
-    "status": "tested",
-    "positive": [
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreAccepted/direct_recursive_call"
-      }
-    ],
-    "negative": [
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreProhibitedSyntax/nested_function"
-      },
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreProhibitedSyntax/lambda"
-      }
-    ],
-    "fixtures": [],
-    "notes": "Only top-level direct-call behavior remains accepted."
-  },
-  {
     "section": "11.2",
     "quote": "A function signature MUST have:",
     "status": "tested",
@@ -2360,7 +2076,7 @@
       },
       {
         "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreProhibitedSyntax/generic_function"
+        "test": "TestSpecCoreProhibitedSyntax/bounded_generic_function"
       },
       {
         "path": "internal/check/spec_core_test.go",
@@ -2403,7 +2119,7 @@
       },
       {
         "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreProhibitedSyntax/generic_function"
+        "test": "TestSpecCoreProhibitedSyntax/bounded_generic_function"
       },
       {
         "path": "internal/check/spec_core_test.go",
@@ -2502,45 +2218,6 @@
     "notes": "Original parameter names forward directly; rebinding and aliases of both capability and host-reference parameters reject. Targeted dynamically generated subtests: Connection_rebound."
   },
   {
-    "section": "11.4",
-    "quote": "Every verified function MUST return a Pure Value type or `None`.",
-    "status": "tested",
-    "positive": [
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreAccepted/annotated_primitives"
-      },
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreAccepted/none_returns_and_fallthrough"
-      },
-      {
-        "path": "internal/check/spec_completion_test.go",
-        "test": "TestSpecCompletionReturnExpressions"
-      }
-    ],
-    "negative": [
-      {
-        "path": "internal/check/security_test.go",
-        "test": "TestSecurityCategoryAndCallRejections/authority_return"
-      },
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreRejected/range_stored"
-      },
-      {
-        "path": "internal/check/spec_boundary_test.go",
-        "test": "TestBoundaryAuthorityCategoryRestrictions"
-      },
-      {
-        "path": "internal/check/spec_completion_test.go",
-        "test": "TestSpecCompletionReturnExpressions"
-      }
-    ],
-    "fixtures": [],
-    "notes": "Pure Value/None results pass. Valid Pure Value signatures independently reject return expressions containing capabilities, host references, ranges, function/decorator/record declarations, unawaited async calls, and generator expressions. Both plain-module imports and module-symbol imports are prohibited before a module can become a return value. Range and coroutine nesting are also checked; the table covers the enumerated categories, not arbitrary compositions."
-  },
-  {
     "section": "11.6",
     "quote": "A call expression MUST name its target directly through a statically resolved imported or local symbol.",
     "status": "tested",
@@ -2561,7 +2238,7 @@
       },
       {
         "path": "internal/check/security_test.go",
-        "test": "TestSecurityCategoryAndCallRejections/function_as_data"
+        "test": "TestSecurityCategoryAndCallRejections/function_as_integer"
       },
       {
         "path": "internal/check/security_test.go",
@@ -2738,7 +2415,7 @@
   },
   {
     "section": "12.5",
-    "quote": "- direct construction of a `@value` record from constant expressions.",
+    "quote": "- direct construction of a `NamedTuple` record from constant expressions.",
     "status": "tested",
     "positive": [
       {
@@ -3023,29 +2700,6 @@
   },
   {
     "section": "14.2",
-    "quote": "Heterogeneous tuples are prohibited. Use a `@value` record instead.",
-    "status": "tested",
-    "positive": [
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreAccepted/tuple_nested_context"
-      },
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreAccepted/record_fields_and_top_level_behavior"
-      }
-    ],
-    "negative": [
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreRejected/heterogeneous_tuple"
-      }
-    ],
-    "fixtures": [],
-    "notes": "Homogeneous nested tuples and records pass; int/bool heterogeneous tuple rejects."
-  },
-  {
-    "section": "14.2",
     "quote": "The empty tuple has no standalone inferred element type. It is permitted only when an explicit contextual type supplies `tuple[T, ...]`, for example `items: tuple[int, ...] = ()`.",
     "status": "tested",
     "positive": [
@@ -3286,7 +2940,7 @@
   },
   {
     "section": "14.13",
-    "quote": "List, dictionary, set, and generator comprehensions are prohibited in PurePy 0.1.",
+    "quote": "List, dictionary, set, and generator comprehensions are prohibited in PurePy 0.2.",
     "status": "tested",
     "positive": [
       {
@@ -3378,41 +3032,6 @@
       "intrinsics"
     ],
     "notes": "The sealed intrinsic contract is explicitly version 1, independently declared in check.IntrinsicVersion, identified by the exact CLI version regression, and included in program-image cache identity. The differential gate checks accepted/rejected exact call forms and inferred result types against CPython 3.14, including empty tuples and domain failures. Versioning plus finite table regression evidence does not prove all possible runtime inputs."
-  },
-  {
-    "section": "16.1",
-    "quote": "Every call target MUST resolve to exactly one callable declaration.",
-    "status": "tested",
-    "positive": [
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreAccepted/direct_recursive_call"
-      },
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreDirectProjectImports"
-      },
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreAccepted/primitive_intrinsics"
-      }
-    ],
-    "negative": [
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreRejected/duplicate_callable"
-      },
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreRejected/unknown_import"
-      },
-      {
-        "path": "internal/check/spec_core_test.go",
-        "test": "TestSpecCoreRejected/dynamic_call_target"
-      }
-    ],
-    "fixtures": [],
-    "notes": "Unique direct declarations resolve; duplicate top-level callables, unknown imported symbols, and computed targets reject."
   },
   {
     "section": "16.3",
@@ -3579,32 +3198,5 @@
     ],
     "fixtures": [],
     "notes": "Comparable optional records admit == None. Opaque optionals and nested opaque record/tuple wrappers reject == and != against None because Python can dispatch equality on the non-None path. is None and is not None retain positive controls for opaque values without granting equality. Independent CPython host-event oracles observe hidden equality dispatch in rejected opaque cases, while permitted None identity avoids dispatch."
-  },
-  {
-    "section": "10.2",
-    "quote": "Identifiers in a record class body follow Python private-name mangling after Unicode NFKC normalization.",
-    "status": "tested",
-    "positive": [
-      {
-        "path": "tools/tests/test_differential_modules.py",
-        "test": "ModuleDifferentialTests.test_live_fixed_catalog"
-      },
-      {
-        "path": "internal/frontend/parser_test.go",
-        "test": "TestPrivateRecordNamesMatchPythonMangling"
-      }
-    ],
-    "negative": [
-      {
-        "path": "internal/check/security_test.go",
-        "test": "TestSecurityCategoryAndCallRejections/private_field_source_spelling"
-      },
-      {
-        "path": "tools/tests/test_differential_modules.py",
-        "test": "ModuleDifferentialTests.test_live_fixed_catalog"
-      }
-    ],
-    "fixtures": [],
-    "notes": "The fixed multi-module runtime catalog constructs and reads _Secret__key after declaring __key in class Secret, and validates the effective runtime record fields. A separate __key keyword near miss rejects with PP302 and produces the independently expected CPython TypeError. This is a name-normalization rule, not permission for reflection."
   }
 ]

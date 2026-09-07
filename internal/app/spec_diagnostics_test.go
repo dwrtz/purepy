@@ -50,7 +50,7 @@ func TestRejectedReportsAreEquivalentAcrossCacheAndWorkers(t *testing.T) {
 
 func TestEntrypointRejectionPointsToConfigurationDeclaration(t *testing.T) {
 	root := cliProject(t, map[string]string{"src/main.py": "def run() -> None:\n    pass\n"}, nil, nil)
-	source := "# main.absent is a comment, not the declaration\n[tool.purepy]\nlanguage = '0.1'\npython_syntax = '3.14'\nsource_root = 'src'\nentrypoints = [\n  'main.absent',\n]\nmanifests = []\n"
+	source := "# main.absent is a comment, not the declaration\n[tool.purepy]\nlanguage = '0.2'\npython_syntax = '3.14'\nsource_root = 'src'\nentrypoints = [\n  'main.absent',\n]\nmanifests = []\n"
 	cliWrite(t, root, "purepy.toml", source)
 	r := Check(Options{Path: root, NoCache: true})
 	if r.OK || len(r.Diagnostics) != 1 {
@@ -152,7 +152,7 @@ func TestReportsIdentifySpecificationAndLanguageVersions(t *testing.T) {
 		if json.Unmarshal([]byte(output), &report) != nil || stderr != "" || (status == 0) != valid {
 			t.Fatalf("unexpected verification result: %d %s %s", status, output, stderr)
 		}
-		for key, want := range map[string]string{"verifier_version": Version, "specification_version": "0.3-draft", "language": "0.1", "python_syntax": "3.14"} {
+		for key, want := range map[string]string{"verifier_version": Version, "specification_version": "0.4-draft", "language": "0.2", "python_syntax": "3.14"} {
 			if report[key] != want {
 				t.Errorf("%s metadata=%v want=%s", key, report[key], want)
 			}

@@ -23,11 +23,11 @@ func parseGood(t *testing.T, source string) *model.Node {
 }
 
 func TestNormalizedDeclarationsAndAnnotations(t *testing.T) {
-	m := parseGood(t, `from purepy import value
+	m := parseGood(t, `from typing import NamedTuple
 from typing import Final
 MAX: Final[int] = 10
-@value
-class Item:
+
+class Item(NamedTuple):
     key: int
     name: str
 async def load(x: tuple[int, ...], key: int | None) -> Item:
@@ -37,13 +37,13 @@ async def load(x: tuple[int, ...], key: int | None) -> Item:
 	if len(b) != 5 {
 		t.Fatalf("body: %+v", b)
 	}
-	if b[0].A("module") != "purepy" || b[0].Items("names")[0].A("name") != "value" {
+	if b[0].A("module") != "typing" || b[0].Items("names")[0].A("name") != "NamedTuple" {
 		t.Fatal("import normalization")
 	}
 	if b[2].Get("annotation").Kind != "Index" || b[2].Get("target").A("name") != "MAX" {
 		t.Fatal("constant normalization")
 	}
-	if b[3].Kind != "Record" || b[3].Items("decorators")[0].A("name") != "value" || len(b[3].Items("body")) != 2 {
+	if b[3].Kind != "Record" || len(b[3].Items("decorators")) != 0 || b[3].Items("bases")[0].A("name") != "NamedTuple" || len(b[3].Items("body")) != 2 {
 		t.Fatal("record normalization")
 	}
 	f := b[4]
@@ -79,7 +79,7 @@ func TestExpressionStatementsAndDocstrings(t *testing.T) {
 }
 
 func TestPrivateRecordNamesMatchPythonMangling(t *testing.T) {
-	m := parseGood(t, "from purepy import value\n@value\nclass __Record:\n    __field: int\ndef f(x: __Record) -> int:\n    return x._Record__field\n")
+	m := parseGood(t, "from typing import NamedTuple\n\nclass __Record(NamedTuple):\n    __field: int\ndef f(x: __Record) -> int:\n    return x._Record__field\n")
 	field := m.Items("body")[1].Items("body")[0].Get("target")
 	if field.A("name") != "_Record__field" || field.Text != "__field" {
 		t.Fatalf("private field normalization: %+v", field)
@@ -175,9 +175,9 @@ func TestSpansUnicodeAndNFKC(t *testing.T) {
 func TestUnsupportedSyntaxIsNeverDropped(t *testing.T) {
 	cases := []string{
 		"import os\n", "from .app import f\n", "from app import *\n", "from app import f as g\n", "from __future__ import annotations\n",
-		"def f(x: int = 1) -> int:\n    return x\n", "def f(x: int, /) -> int:\n    return x\n", "def f(*, x: int) -> int:\n    return x\n", "def f(*xs: int) -> int:\n    return 0\n", "def f(**xs: int) -> int:\n    return 0\n", "def f[T](x: T) -> T:\n    return x\n",
-		"assert True\n", "raise ValueError()\n", "try:\n    pass\nexcept:\n    pass\n", "with x:\n    pass\n", "match x:\n    case 1:\n        pass\n", "global x\n", "nonlocal x\n", "del x\n", "type X = int\n",
-		"x += 1\n", "x = y = 1\n", "x = [1]\n", "x = {1}\n", "x = {'a': 1}\n", "x = [a for a in b]\n", "x = (a for a in b)\n", "x = lambda: 1\n", "x = (a := 1)\n", "x = yield 1\n", "x = 1j\n",
+		"def f(x: int = 1) -> int:\n    return x\n", "def f(x: int, /) -> int:\n    return x\n", "def f(*, x: int) -> int:\n    return x\n", "def f(*xs: int) -> int:\n    return 0\n", "def f(**xs: int) -> int:\n    return 0\n",
+		"assert True\n", "raise ValueError()\n", "try:\n    pass\nexcept:\n    pass\n", "with x:\n    pass\n", "match x:\n    case 1:\n        pass\n", "global x\n", "nonlocal x\n", "del x\n",
+		"x += 1\n", "x = y = 1\n", "x = {1}\n", "x = {'a': 1}\n", "x = [a for a in b]\n", "x = (a for a in b)\n", "x = lambda: 1\n", "x = (a := 1)\n", "x = yield 1\n", "x = 1j\n",
 		"for x in y:\n    pass\nelse:\n    pass\n", "while True:\n    pass\nelse:\n    pass\n", "async for x in y:\n    pass\n", "x = await pending\n", "f(*xs)\n", "f(**xs)\n", "x = a[::2]\n", "x = f'{a!r}'\n", "x = f'{a:{b}}'\n", "x = t'{a}'\n",
 	}
 	for _, source := range cases {
@@ -276,7 +276,7 @@ func FuzzParseNeverPanics(f *testing.F) {
 }
 
 func BenchmarkParse(b *testing.B) {
-	source := []byte("from purepy import value\n@value\nclass Item:\n    key: int\n    name: str\nasync def f(x: int, data: bytes) -> int:\n    total = 0\n    for item in data:\n        if item > x:\n            total = total + item\n    return total\n")
+	source := []byte("from typing import NamedTuple\n\nclass Item(NamedTuple):\n    key: int\n    name: str\nasync def f(x: int, data: bytes) -> int:\n    total = 0\n    for item in data:\n        if item > x:\n            total = total + item\n    return total\n")
 	b.SetBytes(int64(len(source)))
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {

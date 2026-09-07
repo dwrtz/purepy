@@ -40,18 +40,13 @@ jobs:
         run: uv run --no-project --with jsonschema==4.23.0 python tools/check_schema_contract.py --verifier bin/purepy
       - name: Prepare first source snapshot and native binary
         run: .venv/bin/python tools/package_binary.py --output build/release-first
-      - name: Build Python wheel and source distribution
-        run: uv build --no-sources python --out-dir build/release-first
-        env:
-          SOURCE_DATE_EPOCH: '315532800'
-      - run: .venv/bin/python tools/package_binary.py --finalize --output build/release-first --require-python
-      - run: .venv/bin/python tools/package_binary.py --verify --output build/release-first --require-python
+      - run: .venv/bin/python tools/package_binary.py --finalize --output build/release-first
+      - run: .venv/bin/python tools/package_binary.py --verify --output build/release-first
       - name: Repeat all builds and compare artifact bytes
         run: |
           .venv/bin/python tools/package_binary.py --output build/release-second
-          uv build --no-sources python --out-dir build/release-second
-          .venv/bin/python tools/package_binary.py --finalize --output build/release-second --require-python
-          .venv/bin/python tools/package_binary.py --verify --output build/release-second --require-python
+          .venv/bin/python tools/package_binary.py --finalize --output build/release-second
+          .venv/bin/python tools/package_binary.py --verify --output build/release-second
           cmp build/release-first/SHA256SUMS build/release-second/SHA256SUMS
         env:
           SOURCE_DATE_EPOCH: '315532800'
@@ -60,14 +55,3 @@ jobs:
           name: purepy-${{ matrix.target }}
           path: build/release-first/*
           if-no-files-found: error
-  python-runtimes:
-    runs-on: ubuntu-24.04
-    strategy:
-      matrix:
-        python: ['3.12', '3.13', '3.14']
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.ref || github.sha }}
-      - uses: astral-sh/setup-uv@v6
-      - run: make python-test PYTHON_VERSION=${{ matrix.python }}

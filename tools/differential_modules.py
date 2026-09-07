@@ -29,7 +29,6 @@ from module_runtime import (fingerprint, input_data, runtime_worker, select_case
 RECORD_FIELDS = {
     **{name + ".Pair": (("x", "int"), ("label", "str"))
        for name in ("models", "left", "right", "pkg.models")},
-    "models.Secret": (("_Secret__key", "int"),),
     "main.Batch": (("entries", "tuple[models.Pair | None, ...]"),),
     "main.Box": (("token", "fixture.Token"),),
 }
@@ -96,7 +95,7 @@ def static_case(case, verifier):
         write_sources(root / "src", case)
         manifests = ["fixture.toml"] if case.manifest else []
         (root / "purepy.toml").write_text(
-            '[tool.purepy]\nlanguage = "0.1"\npython_syntax = "3.14"\nsource_root = "src"\n'
+            '[tool.purepy]\nlanguage = "0.2"\npython_syntax = "3.14"\nsource_root = "src"\n'
             'entrypoints = ["main.probe"]\nmanifests = ' + json.dumps(manifests) + "\n", encoding="utf-8")
         if case.manifest:
             (root / "fixture.toml").write_text(case.manifest, encoding="utf-8")
@@ -112,7 +111,7 @@ def static_case(case, verifier):
 
 def compare_case(case, static, runtime):
     errors = []
-    if (not isinstance(static, dict) or type(static.get("schema")) is not int or static["schema"] != 1
+    if (not isinstance(static, dict) or type(static.get("schema")) is not int or static["schema"] != 2
             or not isinstance(static.get("verifier_version"), str) or not static["verifier_version"]
             or type(static.get("ok")) is not bool or not isinstance(static.get("diagnostics"), list)
             or not isinstance(static.get("functions"), list)
